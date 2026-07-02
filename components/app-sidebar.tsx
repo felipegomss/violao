@@ -26,7 +26,8 @@ export function AppSidebar({ active }: { active: ActiveSection }) {
         <span className="font-cifra text-[8px] uppercase tracking-wide">acervo</span>
       </Link>
 
-      <div
+      <Link
+        href="/repertorios"
         className={
           active === 'repert'
             ? 'flex w-full flex-col items-center gap-1.5 border-l-2 border-teal bg-folha py-2.5 text-teal'
@@ -39,7 +40,7 @@ export function AppSidebar({ active }: { active: ActiveSection }) {
           }`}
         />
         <span className="font-cifra text-[8px] uppercase tracking-wide">repertório</span>
-      </div>
+      </Link>
 
       <div
         className={
