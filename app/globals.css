@@ -46,6 +46,20 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ===== Design System editorial "Caderno" (aditivo — não colide com shadcn) ===== */
+  --color-paper: #e7ddca; /* fundo papel */
+  --color-folha: #f8f3e8; /* superfície folha */
+  --color-ink: #26211b; /* tinta (texto) */
+  --color-teal: #1c3c4c; /* acento */
+  --color-palco: #16130f; /* modo palco (escuro) */
+  --color-soft: #5f574a; /* texto secundário */
+  --color-faint: #8a8073; /* labels/metadados apagados */
+  --color-rust: #b8532c; /* laranja de seção */
+  --color-gold: #e7c9a0; /* destaque de palco */
+  --color-stageblue: #7fa9bd; /* azul de palco */
+  --font-editorial: var(--font-newsreader);
+  --font-cifra: var(--font-jbmono);
 }
 
 :root {
