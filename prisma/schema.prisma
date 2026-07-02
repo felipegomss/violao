@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model Song {
+  id                  String   @id @default(cuid())
+  title               String
+  artist              String
+  genres              String[]
+  version             String?
+  key                 String
+  capo                Int?
+  tuning              String   @default("standard")
+  bpm                 Int?
+  difficulty          Int?
+  status              SongStatus  @default(APRENDENDO)
+  chordFormat         ChordFormat
+  chordContent        String   @db.Text
+  referenceYoutubeUrl String?
+  notes               String?  @db.Text
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  recordings       Recording[]
+  practiceSessions PracticeSession[]
+  repertoires      RepertoireSong[]
+}
+
+enum SongStatus {
+  APRENDENDO
+  LAPIDANDO
+  DOMINADA
+  MANUTENCAO
+}
+
+enum ChordFormat {
+  TRADICIONAL
+  GRADE
+}
+
+model Recording {
+  id         String   @id @default(cuid())
+  songId     String
+  song       Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  youtubeUrl String
+  recordedAt DateTime @default(now())
+  rating     Int?
+  notes      String?
+}
+
+model PracticeSession {
+  id          String   @id @default(cuid())
+  songId      String
+  song        Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  date        DateTime @default(now())
+  rating      Int
+  durationMin Int?
+  notes       String?
+}
+
+model Repertoire {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  songs       RepertoireSong[]
+}
+
+model RepertoireSong {
+  repertoireId String
+  songId       String
+  repertoire   Repertoire @relation(fields: [repertoireId], references: [id], onDelete: Cascade)
+  song         Song       @relation(fields: [songId], references: [id], onDelete: Cascade)
+  order        Int?
+
+  @@id([repertoireId, songId])
+}
