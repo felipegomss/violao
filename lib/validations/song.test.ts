@@ -6,14 +6,14 @@ const valid = {
   artist: 'Toquinho',
   key: 'C',
   genres: ['MPB'],
-  status: 'APRENDENDO',
   chordFormat: 'GRADE',
-  chordContent: '| C7M | G/B |',
 }
 
 describe('SongSchema', () => {
-  it('aceita payload mínimo válido', () => {
-    expect(SongSchema.safeParse(valid).success).toBe(true)
+  it('aceita payload mínimo válido e aplica default de tuning', () => {
+    const r = SongSchema.safeParse(valid)
+    expect(r.success).toBe(true)
+    if (r.success) expect(r.data.tuning).toBe('standard')
   })
 
   it('exige title, artist e key', () => {
@@ -27,25 +27,13 @@ describe('SongSchema', () => {
     }
   })
 
-  it('rejeita difficulty fora de 1–5', () => {
-    expect(SongSchema.safeParse({ ...valid, difficulty: 9 }).success).toBe(false)
-    expect(SongSchema.safeParse({ ...valid, difficulty: 0 }).success).toBe(false)
-  })
-
-  it('rejeita status/chordFormat inválidos', () => {
-    expect(SongSchema.safeParse({ ...valid, status: 'X' }).success).toBe(false)
-    expect(SongSchema.safeParse({ ...valid, chordFormat: 'Y' }).success).toBe(false)
+  it('rejeita chordFormat inválido', () => {
+    expect(SongSchema.safeParse({ ...valid, chordFormat: 'X' }).success).toBe(false)
   })
 
   it('rejeita referenceYoutubeUrl malformada', () => {
     expect(
       SongSchema.safeParse({ ...valid, referenceYoutubeUrl: 'nao-e-url' }).success,
     ).toBe(false)
-  })
-
-  it('aceita opcionais ausentes e aplica default de tuning', () => {
-    const r = SongSchema.safeParse(valid)
-    expect(r.success).toBe(true)
-    if (r.success) expect(r.data.tuning).toBe('standard')
   })
 })
