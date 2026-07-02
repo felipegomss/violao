@@ -95,6 +95,8 @@ describe('toggleFormat', () => {
   it('scaffold intocado → troca o scaffold inteiro', () => {
     expect(toggleFormat(SCAFFOLD_TRADICIONAL, 'GRADE')).toBe(SCAFFOLD_GRADE)
     expect(toggleFormat(SCAFFOLD_GRADE, 'TRADICIONAL')).toBe(SCAFFOLD_TRADICIONAL)
+    // tolerante a \n final vindo da textarea
+    expect(toggleFormat(SCAFFOLD_TRADICIONAL + '\n', 'GRADE')).toBe(SCAFFOLD_GRADE)
   })
 
   it('conteúdo editado → só troca {tipo}, preserva o corpo', () => {

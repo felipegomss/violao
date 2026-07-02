@@ -17,7 +17,7 @@ export type DirectiveSpec = {
   key: string
   field: keyof DerivedFields
   label: string
-  required?: boolean
+  required?: boolean // usado pelo painel do editor (bloqueia o submit se faltar)
 }
 
 export const DIRECTIVES: DirectiveSpec[] = [
@@ -109,7 +109,9 @@ export const SCAFFOLD_GRADE = `${HEADER}
 export function toggleFormat(content: string, target: ChordFormat): string {
   const pristineOther =
     target === 'GRADE' ? SCAFFOLD_TRADICIONAL : SCAFFOLD_GRADE
-  if (content === pristineOther) {
+  // Scaffold intocado (tolerante a espaço/linha em branco nas bordas) → troca o
+  // scaffold inteiro; senão preserva o corpo digitado e só troca {tipo}.
+  if (content.trim() === pristineOther.trim()) {
     return target === 'GRADE' ? SCAFFOLD_GRADE : SCAFFOLD_TRADICIONAL
   }
   return setDirective(content, 'tipo', target === 'GRADE' ? 'grade' : 'tradicional')
