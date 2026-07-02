@@ -52,6 +52,8 @@ model Recording {
   recordedAt DateTime @default(now())
   rating     Int?
   notes      String?
+
+  @@index([songId])
 }
 
 model PracticeSession {
@@ -62,6 +64,8 @@ model PracticeSession {
   rating      Int
   durationMin Int?
   notes       String?
+
+  @@index([songId])
 }
 
 model Repertoire {
@@ -80,4 +84,5 @@ model RepertoireSong {
   order        Int?
 
   @@id([repertoireId, songId])
+  @@index([songId])
 }
