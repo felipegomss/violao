@@ -24,6 +24,16 @@ describe('encrypt/decrypt', () => {
     expect(await decrypt('not-a-jwt')).toBeNull()
     expect(await decrypt(undefined)).toBeNull()
   })
+
+  it('rejeita token expirado', async () => {
+    const { SignJWT } = await import('jose')
+    const key = new TextEncoder().encode(process.env.SESSION_SECRET)
+    const expired = await new SignJWT({ sub: 'owner' })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('-1s')
+      .sign(key)
+    expect(await decrypt(expired)).toBeNull()
+  })
 })
 
 describe('verifyPassword', () => {

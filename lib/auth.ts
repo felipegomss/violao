@@ -9,7 +9,7 @@ const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
 
 export async function createSession() {
   const expiresAt = new Date(Date.now() + MAX_AGE_MS)
-  const token = await encrypt({ sub: 'owner', expiresAt: expiresAt.toISOString() })
+  const token = await encrypt({ sub: 'owner' })
   const cookieStore = await cookies()
   cookieStore.set(COOKIE, token, {
     httpOnly: true,
