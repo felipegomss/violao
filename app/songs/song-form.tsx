@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { cloneElement, isValidElement, useActionState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -41,11 +41,22 @@ function Field({
   errors?: string[]
   children: React.ReactNode
 }) {
+  const errId = errors?.[0] ? `${htmlFor}-error` : undefined
+  const child = isValidElement(children)
+    ? cloneElement(children as React.ReactElement<Record<string, unknown>>, {
+        'aria-invalid': errors?.[0] ? true : undefined,
+        'aria-describedby': errId,
+      })
+    : children
   return (
     <div className="flex flex-col gap-2">
       <Label htmlFor={htmlFor}>{label}</Label>
-      {children}
-      {errors?.[0] && <p className="text-sm text-red-600">{errors[0]}</p>}
+      {child}
+      {errId && (
+        <p id={errId} className="text-sm text-red-600">
+          {errors?.[0]}
+        </p>
+      )}
     </div>
   )
 }
@@ -100,7 +111,7 @@ export function SongForm({
             id="status"
             name="status"
             defaultValue={defaults.status ?? 'APRENDENDO'}
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
           >
             {SONG_STATUS.map((s) => (
               <option key={s} value={s}>{s}</option>
@@ -112,7 +123,7 @@ export function SongForm({
             id="chordFormat"
             name="chordFormat"
             defaultValue={defaults.chordFormat ?? 'TRADICIONAL'}
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
           >
             {CHORD_FORMAT.map((c) => (
               <option key={c} value={c}>{c}</option>
