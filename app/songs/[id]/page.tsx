@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
 import { deleteSong } from '@/app/actions/songs'
 import { Button } from '@/components/ui/button'
+import { DeleteSongButton } from './delete-song-button'
 
 export default async function SongDetailPage({
   params,
@@ -31,9 +32,7 @@ export default async function SongDetailPage({
         </div>
         <div className="flex gap-3">
           <Button variant="outline" render={<Link href={`/songs/${song.id}/edit`}>Editar</Link>} />
-          <form action={deleteThis}>
-            <Button type="submit" variant="destructive">Apagar</Button>
-          </form>
+          <DeleteSongButton action={deleteThis} />
         </div>
       </div>
 
@@ -52,7 +51,7 @@ export default async function SongDetailPage({
       {song.referenceYoutubeUrl && (
         <p className="mb-6 text-sm">
           Referência:{' '}
-          <a href={song.referenceYoutubeUrl} target="_blank" rel="noreferrer" className="text-blue-600 underline">
+          <a href={song.referenceYoutubeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
             {song.referenceYoutubeUrl}
           </a>
         </p>
