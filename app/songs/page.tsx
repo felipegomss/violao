@@ -11,17 +11,13 @@ export default async function SongsPage() {
     <main className="mx-auto max-w-4xl p-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Músicas</h1>
-        <Button asChild>
-          <Link href="/songs/new">Nova música</Link>
-        </Button>
+        <Button render={<Link href="/songs/new">Nova música</Link>} />
       </div>
 
       {songs.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
           <p className="mb-4">Nenhuma música ainda.</p>
-          <Button asChild>
-            <Link href="/songs/new">Adicionar a primeira</Link>
-          </Button>
+          <Button render={<Link href="/songs/new">Adicionar a primeira</Link>} />
         </div>
       ) : (
         <ul className="flex flex-col gap-2">

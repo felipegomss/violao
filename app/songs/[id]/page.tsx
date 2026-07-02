@@ -30,9 +30,7 @@ export default async function SongDetailPage({
           </h1>
         </div>
         <div className="flex gap-3">
-          <Button asChild variant="outline">
-            <Link href={`/songs/${song.id}/edit`}>Editar</Link>
-          </Button>
+          <Button variant="outline" render={<Link href={`/songs/${song.id}/edit`}>Editar</Link>} />
           <form action={deleteThis}>
             <Button type="submit" variant="destructive">Apagar</Button>
           </form>
