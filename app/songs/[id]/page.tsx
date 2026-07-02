@@ -5,6 +5,7 @@ import { verifySession } from '@/lib/auth'
 import { deleteSong } from '@/app/actions/songs'
 import { Button } from '@/components/ui/button'
 import { DeleteSongButton } from './delete-song-button'
+import { Cifra } from './cifra'
 
 export default async function SongDetailPage({
   params,
@@ -59,9 +60,7 @@ export default async function SongDetailPage({
 
       <section className="mb-6">
         <h2 className="mb-2 text-lg font-semibold">Cifra</h2>
-        <pre className="overflow-x-auto rounded-md border bg-muted p-4 font-mono text-sm">
-          {song.chordContent || '(vazio)'}
-        </pre>
+        <Cifra format={song.chordFormat} content={song.chordContent} />
       </section>
 
       {song.notes && (
