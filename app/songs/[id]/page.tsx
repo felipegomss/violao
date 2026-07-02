@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
 import { deleteSong } from '@/app/actions/songs'
 import { parseChordSheet, type ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
+import { AppSidebar } from '@/components/app-sidebar'
 import { DeleteSongButton } from './delete-song-button'
 import { EditorialCifra } from './editorial-cifra'
 
@@ -33,31 +34,7 @@ export default async function SongDetailPage({
 
   return (
     <div className="flex min-h-screen bg-paper text-ink">
-      {/* Sidebar */}
-      <nav className="hidden w-[76px] flex-none flex-col items-center gap-1.5 border-r border-ink/12 bg-[#efe7d5] py-5 md:flex">
-        <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-[9px] bg-ink font-editorial text-lg font-semibold text-folha">
-          C
-        </div>
-        <Link
-          href="/songs"
-          className="flex w-full flex-col items-center gap-1.5 border-l-2 border-teal bg-folha py-2.5"
-        >
-          <span className="h-5 w-5 rounded-[3px] border-[1.5px] border-teal" />
-          <span className="font-cifra text-[8px] uppercase tracking-wide text-teal">acervo</span>
-        </Link>
-        <div className="flex w-full flex-col items-center gap-1.5 py-2.5">
-          <span className="h-4 w-5 rounded-t-[5px] border-[1.5px] border-t-[5px] border-faint" />
-          <span className="font-cifra text-[8px] uppercase tracking-wide text-faint">repertório</span>
-        </div>
-        <div className="flex w-full flex-col items-center gap-1.5 py-2.5">
-          <span className="flex h-5 w-5 items-end gap-[2px]">
-            <span className="h-2 flex-1 bg-faint" />
-            <span className="h-3.5 flex-1 bg-faint" />
-            <span className="h-5 flex-1 bg-faint" />
-          </span>
-          <span className="font-cifra text-[8px] uppercase tracking-wide text-faint">progresso</span>
-        </div>
-      </nav>
+      <AppSidebar active="acervo" />
 
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
