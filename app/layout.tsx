@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { cookies } from 'next/headers'
-import { decrypt } from '@/lib/session'
+import { getSession } from '@/lib/auth'
 import { logout } from '@/app/actions/auth'
 import './globals.css'
 
@@ -15,8 +14,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const token = (await cookies()).get('session')?.value
-  const isAuth = (await decrypt(token))?.sub === 'owner'
+  const isAuth = (await getSession()) !== null
 
   return (
     <html lang="pt-BR">

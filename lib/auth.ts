@@ -25,10 +25,17 @@ export async function deleteSession() {
   cookieStore.delete(COOKIE)
 }
 
-export const verifySession = cache(async () => {
+// Lê e valida a sessão do cookie. Não redireciona — retorna o payload ou null.
+export const getSession = cache(async () => {
   const token = (await cookies()).get(COOKIE)?.value
   const payload = await decrypt(token)
-  if (payload?.sub !== 'owner') {
+  return payload?.sub === 'owner' ? payload : null
+})
+
+// DAL: usar em páginas/actions protegidas. Redireciona se não autenticado.
+export const verifySession = cache(async () => {
+  const session = await getSession()
+  if (!session) {
     redirect('/login')
   }
   return { isAuth: true as const }
