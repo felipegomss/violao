@@ -1,19 +1,14 @@
-import Link from 'next/link'
 import { verifySession } from '@/lib/auth'
 import { createSong } from '@/app/actions/songs'
+import { AppSidebar } from '@/components/app-sidebar'
 import { SongEditor } from '@/app/songs/song-editor'
 
 export default async function NewSongPage() {
   await verifySession()
   return (
-    <main className="mx-auto max-w-5xl p-6">
-      <div className="mb-6 flex items-center gap-4">
-        <Link href="/songs" className="text-sm text-muted-foreground hover:underline">
-          ← Músicas
-        </Link>
-        <h1 className="text-2xl font-semibold">Nova música</h1>
-      </div>
-      <SongEditor action={createSong} submitLabel="Criar" />
-    </main>
+    <div className="flex min-h-screen bg-paper text-ink">
+      <AppSidebar active="acervo" />
+      <SongEditor action={createSong} title="Nova música" backHref="/songs" submitLabel="Criar música" />
+    </div>
   )
 }
