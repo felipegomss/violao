@@ -18,8 +18,7 @@ model Song {
   capo                Int?
   tuning              String   @default("standard")
   bpm                 Int?
-  difficulty          Int?
-  status              SongStatus  @default(APRENDENDO)
+  comoEstouTocando    Int?     // 1-5, marcado depois na view da cifra
   chordFormat         ChordFormat
   chordContent        String   @db.Text
   referenceYoutubeUrl String?
@@ -30,13 +29,6 @@ model Song {
   recordings       Recording[]
   practiceSessions PracticeSession[]
   repertoires      RepertoireSong[]
-}
-
-enum SongStatus {
-  APRENDENDO
-  LAPIDANDO
-  DOMINADA
-  MANUTENCAO
 }
 
 enum ChordFormat {
