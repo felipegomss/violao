@@ -2,10 +2,24 @@ import { describe, expect, it } from 'vitest'
 import {
   parseDirectives,
   setDirective,
+  getDirective,
   toggleFormat,
   SCAFFOLD_TRADICIONAL,
   SCAFFOLD_GRADE,
 } from './directives'
+
+describe('getDirective (edição bi-direcional)', () => {
+  it('lê o valor cru de uma diretiva', () => {
+    expect(getDirective('{tom: Cm}\n[C]oi', 'tom')).toBe('Cm')
+  })
+  it('retorna vazio quando ausente', () => {
+    expect(getDirective('[C]oi', 'bpm')).toBe('')
+  })
+  it('round-trip com setDirective', () => {
+    const c = setDirective('{tom: }', 'tom', 'Dm')
+    expect(getDirective(c, 'tom')).toBe('Dm')
+  })
+})
 
 const tradFull = `{title: Minha Música}
 {artist: Fulano}

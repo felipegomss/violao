@@ -87,6 +87,16 @@ export function setDirective(
   return [newLine, ...lines].join('\n')
 }
 
+// Valor cru (não-trimado) de uma diretiva no texto, ou '' se ausente.
+// Untrimmed de propósito: liga inputs controlados sem "comer" espaços digitados.
+export function getDirective(content: string, key: string): string {
+  for (const line of content.split('\n')) {
+    const m = line.match(DIRECTIVE_LINE)
+    if (m && m[1] === key) return m[2]
+  }
+  return ''
+}
+
 const HEADER = `{title: }
 {artist: }
 {tom: }

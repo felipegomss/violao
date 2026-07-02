@@ -5,53 +5,29 @@ import Link from 'next/link'
 import {
   parseDirectives,
   setDirective,
+  getDirective,
   toggleFormat,
   DIRECTIVES,
   SCAFFOLD_TRADICIONAL,
   type ChordFormat,
-  type DerivedFields,
 } from '@/lib/song/directives'
 import type { SongFormState } from '@/app/actions/songs'
 
 const PANEL = DIRECTIVES.filter((d) => d.key !== 'tipo')
 
-const FIELD_TYPE: Record<string, 'title' | 'artist' | 'chip' | 'tag' | 'link' | 'mono'> = {
-  title: 'title',
-  artist: 'artist',
-  key: 'chip',
-  genres: 'tag',
-  referenceYoutubeUrl: 'link',
-}
-
 const PLACEHOLDER: Record<string, string> = {
   title: 'digite o título',
   artist: 'digite o artista',
   key: 'ex.: G, Am, Dm…',
+  genres: 'ex.: bossa, mpb',
+  version: 'ex.: v2 · songbook',
+  capo: 'casa do capo',
+  tuning: 'ex.: E A D G B E',
+  bpm: 'ex.: 96',
+  referenceYoutubeUrl: 'link do YouTube',
 }
 
 type Action = (state: SongFormState, formData: FormData) => Promise<SongFormState>
-
-function ValueDisplay({ type, value }: { type: string; value: string }) {
-  if (type === 'title')
-    return <span className="font-editorial font-medium text-[21px] leading-tight text-ink">{value}</span>
-  if (type === 'artist')
-    return <span className="font-editorial italic text-[17px] text-soft">{value}</span>
-  if (type === 'chip')
-    return (
-      <span className="inline-block font-cifra text-[14px] font-medium text-folha bg-teal px-2.5 py-1 rounded">
-        {value}
-      </span>
-    )
-  if (type === 'tag')
-    return (
-      <span className="inline-block font-cifra text-[11px] tracking-[.08em] uppercase text-soft border border-ink/24 px-2 py-0.5 rounded">
-        {value}
-      </span>
-    )
-  if (type === 'link')
-    return <span className="font-cifra text-[13px] text-teal border-b border-teal pb-px">{value}</span>
-  return <span className="font-cifra text-[14px] text-ink">{value}</span>
-}
 
 export function SongEditor({
   action,
@@ -69,18 +45,12 @@ export function SongEditor({
   const [state, formAction, pending] = useActionState<SongFormState, FormData>(action, undefined)
   const [content, setContent] = useState(initialContent)
 
-  const derived = parseDirectives(content)
-  const format = derived.chordFormat
+  const format = parseDirectives(content).chordFormat
+  const raw = (key: string) => getDirective(content, key)
 
-  const display = (field: keyof DerivedFields) => {
-    const v = derived[field]
-    if (Array.isArray(v)) return v.join(', ')
-    return v == null ? '' : String(v)
-  }
-
-  const missing = PANEL.filter((d) => d.required && display(d.field).trim() === '')
+  const missing = PANEL.filter((d) => d.required && raw(d.key).trim() === '')
   const hasMissing = missing.length > 0
-  const detectedCount = PANEL.filter((d) => display(d.field).trim() !== '').length
+  const filledCount = PANEL.filter((d) => raw(d.key).trim() !== '').length
 
   return (
     <form action={formAction} className="flex flex-1 flex-col min-w-0">
@@ -120,7 +90,7 @@ export function SongEditor({
               Cole ou edite a cifra
             </span>
             <span className="font-cifra text-[10px] text-[#b0a696]">
-              diretivas <span className="text-teal">{'{ }'}</span> viram campos →
+              campos <span className="text-teal">↔</span> diretivas
             </span>
           </div>
           <textarea
@@ -132,54 +102,40 @@ export function SongEditor({
           />
         </div>
 
-        {/* detectado */}
+        {/* detectado — campos editáveis (bi-direcional com o texto) */}
         <aside className="flex min-h-0 flex-col bg-[#efe7d5]">
           <div className="flex items-baseline justify-between border-b border-ink/12 px-5 pt-4 pb-3">
             <span className="font-cifra text-[11px] tracking-[.18em] uppercase text-ink">Detectado</span>
             <span className="font-cifra text-[10px] text-faint">
-              {detectedCount} de {PANEL.length} campos
+              {filledCount} de {PANEL.length} campos
             </span>
           </div>
 
           <div className="flex-1 overflow-y-auto px-5 pt-1.5 pb-4">
             {PANEL.map((d) => {
-              const val = display(d.field)
-              const present = val.trim() !== ''
-              const type = FIELD_TYPE[d.field] ?? 'mono'
-              const isInput = !!d.required && !present
+              const value = raw(d.key)
+              const missingReq = !!d.required && value.trim() === ''
               return (
                 <div key={d.key} className="border-b border-ink/9 py-3">
-                  <div className="mb-1.5 flex items-center justify-between">
-                    <span
-                      className={`font-cifra text-[9px] tracking-[.14em] uppercase ${
-                        isInput ? 'text-rust' : 'text-faint'
-                      }`}
-                    >
-                      {d.label}
-                    </span>
-                    <span
-                      className={`font-cifra text-[8.5px] tracking-[.12em] uppercase ${
-                        present ? 'text-[#9aa88f]' : d.required ? 'text-rust' : 'text-transparent'
-                      }`}
-                    >
-                      {present ? 'auto' : d.required ? 'obrigatório' : ''}
-                    </span>
-                  </div>
-                  {present ? (
-                    <ValueDisplay type={type} value={val} />
-                  ) : isInput ? (
-                    <input
-                      defaultValue=""
-                      placeholder={PLACEHOLDER[d.field] ?? ''}
-                      onBlur={(e) => {
-                        const v = e.target.value.trim()
-                        if (v) setContent((c) => setDirective(c, d.key, v))
-                      }}
-                      className="w-full rounded-md border-[1.5px] border-rust bg-[#fbf7ee] px-2.5 py-2 font-cifra text-[14px] text-ink outline-none"
-                    />
-                  ) : (
-                    <span className="font-cifra text-[12px] text-[#b0a696]">— não informado</span>
-                  )}
+                  <label
+                    htmlFor={`f-${d.key}`}
+                    className={`mb-1.5 block font-cifra text-[9px] tracking-[.14em] uppercase ${
+                      missingReq ? 'text-rust' : 'text-faint'
+                    }`}
+                  >
+                    {d.label}
+                    {d.required && <span className="text-rust"> *</span>}
+                  </label>
+                  <input
+                    id={`f-${d.key}`}
+                    value={value}
+                    onChange={(e) => setContent((c) => setDirective(c, d.key, e.target.value))}
+                    placeholder={PLACEHOLDER[d.field] ?? ''}
+                    aria-invalid={missingReq || undefined}
+                    className={`w-full rounded-md border-[1.5px] bg-[#fbf7ee] px-2.5 py-2 font-cifra text-[14px] text-ink outline-none ${
+                      missingReq ? 'border-rust' : 'border-ink/15 focus:border-teal'
+                    }`}
+                  />
                 </div>
               )
             })}
