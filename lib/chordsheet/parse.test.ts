@@ -28,6 +28,16 @@ describe('parseChordSheet', () => {
     }
   })
 
+  it('linha só de letra (sem acordes) vira row com chord null', () => {
+    const line = parseChordSheet('Só a letra, sem acorde').lines[0]
+    expect(line.type).toBe('row')
+    if (line.type === 'row') {
+      expect(line.items).toHaveLength(1)
+      expect(line.items[0].chord).toBeNull()
+      expect(line.items[0].lyrics).toBe('Só a letra, sem acorde')
+    }
+  })
+
   it('{comment} vira label', () => {
     const { lines } = parseChordSheet('{comment: Intro}')
     expect(lines[0]).toEqual({ type: 'label', text: 'Intro' })

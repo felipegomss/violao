@@ -9,6 +9,12 @@ export type ChordSheetLine =
   | { type: 'empty' }
 export type ChordSheet = { lines: ChordSheetLine[] }
 
+/**
+ * Converte ChordPro (formato TRADICIONAL) num view model desacoplado do ChordSheetJS.
+ *
+ * @throws quando o ChordPro é malformado (o `ChordProParser` lança). Quem chama
+ * DEVE tratar (ex.: o componente `Cifra` envolve em try/catch e cai no texto cru).
+ */
 export function parseChordSheet(content: string): ChordSheet {
   const song = new ChordProParser().parse(content)
   const lines: ChordSheetLine[] = []
