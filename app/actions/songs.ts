@@ -36,9 +36,9 @@ function parseSongForm(formData: FormData) {
     tuning: str(formData.get('tuning')) ?? 'standard',
     bpm: num(formData.get('bpm')),
     difficulty: num(formData.get('difficulty')),
-    status: str(formData.get('status')) ?? 'APRENDENDO',
-    chordFormat: str(formData.get('chordFormat')) ?? 'TRADICIONAL',
-    chordContent: (formData.get('chordContent') as string) ?? '',
+    status: str(formData.get('status')),
+    chordFormat: str(formData.get('chordFormat')),
+    chordContent: String(formData.get('chordContent') ?? ''),
     referenceYoutubeUrl: str(formData.get('referenceYoutubeUrl')),
     notes: str(formData.get('notes')),
   }
