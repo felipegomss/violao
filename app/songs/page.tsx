@@ -31,7 +31,7 @@ export default async function SongsPage() {
                   <span className="font-medium">{s.title}</span>{' '}
                   <span className="text-muted-foreground">— {s.artist}</span>
                 </span>
-                <span className="text-sm text-muted-foreground">{s.status}</span>
+                <span className="font-mono text-sm text-muted-foreground">{s.key}</span>
               </Link>
             </li>
           ))}
