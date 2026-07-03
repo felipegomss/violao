@@ -3,8 +3,11 @@
 import { useEffect, useState } from 'react'
 import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
+import type { ChordShape } from '@/lib/chords/diagram'
 import { setComoEstouTocando } from '@/app/actions/songs'
+import { getChordDiagram } from '@/app/actions/chords'
 import { EditorialCifra } from './editorial-cifra'
+import { ChordDiagram } from './chord-diagram'
 
 type Notation = 'chord' | 'degree'
 
@@ -47,6 +50,16 @@ export function CifraStudy({
   const [rating, setRating] = useState(comoEstouTocando ?? 0)
   const [metronomeOn, setMetronomeOn] = useState(false)
   const [beat, setBeat] = useState(0)
+  const [diagram, setDiagram] = useState<
+    { name: string; shape: ChordShape | null; loading: boolean } | null
+  >(null)
+
+  const showDiagram = (chord: string) => {
+    setDiagram({ name: chord, shape: null, loading: true })
+    void getChordDiagram(chord).then((shape) =>
+      setDiagram({ name: chord, shape, loading: false }),
+    )
+  }
 
   // Auto-scroll: rola a JANELA (na view normal a página cresce e quem rola é a
   // window, não um container interno). Animação imperativa via rAF.
@@ -137,12 +150,16 @@ export function CifraStudy({
   )
 
   return (
+    <>
     <div className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 lg:grid-cols-[1fr_320px] lg:min-h-0">
       {/* Cifra sheet */}
       <div className="px-8 py-8 lg:px-10">
         {chordFormat === 'TRADICIONAL' ? (
           shownSheet ? (
-            <EditorialCifra sheet={shownSheet} />
+            <EditorialCifra
+              sheet={shownSheet}
+              onChordClick={notation === 'chord' ? showDiagram : undefined}
+            />
           ) : (
             <>
               {parseFailed && (
@@ -379,5 +396,36 @@ export function CifraStudy({
         </div>
       </div>
     </div>
+
+    {diagram && (
+      <div
+        className="fixed inset-0 z-40 flex items-center justify-center bg-[rgba(22,19,15,.35)] p-4"
+        onClick={() => setDiagram(null)}
+      >
+        <div
+          className="relative rounded-xl border border-ink/20 bg-folha px-6 py-5 shadow-[0_24px_50px_-20px_rgba(22,19,15,.6)]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={() => setDiagram(null)}
+            className="absolute right-3 top-3 font-cifra text-[13px] text-faint hover:text-ink"
+          >
+            ✕
+          </button>
+          {diagram.loading ? (
+            <div className="w-[200px] py-10 text-center font-cifra text-[12px] text-soft">…</div>
+          ) : diagram.shape ? (
+            <ChordDiagram name={diagram.name} shape={diagram.shape} />
+          ) : (
+            <div className="w-[200px] py-10 text-center font-editorial text-[15px] italic text-soft">
+              sem diagrama pra{' '}
+              <span className="font-cifra not-italic text-ink">{diagram.name}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+    </>
   )
 }
