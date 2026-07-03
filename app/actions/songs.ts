@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
 import { SongSchema } from '@/lib/validations/song'
 import { parseDirectives } from '@/lib/song/directives'
+import { slugify, uniqueSlug } from '@/lib/slug'
 
 export type SongFormState =
   | { errors?: Record<string, string[]>; message?: string }
@@ -21,11 +22,15 @@ export async function createSong(
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors }
   }
+  const slug = await uniqueSlug(
+    slugify(parsed.data.title),
+    async (s) => (await prisma.song.count({ where: { userId, slug: s } })) > 0,
+  )
   const song = await prisma.song.create({
-    data: { ...parsed.data, chordContent, userId },
+    data: { ...parsed.data, chordContent, userId, slug },
   })
   revalidatePath('/songs')
-  redirect(`/songs/${song.id}`)
+  redirect(`/songs/${song.slug}`)
 }
 
 export async function updateSong(
@@ -44,9 +49,11 @@ export async function updateSong(
     data: { ...parsed.data, chordContent },
   })
   if (count === 0) notFound()
+  // slug é estável (não muda no rename) — busco pra redirecionar pela URL bonita.
+  const s = await prisma.song.findFirst({ where: { id, userId }, select: { slug: true } })
   revalidatePath('/songs')
-  revalidatePath(`/songs/${id}`)
-  redirect(`/songs/${id}`)
+  revalidatePath(`/songs/${s?.slug}`)
+  redirect(`/songs/${s?.slug ?? ''}`)
 }
 
 export async function deleteSong(id: string) {

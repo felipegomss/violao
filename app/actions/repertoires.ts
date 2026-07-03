@@ -4,14 +4,19 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
+import { slugify, uniqueSlug } from '@/lib/slug'
 
 export async function createRepertoire(formData: FormData) {
   const { userId } = await verifySession()
   const name = String(formData.get('name') ?? '').trim()
   if (!name) return
-  const rep = await prisma.repertoire.create({ data: { name, userId } })
+  const slug = await uniqueSlug(
+    slugify(name),
+    async (s) => (await prisma.repertoire.count({ where: { userId, slug: s } })) > 0,
+  )
+  const rep = await prisma.repertoire.create({ data: { name, userId, slug } })
   revalidatePath('/repertorios')
-  redirect(`/repertorios/${rep.id}`)
+  redirect(`/repertorios/${rep.slug}`)
 }
 
 export async function renameRepertoire(id: string, formData: FormData) {
