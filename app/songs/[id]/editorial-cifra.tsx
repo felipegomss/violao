@@ -70,19 +70,16 @@ export function EditorialCifra({
         return (
           <div key={i} className="flex flex-wrap items-end">
             {line.items.map((item, j) => {
-              // Acorde "solto" (sem sílaba embaixo, ex.: sequência no fim da
-              // linha) precisa de respiro à direita, senão os acordes se colam.
-              const bareChord = !!item.chord && item.lyrics.trim() === ''
               return (
-                <span
-                  key={j}
-                  className={`inline-flex flex-col items-start${bareChord ? ' pr-2.5' : ''}`}
-                >
+                <span key={j} className="inline-flex flex-col items-start">
                   {item.chord ? (
+                    // pr no próprio acorde: reserva um respiro à direita, então
+                    // acordes nunca se colam — mesmo quando a sílaba embaixo é
+                    // menor que o acorde (ex.: D6(9) sobre "ção" antes de F#7).
                     <Chord
                       chord={item.chord}
                       onHover={onChordHover}
-                      className="h-[15px] font-cifra text-[12px] font-medium leading-none text-teal"
+                      className="h-[15px] pr-2.5 font-cifra text-[12px] font-medium leading-none text-teal"
                     />
                   ) : (
                     <span className="h-[15px] font-cifra text-[12px] leading-none">{' '}</span>

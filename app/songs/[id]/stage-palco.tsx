@@ -31,13 +31,13 @@ function renderDark(sheet: ChordSheetModel, disp: (c: string) => string) {
     return (
       <div key={i} className="flex flex-wrap items-end">
         {line.items.map((it, j) => {
-          const bareChord = !!it.chord && it.lyrics.trim() === ''
           return (
-            <span
-              key={j}
-              className={`inline-flex flex-col items-start${bareChord ? ' pr-3' : ''}`}
-            >
-              <span className="h-[20px] font-cifra text-[16px] font-bold leading-none text-gold">
+            <span key={j} className="inline-flex flex-col items-start">
+              <span
+                className={`h-[20px] font-cifra text-[16px] font-bold leading-none text-gold${
+                  it.chord ? ' pr-3' : ''
+                }`}
+              >
                 {it.chord ? disp(it.chord) : ' '}
               </span>
               <span className="whitespace-pre font-editorial text-[28px] leading-[1.3] text-[#f0e9da]">
