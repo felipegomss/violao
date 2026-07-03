@@ -87,3 +87,15 @@ export async function setComoEstouTocando(id: string, value: number) {
   revalidatePath('/songs')
   revalidatePath('/songs/[slug]', 'page')
 }
+
+// Digitação escolhida por acorde ("variar acorde"), persistida por música.
+// Recebe o mapa inteiro { acorde: índice } e substitui — sem revalidar (é
+// preferência de view, aplicada no client; a página relê no próximo acesso).
+export async function saveVoicings(id: string, voicings: Record<string, number>) {
+  const { userId } = await verifySession()
+  const clean: Record<string, number> = {}
+  for (const [name, idx] of Object.entries(voicings)) {
+    if (typeof idx === 'number' && Number.isInteger(idx) && idx > 0) clean[name] = idx
+  }
+  await prisma.song.updateMany({ where: { id, userId }, data: { voicings: clean } })
+}

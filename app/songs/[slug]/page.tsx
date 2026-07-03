@@ -73,6 +73,7 @@ export default async function SongDetailPage({
           referenceYoutubeUrl={song.referenceYoutubeUrl}
           notes={song.notes}
           comoEstouTocando={song.comoEstouTocando}
+          initialVoicings={(song.voicings as Record<string, number> | null) ?? undefined}
           actions={
             <>
               <StagePalco

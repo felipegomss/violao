@@ -33,6 +33,7 @@ export function PublicCifra({
   sheet,
   parseFailed,
   rawContent,
+  initialVoicings,
 }: {
   share: string
   songId: string
@@ -44,10 +45,12 @@ export function PublicCifra({
   sheet: ChordSheetModel | null
   parseFailed: boolean
   rawContent: string
+  initialVoicings?: Record<string, number>
 }) {
   const [notation, setNotation] = useState<Notation>('chord')
   const [transpose, setTranspose] = useState(0)
-  const [voicings, setVoicings] = useState<Record<string, number>>({})
+  // começa da escolha do dono (só leitura aqui — quem vê não persiste nada)
+  const [voicings, setVoicings] = useState<Record<string, number>>(initialVoicings ?? {})
   const [hover, setHover] = useState<
     { name: string; shape: ChordShape; top: number; left: number } | null
   >(null)

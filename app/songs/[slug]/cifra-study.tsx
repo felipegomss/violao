@@ -6,7 +6,7 @@ import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
 import { chordDiagram, type ChordShape } from '@/lib/chords/diagram'
 import { suggestScrollSpeed } from '@/lib/song/autoscroll'
-import { setComoEstouTocando } from '@/app/actions/songs'
+import { setComoEstouTocando, saveVoicings } from '@/app/actions/songs'
 import { EditorialCifra } from './editorial-cifra'
 import { ChordDiagram } from './chord-diagram'
 import { ChordGrid } from './chord-grid'
@@ -47,6 +47,7 @@ export function CifraStudy({
   referenceYoutubeUrl,
   notes,
   comoEstouTocando,
+  initialVoicings,
 }: {
   songId: string
   title: string
@@ -64,6 +65,7 @@ export function CifraStudy({
   referenceYoutubeUrl: string | null
   notes: string | null
   comoEstouTocando: number | null
+  initialVoicings?: Record<string, number>
 }) {
   const [notation, setNotation] = useState<Notation>('chord')
   const [transpose, setTranspose] = useState(0)
@@ -74,7 +76,16 @@ export function CifraStudy({
   const [rating, setRating] = useState(comoEstouTocando ?? 0)
   const [metronomeOn, setMetronomeOn] = useState(false)
   // Digitação escolhida por acorde (índice de posição). "variar acorde".
-  const [voicings, setVoicings] = useState<Record<string, number>>({})
+  // Começa do que foi salvo na música e persiste a cada mudança (menos no mount).
+  const [voicings, setVoicings] = useState<Record<string, number>>(initialVoicings ?? {})
+  const voicingsSaved = useRef(true)
+  useEffect(() => {
+    if (voicingsSaved.current) {
+      voicingsSaved.current = false
+      return
+    }
+    void saveVoicings(songId, voicings)
+  }, [voicings, songId])
   const [hover, setHover] = useState<
     { name: string; shape: ChordShape; top: number; left: number } | null
   >(null)

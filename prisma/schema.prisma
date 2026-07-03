@@ -20,6 +20,7 @@ model Song {
   tuning              String   @default("standard")
   bpm                 Int?
   comoEstouTocando    Int?     // 1-5, marcado depois na view da cifra
+  voicings            Json?    // { [acorde]: índice da digitação } — escolha do "variar acorde", persistida
   chordContent        String   @db.Text
   referenceYoutubeUrl String?
   notes               String?  @db.Text

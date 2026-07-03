@@ -43,6 +43,7 @@ export default async function PublicSongPage({
       sheet={sheet}
       parseFailed={parseFailed}
       rawContent={song.chordContent}
+      initialVoicings={(song.voicings as Record<string, number> | null) ?? undefined}
     />
   )
 }
