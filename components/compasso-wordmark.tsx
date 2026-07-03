@@ -13,7 +13,7 @@ export function CompassoWordmark({
 }) {
   return (
     <span
-      className={`relative inline-block font-editorial font-medium leading-none tracking-[-0.01em] ${className}`}
+      className={`relative inline-block whitespace-nowrap font-editorial font-medium leading-none tracking-[-0.01em] ${className}`}
       style={{ fontSize: size }}
     >
       {/* pauta: 5 linhas atrás da palavra */}
@@ -37,7 +37,13 @@ export function CompassoWordmark({
         <svg
           viewBox="8 11 24 18"
           aria-hidden="true"
-          style={{ height: '0.52em', width: 'auto', verticalAlign: 'baseline', margin: '0 0.015em' }}
+          style={{
+            display: 'inline-block',
+            height: '0.52em',
+            width: '0.693em',
+            verticalAlign: 'baseline',
+            margin: '0 0.015em',
+          }}
         >
           <mask id="compasso-wordmark-o">
             <rect x="8" y="11" width="24" height="18" fill="#fff" />
