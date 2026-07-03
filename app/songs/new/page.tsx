@@ -9,10 +9,11 @@ export const metadata = { title: 'Nova música' }
 export default async function NewSongPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string }>
+  searchParams: Promise<{ from?: string; mode?: string }>
 }) {
   await verifySession()
-  const { from } = await searchParams
+  const { from, mode } = await searchParams
+  const initialMode = mode === 'import' || mode === 'edit' ? mode : undefined
 
   // "Adicionar ao meu acervo": pré-carrega a cifra de uma música que esteja num
   // repertório PÚBLICO (shareSlug != null). Sem esse gate, qualquer um puxaria
@@ -32,7 +33,7 @@ export default async function NewSongPage({
   return (
     <div className="flex min-h-screen bg-paper text-ink max-md:pt-12">
       <AppSidebar active="acervo" />
-      <NewSongFlow action={createSong} initialContent={initialContent} />
+      <NewSongFlow action={createSong} initialContent={initialContent} initialMode={initialMode} />
     </div>
   )
 }

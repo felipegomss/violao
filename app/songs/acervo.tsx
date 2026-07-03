@@ -2,11 +2,12 @@
 
 import { useRef, useState } from 'react'
 import Link from 'next/link'
-import { ChevronDown, Plus, Search } from 'lucide-react'
+import { ChevronDown, Search } from 'lucide-react'
 import { EmptyState } from '@/components/empty-state'
 import { searchSongs, type SongRow } from '@/app/actions/songs'
 import { useDebouncedValue } from '@/lib/hooks/use-debounced-value'
 import { useInfiniteSongs } from '@/lib/hooks/use-infinite-songs'
+import { NewSongMenu } from './new-song-menu'
 
 type SortKey = 'titulo' | 'artista' | 'toco'
 
@@ -20,10 +21,6 @@ const PAGE = 40
 
 const FOCUS =
   'focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
-
-// Espelho do <Btn variant="primary" size="md"> pra usar em <Link> (Btn é <button>).
-const BTN_PRIMARY_LINK =
-  'inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-transparent bg-teal px-5 font-cifra text-[13px] lowercase tracking-[.02em] text-folha transition-colors duration-150 hover:bg-[#16323f] focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
 
 export function Acervo({
   initialSongs,
@@ -88,20 +85,14 @@ export function Acervo({
             {total} {total === 1 ? 'música' : 'músicas'}
           </div>
         </div>
-        <Link href="/songs/new" className={BTN_PRIMARY_LINK}>
-          <Plus size={16} strokeWidth={2.25} /> Nova música
-        </Link>
+        <NewSongMenu />
       </div>
 
       {total === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center px-10 py-14">
           <EmptyState
             title="Seu acervo tá vazio. Bora adicionar a primeira música?"
-            action={
-              <Link href="/songs/new" className={BTN_PRIMARY_LINK}>
-                <Plus size={16} strokeWidth={2.25} /> adicionar música
-              </Link>
-            }
+            action={<NewSongMenu label="adicionar música" />}
           />
         </div>
       ) : (

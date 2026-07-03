@@ -16,10 +16,21 @@ const INPUT =
   'h-11 w-full rounded-lg border border-ink/22 bg-folha px-3 font-cifra text-[14px] text-ink outline-none transition-colors duration-150 placeholder:text-[#a89e8d] focus:border-teal ' +
   FOCUS
 
-export function NewSongFlow({ action, initialContent }: { action: Action; initialContent?: string }) {
+export function NewSongFlow({
+  action,
+  initialContent,
+  initialMode,
+}: {
+  action: Action
+  initialContent?: string
+  initialMode?: 'import' | 'edit'
+}) {
   // Vindo de "adicionar ao acervo" (?from=) já entra no editor com a cifra.
+  // A escolha colar/importar agora vem do dropdown do botão (?mode=).
   const [content, setContent] = useState<string | undefined>(initialContent)
-  const [mode, setMode] = useState<'choose' | 'import' | 'edit'>(initialContent ? 'edit' : 'choose')
+  const [mode, setMode] = useState<'choose' | 'import' | 'edit'>(
+    initialContent ? 'edit' : (initialMode ?? 'choose'),
+  )
   const [url, setUrl] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
