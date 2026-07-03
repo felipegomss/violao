@@ -49,20 +49,18 @@ export default async function RepertoriosPage() {
                   <Link
                     key={rep.id}
                     href={`/repertorios/${rep.id}`}
-                    className="relative block overflow-hidden rounded-xl border border-ink/16 bg-[#fbf7ee] p-6 transition-shadow duration-150 hover:shadow-[0_8px_24px_-12px_rgba(38,33,27,.35)]"
+                    className="block rounded-xl border border-ink/16 bg-[#fbf7ee] p-6 transition-colors duration-150 hover:border-ink/35"
                   >
-                    {/* lombada do caderno */}
-                    <span aria-hidden className="absolute inset-y-0 left-0 w-1 bg-teal" />
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-editorial font-semibold text-[24px] leading-tight">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <h3 className="truncate font-editorial font-semibold text-[24px] leading-tight">
                         {rep.name}
                       </h3>
-                      <span className="font-cifra text-[12px] text-teal shrink-0">
+                      <span className="font-cifra text-[12px] text-faint shrink-0">
                         {count} músicas
                       </span>
                     </div>
-                    <div className="font-cifra text-[11px] leading-relaxed text-faint mt-3.5 truncate">
-                      {preview}
+                    <div className="mt-4 truncate border-t border-dotted border-ink/15 pt-3 font-editorial text-[14px] italic text-soft">
+                      {preview || 'ainda sem músicas'}
                     </div>
                   </Link>
                 )
