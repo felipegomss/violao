@@ -38,7 +38,7 @@ export async function AppShell({
       <SidebarProvider
         defaultOpen={open}
         className="bg-paper"
-        style={{ '--sidebar-width': '18rem', '--sidebar-width-icon': '4rem' } as CSSProperties}
+        style={{ '--sidebar-width': '18rem', '--sidebar-width-icon': '3.75rem' } as CSSProperties}
       >
         <AppSidebar active={active} songs={songs} context={context} />
         <SidebarInset className={insetClassName ?? 'bg-paper'}>

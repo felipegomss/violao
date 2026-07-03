@@ -167,3 +167,8 @@
     }
   }
 }
+/* Sidebar flutuante (shadcn) casando com a study-bar: mesmo raio e sombra suave. */
+[data-slot='sidebar-inner'] {
+  border-radius: 1rem !important;
+  box-shadow: 0 12px 32px -12px rgba(38, 33, 27, 0.35) !important;
+}

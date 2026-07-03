@@ -33,6 +33,9 @@ export type SidebarContext = {
 }
 
 const HIDE_ICON = 'group-data-[collapsible=icon]:hidden'
+// Alvo de 44px (DS): row alto expandido, botão 44×44 no modo ícone, ícone 20px.
+const NAV_BTN =
+  'h-11 gap-3 font-cifra text-[13px] lowercase group-data-[collapsible=icon]:size-11! [&_svg]:size-5'
 
 export function AppSidebar({
   active,
@@ -46,7 +49,7 @@ export function AppSidebar({
   const { state } = useSidebar()
   const collapsed = state === 'collapsed'
 
-  // Busca no servidor (mesma lógica: mostra 5; se >5, "ver mais" pro acervo).
+  // Busca no servidor (mostra 5; se >5, "ver mais" pro acervo).
   const [q, setQ] = useState('')
   const debouncedQ = useDebouncedValue(q, 250)
   const [items, setItems] = useState<SongRow[]>(songs)
@@ -70,24 +73,24 @@ export function AppSidebar({
   const setlist = context?.setlist ?? []
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader>
+    <Sidebar variant="floating" collapsible="icon">
+      <SidebarHeader className="gap-1">
         <div
           className={cn(
-            'flex px-1',
-            collapsed ? 'flex-col items-center gap-2' : 'items-center justify-between',
+            'flex',
+            collapsed ? 'flex-col items-center gap-1' : 'items-center justify-between px-1',
           )}
         >
           <Link href="/songs" aria-label="Compasso — início" className="flex items-center">
             {collapsed ? (
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink text-folha">
-                <Semibreve size={18} />
+              <span className="flex size-11 items-center justify-center rounded-xl bg-ink text-folha">
+                <Semibreve size={20} />
               </span>
             ) : (
               <CompassoWordmark size={22} />
             )}
           </Link>
-          <SidebarTrigger className="text-soft hover:text-ink" />
+          <SidebarTrigger className="size-11 text-soft hover:text-ink" />
         </div>
       </SidebarHeader>
 
@@ -96,15 +99,23 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton isActive={active === 'acervo'} render={<Link href="/songs" />}>
+              <SidebarMenuButton
+                className={NAV_BTN}
+                isActive={active === 'acervo'}
+                render={<Link href="/songs" />}
+              >
                 <Library />
-                <span className="font-cifra text-[13px] lowercase">acervo</span>
+                <span>acervo</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton isActive={active === 'repert'} render={<Link href="/repertorios" />}>
+              <SidebarMenuButton
+                className={NAV_BTN}
+                isActive={active === 'repert'}
+                render={<Link href="/repertorios" />}
+              >
                 <ListMusic />
-                <span className="font-cifra text-[13px] lowercase">repertórios</span>
+                <span>repertórios</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -120,6 +131,7 @@ export function AppSidebar({
               {setlist.map((s, i) => (
                 <SidebarMenuItem key={s.slug}>
                   <SidebarMenuButton
+                    className="h-9"
                     isActive={s.slug === context?.currentSlug}
                     render={<Link href={`/songs/${s.slug}?rep=${context?.repSlug ?? ''}`} />}
                   >
@@ -136,7 +148,7 @@ export function AppSidebar({
 
         {/* Busca + acervo (5 + ver mais) */}
         <SidebarGroup className={cn('min-h-0 flex-1', HIDE_ICON)}>
-          <div className="mx-1 mb-1 flex items-center gap-2 border-b-[1.5px] border-ink/30 pb-1.5">
+          <div className="mx-1 mb-2 flex items-center gap-2 border-b-[1.5px] border-ink/25 pb-2">
             <Search size={15} strokeWidth={2} className="shrink-0 text-faint" />
             <input
               type="text"
@@ -157,11 +169,11 @@ export function AppSidebar({
                 {shown.map((s) => (
                   <SidebarMenuItem key={s.slug}>
                     <SidebarMenuButton
-                      className="h-auto"
+                      className="h-auto py-2"
                       isActive={s.slug === context?.currentSlug}
                       render={<Link href={`/songs/${s.slug}`} />}
                     >
-                      <span className="min-w-0 flex-1 py-0.5">
+                      <span className="min-w-0 flex-1">
                         <span className="block truncate font-editorial text-[14px] leading-tight">
                           {s.title}
                         </span>
@@ -180,7 +192,7 @@ export function AppSidebar({
                 {hasMore && (
                   <SidebarMenuItem>
                     <SidebarMenuButton
-                      className="justify-center text-teal"
+                      className="h-9 justify-center text-teal"
                       render={<Link href={moreHref} />}
                     >
                       <span className="font-cifra text-[11px] lowercase">ver mais no acervo →</span>
@@ -197,9 +209,9 @@ export function AppSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <form action={logout}>
-              <SidebarMenuButton render={<button type="submit" />}>
+              <SidebarMenuButton className={NAV_BTN} render={<button type="submit" />}>
                 <LogOut />
-                <span className="font-cifra text-[13px] lowercase">sair</span>
+                <span>sair</span>
               </SidebarMenuButton>
             </form>
           </SidebarMenuItem>
