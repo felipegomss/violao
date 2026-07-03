@@ -47,7 +47,7 @@ export function ChordDiagram({
 
       {baseFret > 1 && (
         <text
-          x={padX - (compact ? 4 : 6)}
+          x={padX - 2}
           y={rowCenter(1) + 3}
           textAnchor="end"
           fill={FAINT}
@@ -109,9 +109,9 @@ export function ChordDiagram({
         ) : null,
       )}
 
-      {/* pestanas (barres) */}
+      {/* pestanas (barres) — frets/barres são relativos ao baseFret (casa 1 = 1ª exibida) */}
       {barres.map((b, k) => {
-        const row = b - baseFret + 1
+        const row = b
         if (row < 1 || row > FRETS) return null
         const idxs = frets.map((f, i) => (f === b ? i : -1)).filter((i) => i >= 0)
         if (idxs.length < 2) return null
@@ -133,7 +133,7 @@ export function ChordDiagram({
       {/* dedos */}
       {frets.map((f, i) => {
         if (f <= 0) return null
-        const row = f - baseFret + 1
+        const row = f
         if (row < 1 || row > FRETS) return null
         return (
           <g key={i}>
