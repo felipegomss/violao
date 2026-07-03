@@ -23,7 +23,7 @@ export default async function RepertoriosPage() {
   const totalSongs = reps.reduce((n, r) => n + r.songs.length, 0)
 
   return (
-    <div className="flex min-h-screen bg-paper text-ink">
+    <div className="flex min-h-screen bg-paper text-ink max-md:pt-12">
       <AppSidebar active="repert" />
       <main className="mx-auto flex w-full max-w-7xl flex-col min-w-0">
         <header className="px-10 pt-8 flex justify-between items-start">

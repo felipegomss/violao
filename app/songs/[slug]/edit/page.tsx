@@ -28,7 +28,7 @@ export default async function EditSongPage({
   if (!song) notFound()
 
   return (
-    <div className="flex min-h-screen bg-paper text-ink">
+    <div className="flex min-h-screen bg-paper text-ink max-md:pt-12">
       <AppSidebar active="acervo" />
       <SongEditor
         action={updateSong.bind(null, song.id)}

@@ -13,7 +13,7 @@ export default async function SongsPage() {
   })
 
   return (
-    <div className="flex min-h-screen bg-paper">
+    <div className="flex min-h-screen bg-paper max-md:pt-12">
       <AppSidebar active="acervo" />
       <Acervo
         songs={songs.map((s) => ({

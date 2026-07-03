@@ -30,7 +30,7 @@ export default async function NewSongPage({
   }
 
   return (
-    <div className="flex min-h-screen bg-paper text-ink">
+    <div className="flex min-h-screen bg-paper text-ink max-md:pt-12">
       <AppSidebar active="acervo" />
       <NewSongFlow action={createSong} initialContent={initialContent} />
     </div>

@@ -75,7 +75,7 @@ export default async function RepertorioPage({
     }))
 
   return (
-    <div className="flex min-h-screen bg-paper text-ink">
+    <div className="flex min-h-screen bg-paper text-ink max-md:pt-12">
       <AppSidebar active="repert" />
       <RepertorioDetalhe
         repertoireId={rep.id}

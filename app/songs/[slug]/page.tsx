@@ -43,6 +43,7 @@ export default async function SongDetailPage({
   // Vindo de um repertório: passa a lista ordenada pro palco navegar como playlist.
   // rep é o slug do repertório; a playlist carrega o slug de cada música.
   let playlist: { slug: string; title: string }[] = []
+  let repName: string | undefined
   if (rep) {
     const repertoire = await prisma.repertoire.findFirst({
       where: { slug: rep, userId },
@@ -53,8 +54,10 @@ export default async function SongDetailPage({
         },
       },
     })
-    if (repertoire)
+    if (repertoire) {
+      repName = repertoire.name
       playlist = repertoire.songs.map((s) => ({ slug: s.song.slug, title: s.song.title }))
+    }
   }
 
   const afinacao = song.tuning === 'standard' ? 'E A D G B E' : song.tuning
@@ -68,8 +71,11 @@ export default async function SongDetailPage({
   }
 
   return (
-    <div className="flex min-h-screen bg-paper text-ink">
-      <AppSidebar active="acervo" />
+    <div className="flex min-h-screen bg-paper text-ink max-md:pt-12">
+      <AppSidebar
+        active="acervo"
+        context={{ currentSlug: slug, repSlug: rep, repName, setlist: rep ? playlist : undefined }}
+      />
 
       {/* A folha é client (CifraStudy renderiza o header: o "tom" é metadado
           vivo, reflete a transposição). O server só injeta as ações. */}
