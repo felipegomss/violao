@@ -2,7 +2,7 @@ import { verifySession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createSong } from '@/app/actions/songs'
 import { AppSidebar } from '@/components/app-sidebar'
-import { SongEditor } from '@/app/songs/song-editor'
+import { NewSongFlow } from './new-song-flow'
 
 export default async function NewSongPage({
   searchParams,
@@ -30,13 +30,7 @@ export default async function NewSongPage({
   return (
     <div className="flex min-h-screen bg-paper text-ink">
       <AppSidebar active="acervo" />
-      <SongEditor
-        action={createSong}
-        title="Nova música"
-        backHref="/songs"
-        submitLabel="Criar música"
-        initialContent={initialContent}
-      />
+      <NewSongFlow action={createSong} initialContent={initialContent} />
     </div>
   )
 }
