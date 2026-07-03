@@ -45,6 +45,8 @@ export function CifraStudy({
   const [autoScroll, setAutoScroll] = useState(false)
   const [speed, setSpeed] = useState(2)
   const [rating, setRating] = useState(comoEstouTocando ?? 0)
+  const [metronomeOn, setMetronomeOn] = useState(false)
+  const [beat, setBeat] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll: animação imperativa (rAF) rolando o container da cifra.
@@ -70,6 +72,35 @@ export function CifraStudy({
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
   }, [autoScroll, speed])
+
+  // Metrônomo: tick de áudio (Web Audio) no BPM, acentuando o tempo 1 (compasso 4/4).
+  useEffect(() => {
+    if (!metronomeOn || !bpm) return
+    const ctx = new AudioContext()
+    void ctx.resume()
+    let b = 0
+    const period = 60 / bpm
+    const tick = () => {
+      const accent = b % 4 === 0
+      const t = ctx.currentTime
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.frequency.value = accent ? 1500 : 900
+      gain.gain.setValueAtTime(accent ? 0.5 : 0.28, t)
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.05)
+      osc.connect(gain).connect(ctx.destination)
+      osc.start(t)
+      osc.stop(t + 0.05)
+      setBeat(b % 4)
+      b += 1
+    }
+    tick()
+    const id = setInterval(tick, period * 1000)
+    return () => {
+      clearInterval(id)
+      void ctx.close()
+    }
+  }, [metronomeOn, bpm])
 
   const displayChord = (chord: string) =>
     notation === 'degree' ? degreeChord(chord, songKey) : transposeChord(chord, transpose)
@@ -290,15 +321,35 @@ export function CifraStudy({
             </div>
           </div>
 
-          {/* Metrônomo (stub) */}
+          {/* Metrônomo — FUNCIONAL (Web Audio) */}
           <div className="flex items-center justify-between">
             <span className="font-cifra text-[9px] tracking-[.06em] text-faint">METRÔNOMO</span>
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => bpm && setMetronomeOn((v) => !v)}
+                disabled={!bpm}
+                className={`rounded border px-2 py-0.5 font-cifra text-[9px] uppercase tracking-[.1em] disabled:opacity-40 ${
+                  metronomeOn ? 'border-transparent bg-rust text-folha' : 'border-ink/22 text-soft'
+                }`}
+              >
+                {metronomeOn ? 'on' : 'off'}
+              </button>
               <div className="flex gap-[3px]">
-                <span className="h-1.5 w-1.5 rounded-full bg-rust" />
-                <span className="h-1.5 w-1.5 rounded-full bg-ink/20" />
-                <span className="h-1.5 w-1.5 rounded-full bg-ink/20" />
-                <span className="h-1.5 w-1.5 rounded-full bg-ink/20" />
+                {[0, 1, 2, 3].map((i) => (
+                  <span
+                    key={i}
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      metronomeOn && i === beat
+                        ? i === 0
+                          ? 'bg-rust'
+                          : 'bg-teal'
+                        : i === 0
+                          ? 'bg-rust/40'
+                          : 'bg-ink/20'
+                    }`}
+                  />
+                ))}
               </div>
               <span className="font-cifra text-[13px] font-medium text-ink">
                 {bpm ?? '—'} <span className="text-[9px] text-faint">bpm</span>
