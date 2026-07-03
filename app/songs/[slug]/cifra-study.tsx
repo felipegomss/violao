@@ -72,6 +72,7 @@ export function CifraStudy({
   const [autoScroll, setAutoScroll] = useState(false)
   const [pxPerSec, setPxPerSec] = useState(14)
   const suggestedOnce = useRef(false)
+  const cifraRef = useRef<HTMLDivElement>(null)
   const [rating, setRating] = useState(comoEstouTocando ?? 0)
   const [metronomeOn, setMetronomeOn] = useState(false)
   const [videoOpen, setVideoOpen] = useState(false)
@@ -111,19 +112,28 @@ export function CifraStudy({
     setHover({ name: chord, shape, top, left })
   }
 
-  // Mede a página no mount e sugere a velocidade pela BPM (a folha inteira rola
-  // ~na duração da música). Roda uma vez; depois o usuário ajusta na régua.
+  // Posição no documento do FIM da cifra (não da página — abaixo dela vêm a
+  // grade de acordes, anotações e a régua "como estou tocando").
+  const cifraBottomDoc = () => {
+    const el = cifraRef.current
+    return el
+      ? el.getBoundingClientRect().bottom + window.scrollY
+      : document.documentElement.scrollHeight
+  }
+
+  // Mede a cifra no mount e sugere a velocidade pela BPM (a CIFRA rola ~na
+  // duração da música). Roda uma vez; depois o usuário ajusta na régua.
   useEffect(() => {
     if (suggestedOnce.current) return
     const rows = sheet ? sheet.lines.filter((l) => l.type === 'row').length : 0
-    const scrollable = document.documentElement.scrollHeight - window.innerHeight
+    const scrollable = Math.max(0, cifraBottomDoc() - window.innerHeight)
     setPxPerSec(suggestScrollSpeed({ scrollable, rows, bpm }))
     suggestedOnce.current = true
   }, [sheet, bpm])
 
-  // Auto-scroll: rola a JANELA (na view normal a página cresce e quem rola é a
-  // window, não um container interno). Baseado em TEMPO (px/s via timestamp do
-  // rAF), então a velocidade não depende do refresh do monitor.
+  // Auto-scroll: rola a JANELA até o FIM DA CIFRA (não da página). Baseado em
+  // TEMPO (px/s via timestamp do rAF), então a velocidade não depende do
+  // refresh do monitor.
   useEffect(() => {
     if (!autoScroll) return
     let raf = 0
@@ -139,10 +149,8 @@ export function CifraStudy({
         window.scrollBy(0, px)
         carry -= px
       }
-      const atBottom =
-        window.innerHeight + window.scrollY >=
-        document.documentElement.scrollHeight - 1
-      if (atBottom) {
+      const atCifraEnd = window.scrollY + window.innerHeight >= cifraBottomDoc() - 1
+      if (atCifraEnd) {
         setAutoScroll(false)
         return
       }
@@ -298,7 +306,7 @@ export function CifraStudy({
         </header>
 
         {/* Cifra — o wrapper controla o A−/A+ da régua (EditorialCifra usa em) */}
-        <div className="mt-7" style={{ fontSize: `${fontScale}em` }}>
+        <div ref={cifraRef} className="mt-7" style={{ fontSize: `${fontScale}em` }}>
           {shownSheet ? (
             <EditorialCifra
               sheet={shownSheet}
