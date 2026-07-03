@@ -33,6 +33,7 @@ export default async function PublicRepertoirePage({
       songs: {
         orderBy: { order: 'asc' },
         include: { song: { select: { slug: true, title: true, artists: true, key: true } } },
+        take: 500, // guarda-corpo
       },
     },
   })

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -16,7 +16,9 @@ import {
 } from 'lucide-react'
 import { Semibreve } from '@/components/semibreve'
 import { logout } from '@/app/actions/auth'
-import { filterSongs, type SidebarSong } from '@/lib/sidebar/filter'
+import { searchSongs, type SongRow } from '@/app/actions/songs'
+import { useDebouncedValue } from '@/lib/hooks/use-debounced-value'
+import { useInfiniteSongs } from '@/lib/hooks/use-infinite-songs'
 
 const FOCUS = 'focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
 
@@ -127,13 +129,22 @@ function Panel({
   closeIcon,
 }: {
   active: Active
-  songs: SidebarSong[]
+  songs: SongRow[]
   context?: SidebarContext
   onClose: () => void
   closeIcon: 'collapse' | 'close'
 }) {
   const [q, setQ] = useState('')
-  const filtered = useMemo(() => filterSongs(songs, q), [songs, q])
+  const debouncedQ = useDebouncedValue(q, 250)
+  const params = { q: debouncedQ.trim() || undefined }
+  const listRef = useRef<HTMLDivElement>(null)
+  const { items, loading, sentinelRef } = useInfiniteSongs({
+    initialItems: songs,
+    params,
+    pageSize: 30,
+    fetchPage: (skip) => searchSongs({ ...params, skip, take: 30 }),
+    rootRef: listRef,
+  })
   const setlist = context?.setlist ?? []
 
   return (
@@ -216,41 +227,49 @@ function Panel({
             className="w-full border-0 bg-transparent font-editorial text-[15px] text-ink caret-teal outline-none placeholder:text-faint"
           />
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-2 py-1">
-          {filtered.length === 0 ? (
+        <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto px-2 py-1">
+          {items.length === 0 && !loading ? (
             <div className="px-2 py-6 text-center font-cifra text-[11px] lowercase text-faint">
               nada por aqui
             </div>
           ) : (
-            filtered.map((s) => {
-              const cur = context?.currentSlug === s.slug
-              return (
-                <Link
-                  key={s.slug}
-                  href={`/songs/${s.slug}`}
-                  aria-current={cur ? 'page' : undefined}
-                  className={`flex items-center gap-3 rounded-md px-2 py-1.5 transition-colors duration-150 ${
-                    cur ? 'bg-folha' : 'hover:bg-folha'
-                  }`}
-                >
-                  <span className="min-w-0 flex-1">
-                    <span
-                      className={`block truncate font-editorial text-[15px] leading-tight ${
-                        cur ? 'text-teal' : 'text-ink'
-                      }`}
-                    >
-                      {s.title}
-                    </span>
-                    {s.artists.length > 0 && (
-                      <span className="block truncate font-cifra text-[11px] text-faint">
-                        {s.artists.join(', ')}
+            <>
+              {items.map((s) => {
+                const cur = context?.currentSlug === s.slug
+                return (
+                  <Link
+                    key={s.slug}
+                    href={`/songs/${s.slug}`}
+                    aria-current={cur ? 'page' : undefined}
+                    className={`flex items-center gap-3 rounded-md px-2 py-1.5 transition-colors duration-150 ${
+                      cur ? 'bg-folha' : 'hover:bg-folha'
+                    }`}
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span
+                        className={`block truncate font-editorial text-[15px] leading-tight ${
+                          cur ? 'text-teal' : 'text-ink'
+                        }`}
+                      >
+                        {s.title}
                       </span>
-                    )}
-                  </span>
-                  <span className="shrink-0 font-cifra text-[11px] font-medium text-faint">{s.key}</span>
-                </Link>
-              )
-            })
+                      {s.artists.length > 0 && (
+                        <span className="block truncate font-cifra text-[11px] text-faint">
+                          {s.artists.join(', ')}
+                        </span>
+                      )}
+                    </span>
+                    <span className="shrink-0 font-cifra text-[11px] font-medium text-faint">{s.key}</span>
+                  </Link>
+                )
+              })}
+              <div ref={sentinelRef} aria-hidden className="h-1" />
+              {loading && (
+                <div className="px-2 py-3 text-center font-cifra text-[11px] lowercase text-faint">
+                  carregando…
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -277,7 +296,7 @@ export function SidebarShell({
 }: {
   initialExpanded: boolean
   active: Active
-  songs: SidebarSong[]
+  songs: SongRow[]
   context?: SidebarContext
 }) {
   const [expanded, setExpanded] = useState(initialExpanded)

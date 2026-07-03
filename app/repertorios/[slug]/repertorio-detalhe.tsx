@@ -12,6 +12,10 @@ import {
   shareRepertoire,
   unshareRepertoire,
 } from '@/app/actions/repertoires'
+import { searchSongs, type SongRow } from '@/app/actions/songs'
+import { fold } from '@/lib/text'
+import { useDebouncedValue } from '@/lib/hooks/use-debounced-value'
+import { useInfiniteSongs } from '@/lib/hooks/use-infinite-songs'
 import { Btn } from '@/components/btn'
 import { EmptyState } from '@/components/empty-state'
 
@@ -27,32 +31,22 @@ type Row = {
   comoEstouTocando: number | null
   also: string[]
 }
-type Avail = {
-  id: string
-  slug: string
-  title: string
-  artist: string
-  key: string
-  comoEstouTocando: number | null
-}
-
 export function RepertorioDetalhe({
   repertoireId,
   repertoireSlug,
   name,
   shareSlug: initialShareSlug,
   rows,
-  available,
+  initialAvailable,
 }: {
   repertoireId: string
   repertoireSlug: string
   name: string
   shareSlug: string | null
   rows: Row[]
-  available: Avail[]
+  initialAvailable: SongRow[]
 }) {
   const [items, setItems] = useState<Row[]>(rows)
-  const [avail, setAvail] = useState<Avail[]>(available)
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -121,46 +115,76 @@ export function RepertorioDetalhe({
     )
   }
 
+  // Picker "adicionar música": scroll infinito + busca no servidor (exclui as já
+  // no repertório). hiddenIds = adicionadas nesta sessão (somem do picker);
+  // extraAvail = removidas nesta sessão (voltam pro picker sem esperar refetch).
+  const [hiddenIds, setHiddenIds] = useState<string[]>([])
+  const [extraAvail, setExtraAvail] = useState<SongRow[]>([])
+  const availRootRef = useRef<HTMLDivElement>(null)
+  const debouncedQ = useDebouncedValue(q, 250)
+  const availParams = { q: debouncedQ.trim() || undefined, excludeRepId: repertoireId }
+  const {
+    items: availServer,
+    loading: availLoading,
+    sentinelRef: availSentinel,
+  } = useInfiniteSongs({
+    initialItems: initialAvailable,
+    params: availParams,
+    pageSize: 30,
+    fetchPage: (skip) => searchSongs({ ...availParams, skip, take: 30 }),
+    rootRef: availRootRef,
+  })
+
+  const needle = fold(debouncedQ)
+  const visibleAvail = [
+    ...extraAvail.filter((s) => fold(`${s.title} ${s.artists.join(' ')}`).includes(needle)),
+    ...availServer,
+  ]
+    .filter((s) => !hiddenIds.includes(s.id))
+    .filter((s, i, arr) => arr.findIndex((x) => x.id === s.id) === i)
+
   const remove = (songId: string) => {
     const row = items.find((r) => r.songId === songId)
     setItemsTracked((prev) => prev.filter((r) => r.songId !== songId))
-    if (row)
-      setAvail((prev) =>
-        [
-          ...prev,
-          {
-            id: row.songId,
-            slug: row.slug,
-            title: row.title,
-            artist: row.artist,
-            key: row.key,
-            comoEstouTocando: row.comoEstouTocando,
-          },
-        ].sort((a, b) => a.title.localeCompare(b.title, 'pt')),
+    if (row) {
+      setHiddenIds((prev) => prev.filter((id) => id !== songId))
+      setExtraAvail((prev) =>
+        prev.some((x) => x.id === songId)
+          ? prev
+          : [
+              {
+                id: row.songId,
+                slug: row.slug,
+                title: row.title,
+                artists: row.artist ? row.artist.split(', ') : [],
+                genres: [],
+                key: row.key,
+                comoEstouTocando: row.comoEstouTocando,
+              },
+              ...prev,
+            ],
       )
+    }
     void removeSongFromRepertoire(repertoireId, songId)
   }
 
-  const add = (s: Avail) => {
+  const add = (s: SongRow) => {
     setItemsTracked((prev) => [
       ...prev,
       {
         songId: s.id,
         slug: s.slug,
         title: s.title,
-        artist: s.artist,
+        artist: s.artists.join(', '),
         key: s.key,
         comoEstouTocando: s.comoEstouTocando,
         also: [],
       },
     ])
-    setAvail((prev) => prev.filter((a) => a.id !== s.id))
+    setExtraAvail((prev) => prev.filter((x) => x.id !== s.id))
+    setHiddenIds((prev) => [...prev, s.id])
     void addSongToRepertoire(repertoireId, s.id)
   }
-
-  const filteredAvail = avail.filter((a) =>
-    (a.title + ' ' + a.artist).toLowerCase().includes(q.trim().toLowerCase()),
-  )
 
   return (
     <main className="mx-auto flex w-full min-w-0 max-w-7xl flex-col">
@@ -395,28 +419,38 @@ export function RepertorioDetalhe({
               placeholder="buscar no acervo…"
               className={`h-11 w-full rounded-lg border border-ink/22 bg-[#fbf7ee] px-3 font-cifra text-[14px] outline-none transition-colors duration-150 focus:border-teal ${FOCUS}`}
             />
-            <div className="mt-3 max-h-[320px] overflow-y-auto">
-              {filteredAvail.length === 0 ? (
+            <div ref={availRootRef} className="mt-3 max-h-[320px] overflow-y-auto">
+              {visibleAvail.length === 0 && !availLoading ? (
                 <div className="py-8 text-center font-editorial text-[16px] italic text-faint">
                   Nada pra adicionar.
                 </div>
               ) : (
-                filteredAvail.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => add(s)}
-                    className="flex w-full items-center justify-between gap-3 rounded px-2 py-2 text-left hover:bg-[#f1eadb]"
-                  >
-                    <span className="min-w-0">
-                      <span className="font-editorial text-[16px] font-medium">{s.title}</span>{' '}
-                      <span className="font-editorial text-[13px] italic text-soft">{s.artist}</span>
-                    </span>
-                    <span className="shrink-0 font-cifra text-[11px] font-medium text-teal">
-                      {s.key}
-                    </span>
-                  </button>
-                ))
+                <>
+                  {visibleAvail.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => add(s)}
+                      className="flex w-full items-center justify-between gap-3 rounded px-2 py-2 text-left hover:bg-[#f1eadb]"
+                    >
+                      <span className="min-w-0">
+                        <span className="font-editorial text-[16px] font-medium">{s.title}</span>{' '}
+                        <span className="font-editorial text-[13px] italic text-soft">
+                          {s.artists.join(', ')}
+                        </span>
+                      </span>
+                      <span className="shrink-0 font-cifra text-[11px] font-medium text-teal">
+                        {s.key}
+                      </span>
+                    </button>
+                  ))}
+                  <div ref={availSentinel} aria-hidden className="h-1" />
+                  {availLoading && (
+                    <div className="py-3 text-center font-cifra text-[11px] lowercase text-faint">
+                      carregando…
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

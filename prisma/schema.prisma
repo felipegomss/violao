@@ -21,6 +21,8 @@ model Song {
   bpm                 Int?
   comoEstouTocando    Int?     // 1-5, marcado depois na view da cifra
   voicings            Json?    // { [acorde]: índice da digitação } — escolha do "variar acorde", persistida
+  searchText          String   @default("") // folded(título + artistas) p/ busca acento-insensível
+  artistSort          String   @default("") // folded(1º artista) p/ ordenar por artista
   chordContent        String   @db.Text
   referenceYoutubeUrl String?
   notes               String?  @db.Text
@@ -36,6 +38,7 @@ model Song {
 
   @@unique([userId, slug])
   @@index([userId])
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin)
 }
 
 model Recording {

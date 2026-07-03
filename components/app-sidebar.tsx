@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { NameGate } from '@/components/name-gate'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { searchSongs } from '@/app/actions/songs'
 import { SidebarShell, type SidebarContext } from '@/components/sidebar/sidebar-shell'
 
 type ActiveSection = 'acervo' | 'repert'
@@ -21,13 +22,7 @@ export async function AppSidebar({
     session
       ? prisma.user.findUnique({ where: { id: session.userId }, select: { name: true } })
       : null,
-    session
-      ? prisma.song.findMany({
-          where: { userId: session.userId },
-          orderBy: { updatedAt: 'desc' },
-          select: { slug: true, title: true, artists: true, key: true },
-        })
-      : [],
+    session ? searchSongs({ take: 30 }) : [],
     cookies(),
   ])
 

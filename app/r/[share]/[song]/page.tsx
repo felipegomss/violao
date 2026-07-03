@@ -30,7 +30,7 @@ export default async function PublicSongPage({
   const { share, song: songSlug } = await params
   const rep = await prisma.repertoire.findFirst({
     where: { shareSlug: share },
-    include: { songs: { include: { song: true } } },
+    include: { songs: { include: { song: true }, take: 500 } },
   })
   if (!rep) notFound()
 

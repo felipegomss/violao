@@ -16,6 +16,7 @@ export default async function RepertoriosPage() {
       songs: {
         include: { song: { select: { title: true } } },
         orderBy: { order: 'asc' },
+        take: 500, // guarda-corpo
       },
     },
   })

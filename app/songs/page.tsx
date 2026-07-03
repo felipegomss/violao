@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
+import { searchSongs, songFacets } from '@/app/actions/songs'
 import { AppSidebar } from '@/components/app-sidebar'
 import { Acervo } from './acervo'
 
@@ -7,24 +8,20 @@ export const metadata = { title: 'Acervo' }
 
 export default async function SongsPage() {
   const { userId } = await verifySession()
-  const songs = await prisma.song.findMany({
-    where: { userId },
-    orderBy: { updatedAt: 'desc' },
-  })
+  const [initialSongs, facets, total] = await Promise.all([
+    searchSongs({ sort: 'titulo', take: 40 }),
+    songFacets(),
+    prisma.song.count({ where: { userId } }),
+  ])
 
   return (
     <div className="flex min-h-screen bg-paper max-md:pt-12">
       <AppSidebar active="acervo" />
       <Acervo
-        songs={songs.map((s) => ({
-          id: s.id,
-          slug: s.slug,
-          title: s.title,
-          artists: s.artists,
-          genres: s.genres,
-          key: s.key,
-          comoEstouTocando: s.comoEstouTocando,
-        }))}
+        initialSongs={initialSongs}
+        genres={facets.genres}
+        artists={facets.artists}
+        total={total}
       />
     </div>
   )

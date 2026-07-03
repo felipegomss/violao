@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
+import { searchSongs } from '@/app/actions/songs'
 import { AppSidebar } from '@/components/app-sidebar'
 import { RepertorioDetalhe } from './repertorio-detalhe'
 
@@ -26,7 +27,7 @@ export default async function RepertorioPage({
   const rep = await prisma.repertoire.findFirst({
     where: { slug, userId },
     include: {
-      songs: { include: { song: true }, orderBy: { order: 'asc' } },
+      songs: { include: { song: true }, orderBy: { order: 'asc' }, take: 500 },
     },
   })
   if (!rep) notFound()
@@ -57,22 +58,8 @@ export default async function RepertorioPage({
     also: alsoMap.get(rs.songId) ?? [],
   }))
 
-  const inIds = new Set(songIds)
-  const allSongs = await prisma.song.findMany({
-    where: { userId },
-    orderBy: { title: 'asc' },
-    select: { id: true, slug: true, title: true, artists: true, key: true, comoEstouTocando: true },
-  })
-  const available = allSongs
-    .filter((s) => !inIds.has(s.id))
-    .map((s) => ({
-      id: s.id,
-      slug: s.slug,
-      title: s.title,
-      artist: s.artists.join(', '),
-      key: s.key,
-      comoEstouTocando: s.comoEstouTocando,
-    }))
+  // 1ª página do picker "adicionar música" (exclui as já no repertório).
+  const initialAvailable = await searchSongs({ excludeRepId: rep.id, take: 30 })
 
   return (
     <div className="flex min-h-screen bg-paper text-ink max-md:pt-12">
@@ -83,7 +70,7 @@ export default async function RepertorioPage({
         name={rep.name}
         shareSlug={rep.shareSlug}
         rows={rows}
-        available={available}
+        initialAvailable={initialAvailable}
       />
     </div>
   )

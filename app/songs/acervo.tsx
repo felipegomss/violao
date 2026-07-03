@@ -1,19 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { ChevronDown, Plus, Search } from 'lucide-react'
 import { EmptyState } from '@/components/empty-state'
-
-type Song = {
-  id: string
-  slug: string
-  title: string
-  artists: string[]
-  genres: string[]
-  key: string
-  comoEstouTocando: number | null
-}
+import { searchSongs, type SongRow } from '@/app/actions/songs'
+import { useDebouncedValue } from '@/lib/hooks/use-debounced-value'
+import { useInfiniteSongs } from '@/lib/hooks/use-infinite-songs'
 
 type SortKey = 'titulo' | 'artista' | 'toco'
 
@@ -23,6 +16,8 @@ const SORT_LABELS: Record<SortKey, string> = {
   toco: 'Como toco',
 }
 
+const PAGE = 40
+
 const FOCUS =
   'focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
 
@@ -30,7 +25,17 @@ const FOCUS =
 const BTN_PRIMARY_LINK =
   'inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-transparent bg-teal px-5 font-cifra text-[13px] lowercase tracking-[.02em] text-folha transition-colors duration-150 hover:bg-[#16323f] focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
 
-export function Acervo({ songs }: { songs: Song[] }) {
+export function Acervo({
+  initialSongs,
+  genres: facetGenres,
+  artists: facetArtists,
+  total,
+}: {
+  initialSongs: SongRow[]
+  genres: string[]
+  artists: string[]
+  total: number
+}) {
   const [q, setQ] = useState('')
   const [genre, setGenre] = useState('todos')
   const [artist, setArtist] = useState('todos')
@@ -38,35 +43,31 @@ export function Acervo({ songs }: { songs: Song[] }) {
   const [artistOpen, setArtistOpen] = useState(false)
   const [sortOpen, setSortOpen] = useState(false)
 
-  const genres = ['todos', ...Array.from(new Set(songs.flatMap((s) => s.genres)))]
-  const artistOptions = ['todos', ...Array.from(new Set(songs.flatMap((s) => s.artists)))]
+  const genres = ['todos', ...facetGenres]
+  const artistOptions = ['todos', ...facetArtists]
 
   const anyMenuOpen = artistOpen || sortOpen
-
   const closeMenus = () => {
     setArtistOpen(false)
     setSortOpen(false)
   }
 
-  const needle = q.trim().toLowerCase()
+  const debouncedQ = useDebouncedValue(q, 250)
+  const params = {
+    q: debouncedQ.trim() || undefined,
+    genre: genre === 'todos' ? undefined : genre,
+    artist: artist === 'todos' ? undefined : artist,
+    sort,
+  }
 
-  const filtered = songs
-    .filter((s) => genre === 'todos' || s.genres.includes(genre))
-    .filter((s) => artist === 'todos' || s.artists.includes(artist))
-    .filter((s) => `${s.title} ${s.artists.join(' ')}`.toLowerCase().includes(needle))
-    .sort((a, b) => {
-      if (sort === 'titulo') return a.title.localeCompare(b.title, 'pt')
-      if (sort === 'artista')
-        return (a.artists[0] ?? '').localeCompare(b.artists[0] ?? '', 'pt')
-      // toco: desc, nulls last, tiebreak title
-      const av = a.comoEstouTocando
-      const bv = b.comoEstouTocando
-      if (av == null && bv == null) return a.title.localeCompare(b.title, 'pt')
-      if (av == null) return 1
-      if (bv == null) return -1
-      if (bv !== av) return bv - av
-      return a.title.localeCompare(b.title, 'pt')
-    })
+  const listRef = useRef<HTMLDivElement>(null)
+  const { items, loading, sentinelRef } = useInfiniteSongs({
+    initialItems: initialSongs,
+    params,
+    pageSize: PAGE,
+    fetchPage: (skip) => searchSongs({ ...params, skip, take: PAGE }),
+    rootRef: listRef,
+  })
 
   return (
     <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col">
@@ -84,7 +85,7 @@ export function Acervo({ songs }: { songs: Song[] }) {
           <h2 className="font-editorial text-[32px] font-semibold leading-none">Acervo</h2>
           {/* único eyebrow da tela */}
           <div className="mt-2 font-cifra text-[11px] uppercase tracking-[.18em] text-faint">
-            {filtered.length} de {songs.length} músicas
+            {total} {total === 1 ? 'música' : 'músicas'}
           </div>
         </div>
         <Link href="/songs/new" className={BTN_PRIMARY_LINK}>
@@ -92,7 +93,7 @@ export function Acervo({ songs }: { songs: Song[] }) {
         </Link>
       </div>
 
-      {songs.length === 0 ? (
+      {total === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center px-10 py-14">
           <EmptyState
             title="Seu acervo tá vazio. Bora adicionar a primeira música?"
@@ -104,7 +105,7 @@ export function Acervo({ songs }: { songs: Song[] }) {
           />
         </div>
       ) : (
-        <div className="flex flex-1 flex-col overflow-y-auto px-10 pb-10">
+        <div ref={listRef} className="flex flex-1 flex-col overflow-y-auto px-10 pb-10">
           {/* Search */}
           <div className="mb-2 mt-8 flex items-center gap-3 border-b-[1.5px] border-ink/35 pb-2.5">
             <Search size={19} strokeWidth={2} className="shrink-0 text-faint" />
@@ -209,16 +210,15 @@ export function Acervo({ songs }: { songs: Song[] }) {
           </div>
 
           {/* List */}
-          {filtered.length === 0 ? (
+          {items.length === 0 && !loading ? (
             <EmptyState title="Nada por aqui. Tenta outra busca." />
           ) : (
             <div className="mt-2">
-              {filtered.map((s, i) => (
+              {items.map((s, i) => (
                 <Link
                   key={s.id}
                   href={`/songs/${s.slug}`}
-                  style={{ animationDelay: `${Math.min(i, 5) * 40}ms`, animationDuration: '200ms' }}
-                  className="animate-in fade-in slide-in-from-bottom-1 fill-mode-both -mx-2 flex items-center gap-5 border-b border-dotted border-ink/15 px-2 py-3 transition-colors duration-150 hover:bg-folha"
+                  className="-mx-2 flex items-center gap-5 border-b border-dotted border-ink/15 px-2 py-3 transition-colors duration-150 hover:bg-folha"
                 >
                   <span className="w-[34px] font-cifra text-[13px] text-faint">
                     {String(i + 1).padStart(2, '0')}
@@ -249,6 +249,13 @@ export function Acervo({ songs }: { songs: Song[] }) {
                   </span>
                 </Link>
               ))}
+              {/* sentinela do scroll infinito */}
+              <div ref={sentinelRef} aria-hidden className="h-1" />
+              {loading && (
+                <div className="py-4 text-center font-cifra text-[11px] lowercase text-faint">
+                  carregando…
+                </div>
+              )}
             </div>
           )}
         </div>
