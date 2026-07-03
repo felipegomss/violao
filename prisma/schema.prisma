@@ -64,6 +64,7 @@ model PracticeSession {
 model Repertoire {
   id          String   @id @default(cuid())
   slug        String
+  shareSlug   String?  @unique // null = privado; setado = link público ativo
   name        String
   description String?
   createdAt   DateTime @default(now())

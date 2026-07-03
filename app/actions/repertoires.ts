@@ -1,10 +1,31 @@
 'use server'
 
+import { randomBytes } from 'node:crypto'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
 import { slugify, uniqueSlug } from '@/lib/slug'
+
+// Liga o compartilhamento: gera um shareSlug opaco (se ainda não houver) e o
+// devolve pro cliente montar o link. Idempotente — não regenera o link.
+export async function shareRepertoire(id: string): Promise<string | null> {
+  const { userId } = await verifySession()
+  const rep = await prisma.repertoire.findFirst({ where: { id, userId } })
+  if (!rep) return null
+  if (rep.shareSlug) return rep.shareSlug
+  const shareSlug = randomBytes(9).toString('base64url')
+  await prisma.repertoire.update({ where: { id }, data: { shareSlug } })
+  revalidatePath('/repertorios/[slug]', 'page')
+  return shareSlug
+}
+
+// Desliga: mata o link (quem tiver a URL antiga perde o acesso).
+export async function unshareRepertoire(id: string): Promise<void> {
+  const { userId } = await verifySession()
+  await prisma.repertoire.updateMany({ where: { id, userId }, data: { shareSlug: null } })
+  revalidatePath('/repertorios/[slug]', 'page')
+}
 
 export async function createRepertoire(formData: FormData) {
   const { userId } = await verifySession()
