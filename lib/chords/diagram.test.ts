@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { chordDiagram } from './diagram'
+import { CHORD_OVERRIDES } from './overrides'
 
 describe('chordDiagram', () => {
   it('acha acordes comuns (6 cordas)', () => {
@@ -30,5 +31,16 @@ describe('chordDiagram', () => {
     expect(chordDiagram('VIm7')).toBeNull()
     expect(chordDiagram('N.C.')).toBeNull()
     expect(chordDiagram('%')).toBeNull()
+  })
+
+  it('override tem precedência (e vale pra tríade em baixo invertido)', () => {
+    const custom = { frets: [0, 2, 2, 1, 0, 0], fingers: [0, 2, 3, 1, 0, 0], baseFret: 1, barres: [] }
+    CHORD_OVERRIDES['G'] = custom
+    try {
+      expect(chordDiagram('G')).toEqual(custom)
+      expect(chordDiagram('G/B')).toEqual(custom)
+    } finally {
+      delete CHORD_OVERRIDES['G']
+    }
   })
 })

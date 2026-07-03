@@ -1,4 +1,5 @@
 import guitar from '@tombatossals/chords-db/lib/guitar.json'
+import { CHORD_OVERRIDES } from './overrides'
 
 // Forma de um acorde no braço (6 cordas, mi grave → mi agudo).
 export type ChordShape = {
@@ -59,7 +60,13 @@ const ROOT_RE = /^([A-G][#b]?)(.*)$/
 // Devolve a primeira digitação do acorde, ou null se não houver.
 // Acordes com baixo invertido (G/B) usam a tríade principal (antes da /).
 export function chordDiagram(token: string): ChordShape | null {
-  const main = token.split('/')[0].trim()
+  const full = token.trim()
+  const main = full.split('/')[0].trim()
+
+  // Overrides têm precedência: acorde completo primeiro (G/B), depois a tríade.
+  if (CHORD_OVERRIDES[full]) return CHORD_OVERRIDES[full]
+  if (CHORD_OVERRIDES[main]) return CHORD_OVERRIDES[main]
+
   const m = ROOT_RE.exec(main)
   if (!m) return null
 
