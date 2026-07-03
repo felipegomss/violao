@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
 import { chordDiagram, type ChordShape } from '@/lib/chords/diagram'
+import { suggestScrollSpeed } from '@/lib/song/autoscroll'
 import { setComoEstouTocando } from '@/app/actions/songs'
 import { EditorialCifra } from './editorial-cifra'
 import { ChordDiagram } from './chord-diagram'
@@ -46,7 +47,8 @@ export function CifraStudy({
   const [notation, setNotation] = useState<Notation>('chord')
   const [transpose, setTranspose] = useState(0)
   const [autoScroll, setAutoScroll] = useState(false)
-  const [speed, setSpeed] = useState(2)
+  const [pxPerSec, setPxPerSec] = useState(14)
+  const suggestedOnce = useRef(false)
   const [rating, setRating] = useState(comoEstouTocando ?? 0)
   const [metronomeOn, setMetronomeOn] = useState(false)
   const [beat, setBeat] = useState(0)
@@ -75,14 +77,29 @@ export function CifraStudy({
     setHover({ name: chord, shape, top, left })
   }
 
+  // Mede a página no mount e sugere a velocidade pela BPM (a folha inteira rola
+  // ~na duração da música). Roda uma vez; depois o usuário ajusta no slider.
+  useEffect(() => {
+    if (suggestedOnce.current) return
+    const rows = sheet ? sheet.lines.filter((l) => l.type === 'row').length : 0
+    const scrollable = document.documentElement.scrollHeight - window.innerHeight
+    setPxPerSec(suggestScrollSpeed({ scrollable, rows, bpm }))
+    suggestedOnce.current = true
+  }, [sheet, bpm])
+
   // Auto-scroll: rola a JANELA (na view normal a página cresce e quem rola é a
-  // window, não um container interno). Animação imperativa via rAF.
+  // window, não um container interno). Baseado em TEMPO (px/s via timestamp do
+  // rAF), então a velocidade não depende do refresh do monitor.
   useEffect(() => {
     if (!autoScroll) return
     let raf = 0
+    let last = 0
     let carry = 0
-    const tick = () => {
-      carry += speed * 0.35
+    const tick = (ts: number) => {
+      if (!last) last = ts
+      const dt = Math.min(0.05, (ts - last) / 1000) // clamp p/ aba em background
+      last = ts
+      carry += pxPerSec * dt
       const px = Math.floor(carry)
       if (px > 0) {
         window.scrollBy(0, px)
@@ -99,7 +116,7 @@ export function CifraStudy({
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [autoScroll, speed])
+  }, [autoScroll, pxPerSec])
 
   // Metrônomo: tick de áudio (Web Audio) no BPM, acentuando o tempo 1 (compasso 4/4).
   useEffect(() => {
@@ -305,16 +322,16 @@ export function CifraStudy({
             </div>
             <input
               type="range"
-              min={1}
-              max={5}
+              min={4}
+              max={80}
               step={1}
-              value={speed}
-              onChange={(e) => setSpeed(Number(e.target.value))}
+              value={pxPerSec}
+              onChange={(e) => setPxPerSec(Number(e.target.value))}
               className="w-full"
             />
             <div className="mt-0.5 flex justify-between font-cifra text-[8px] text-faint">
               <span>lento</span>
-              <span>veloc. {speed}</span>
+              <span>{pxPerSec} px/s</span>
               <span>rápido</span>
             </div>
           </div>

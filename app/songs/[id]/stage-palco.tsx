@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
+import { suggestScrollSpeed } from '@/lib/song/autoscroll'
 
 type Notation = 'chord' | 'degree'
 
@@ -65,18 +66,32 @@ export function StagePalco({
   const [notation, setNotation] = useState<Notation>('chord')
   const [transpose, setTranspose] = useState(0)
   const [autoScroll, setAutoScroll] = useState(false)
-  const [speed, setSpeed] = useState(2)
+  const [pxPerSec, setPxPerSec] = useState(16)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll do palco.
+  // Ao abrir o palco, mede o container e sugere a velocidade pela BPM.
+  useEffect(() => {
+    if (!open) return
+    const el = scrollRef.current
+    if (!el) return
+    const rows = sheet ? sheet.lines.filter((l) => l.type === 'row').length : 0
+    const scrollable = el.scrollHeight - el.clientHeight
+    setPxPerSec(suggestScrollSpeed({ scrollable, rows, bpm }))
+  }, [open, sheet, bpm])
+
+  // Auto-scroll do palco — baseado em TEMPO (px/s), independente do monitor.
   useEffect(() => {
     if (!open || !autoScroll) return
     const el = scrollRef.current
     if (!el) return
     let raf = 0
+    let last = 0
     let carry = 0
-    const tick = () => {
-      carry += speed * 0.35
+    const tick = (ts: number) => {
+      if (!last) last = ts
+      const dt = Math.min(0.05, (ts - last) / 1000)
+      last = ts
+      carry += pxPerSec * dt
       const px = Math.floor(carry)
       if (px > 0) {
         el.scrollTop += px
@@ -90,7 +105,7 @@ export function StagePalco({
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [open, autoScroll, speed])
+  }, [open, autoScroll, pxPerSec])
 
   // Esc sai do palco.
   useEffect(() => {
@@ -219,11 +234,11 @@ export function StagePalco({
               </button>
               <input
                 type="range"
-                min={1}
-                max={5}
+                min={4}
+                max={80}
                 step={1}
-                value={speed}
-                onChange={(e) => setSpeed(Number(e.target.value))}
+                value={pxPerSec}
+                onChange={(e) => setPxPerSec(Number(e.target.value))}
                 className="w-24"
                 aria-label="velocidade do auto-scroll"
               />
