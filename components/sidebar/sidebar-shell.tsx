@@ -62,27 +62,20 @@ function RailLink({
   )
 }
 
-function CollapsedRail({ active, animate }: { active: Active; animate: boolean }) {
-  const it = (i: number) => (animate ? { className: ITEM_ANIM, style: stagger(i * 40) } : {})
+function CollapsedRail({ active }: { active: Active }) {
   return (
     <div className="flex h-full flex-col items-center gap-1 py-5">
-      <div {...it(0)}>
-        <Link
-          href="/songs"
-          aria-label="Compasso — início"
-          className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-ink text-folha transition-transform duration-150 hover:-translate-y-0.5"
-        >
-          <Semibreve size={24} />
-        </Link>
-      </div>
-      <div className="w-full" {...it(1)}>
-        <RailLink href="/songs" label="acervo" active={active === 'acervo'} Icon={Library} />
-      </div>
-      <div className="w-full" {...it(2)}>
-        <RailLink href="/repertorios" label="repertório" active={active === 'repert'} Icon={ListMusic} />
-      </div>
+      <Link
+        href="/songs"
+        aria-label="Compasso — início"
+        className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-ink text-folha transition-transform duration-150 hover:-translate-y-0.5"
+      >
+        <Semibreve size={24} />
+      </Link>
+      <RailLink href="/songs" label="acervo" active={active === 'acervo'} Icon={Library} />
+      <RailLink href="/repertorios" label="repertório" active={active === 'repert'} Icon={ListMusic} />
 
-      <form action={logout} className="mt-auto flex w-full flex-col items-center" {...it(3)}>
+      <form action={logout} className="mt-auto flex w-full flex-col items-center">
         <button
           type="submit"
           className="flex w-full flex-col items-center gap-1.5 py-2.5 text-faint transition-colors duration-150 hover:text-ink"
@@ -365,8 +358,8 @@ export function SidebarShell({
     <>
       {/* Desktop: rail que anima a largura entre recolhido e expandido */}
       <nav
-        className={`sticky top-0 hidden h-screen flex-none flex-col self-start overflow-hidden border-r border-ink/12 bg-[#efe7d5] transition-[width] duration-[250ms] ease-out motion-reduce:transition-none md:flex ${
-          expanded ? 'w-[300px]' : 'w-[76px]'
+        className={`sticky top-0 hidden h-screen flex-none flex-col self-start overflow-hidden border-r border-ink/12 bg-[#efe7d5] motion-reduce:transition-none md:flex ${
+          expanded ? 'w-[300px] transition-[width] duration-[250ms] ease-out' : 'w-[76px]'
         }`}
       >
         {expanded ? (
@@ -379,7 +372,7 @@ export function SidebarShell({
             animate={toggled}
           />
         ) : (
-          <CollapsedRail active={active} animate={toggled} />
+          <CollapsedRail active={active} />
         )}
       </nav>
 
@@ -391,7 +384,9 @@ export function SidebarShell({
         aria-label={expanded ? 'Recolher menu' : 'Expandir menu'}
         title={expanded ? 'Recolher menu' : 'Expandir menu'}
         style={{ left: expanded ? 306 : 82 }}
-        className={`fixed top-2.5 z-30 hidden h-9 w-9 items-center justify-center rounded-lg text-soft transition-[left,color] duration-[250ms] ease-out hover:bg-folha hover:text-ink motion-reduce:transition-none md:flex ${FOCUS}`}
+        className={`fixed top-2.5 z-30 hidden h-9 w-9 items-center justify-center rounded-lg text-soft ease-out hover:bg-folha hover:text-ink motion-reduce:transition-none md:flex ${
+          expanded ? 'transition-[left,color] duration-[250ms]' : 'transition-colors duration-150'
+        } ${FOCUS}`}
       >
         {expanded ? (
           <PanelLeftClose size={18} strokeWidth={1.75} />
