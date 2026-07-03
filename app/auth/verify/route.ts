@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashToken, isExpired } from '@/lib/tokens'
-import { createSession } from '@/lib/auth'
+import { buildSessionCookie } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token')
@@ -17,6 +17,9 @@ export async function GET(req: NextRequest) {
     update: {},
     create: { email: row.email },
   })
-  await createSession(user.id)
-  return NextResponse.redirect(new URL('/songs', req.nextUrl))
+  // Seta o cookie DIRETO na resposta de redirect (senão o Set-Cookie se perde).
+  const { name, value, options } = await buildSessionCookie(user.id)
+  const res = NextResponse.redirect(new URL('/songs', req.nextUrl))
+  res.cookies.set(name, value, options)
+  return res
 }
