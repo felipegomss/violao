@@ -73,4 +73,20 @@ describe('parseChordSheet', () => {
     )
     expect(meaningful).toEqual([])
   })
+
+  it('bloco de tab vira linha tab verbatim, entre as demais', () => {
+    const { lines } = parseChordSheet(
+      '{comment: Lick}\n{start_of_tab}\ne|--3--|\nB|5---5|\n{end_of_tab}\n[C]depois',
+    )
+    expect(lines[0]).toEqual({ type: 'label', text: 'Lick' })
+    expect(lines[1]).toEqual({ type: 'tab', lines: ['e|--3--|', 'B|5---5|'] })
+    const row = lines[2]
+    expect(row.type).toBe('row')
+    if (row.type === 'row') expect(row.items[0].chord).toBe('C')
+  })
+
+  it('aceita o atalho {sot}/{eot}', () => {
+    const { lines } = parseChordSheet('{sot}\ne|-3-|\n{eot}')
+    expect(lines).toEqual([{ type: 'tab', lines: ['e|-3-|'] }])
+  })
 })

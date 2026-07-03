@@ -52,6 +52,17 @@ export function EditorialCifra({
           )
         }
 
+        if (line.type === 'tab') {
+          return (
+            <pre
+              key={i}
+              className="my-3 w-fit max-w-full overflow-x-auto rounded-md border border-ink/12 bg-[#efe7d5] px-4 py-3 font-cifra text-[12px] leading-[1.5] text-ink"
+            >
+              {line.lines.join('\n')}
+            </pre>
+          )
+        }
+
         if (isChordOnlyRow(line.items)) {
           return (
             <div key={i} className="my-1.5 flex flex-wrap gap-2.5">

@@ -21,6 +21,15 @@ function renderDark(sheet: ChordSheetModel, disp: (c: string) => string) {
           {line.text}
         </div>
       )
+    if (line.type === 'tab')
+      return (
+        <pre
+          key={i}
+          className="my-3 w-fit max-w-full overflow-x-auto rounded-md border border-[#f0e9da]/12 bg-[#100e0b] px-4 py-3 font-cifra text-[15px] leading-[1.5] text-[#f0e9da]"
+        >
+          {line.lines.join('\n')}
+        </pre>
+      )
     const chordOnly = line.items.every((it) => it.lyrics.trim() === '')
     if (chordOnly)
       return (
