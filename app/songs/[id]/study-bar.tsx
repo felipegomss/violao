@@ -208,7 +208,9 @@ export function StudyBar({
           >
             <MetronomeIcon size={18} />
           </button>
-          <span className="flex-none font-cifra text-[13px] tabular-nums text-soft">{bpm}</span>
+          <span className="flex-none font-cifra text-[13px] tabular-nums text-soft">
+            {bpm} <span className="text-[11px] text-faint">bpm</span>
+          </span>
         </>
       )}
     </div>
