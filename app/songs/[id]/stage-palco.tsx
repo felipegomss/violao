@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Presentation, SkipBack, SkipForward } from 'lucide-react'
+import { ListMusic, Presentation, SkipBack, SkipForward } from 'lucide-react'
 import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
 import { suggestScrollSpeed } from '@/lib/song/autoscroll'
@@ -74,6 +74,7 @@ export function StagePalco({
 }) {
   const router = useRouter()
   const [open, setOpen] = useState(autoOpen)
+  const [listOpen, setListOpen] = useState(false)
 
   // Playlist (só quando o palco veio de um repertório). idx = posição atual.
   const idx = playlist.findIndex((p) => p.id === currentId)
@@ -130,14 +131,16 @@ export function StagePalco({
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
-      else if (e.key === 'ArrowRight' && next) goTo(next.id)
+      if (e.key === 'Escape') {
+        if (listOpen) setListOpen(false)
+        else setOpen(false)
+      } else if (e.key === 'ArrowRight' && next) goTo(next.id)
       else if (e.key === 'ArrowLeft' && prev) goTo(prev.id)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, next, prev])
+  }, [open, listOpen, next, prev])
 
   const disp = (c: string) =>
     notation === 'degree' ? degreeChord(c, songKey) : transposeChord(c, transpose)
@@ -173,7 +176,7 @@ export function StagePalco({
 
             <div className="flex flex-none items-center gap-3">
               {hasList && (
-                <div className="flex items-center gap-2">
+                <div className="relative flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => prev && goTo(prev.id)}
@@ -184,9 +187,15 @@ export function StagePalco({
                   >
                     <SkipBack size={16} strokeWidth={2} />
                   </button>
-                  <span className="min-w-[52px] text-center font-cifra text-[11px] tracking-[.1em] text-[#f0e9da]/70 tabular-nums">
+                  <button
+                    type="button"
+                    onClick={() => setListOpen((o) => !o)}
+                    aria-label="Ver repertório"
+                    className="flex min-w-[68px] items-center justify-center gap-1.5 rounded-md border border-[#f0e9da]/25 px-2 py-2 font-cifra text-[11px] tracking-[.08em] tabular-nums text-[#f0e9da]/80 transition hover:text-[#f0e9da]"
+                  >
+                    <ListMusic size={14} strokeWidth={2} />
                     {idx + 1} / {playlist.length}
-                  </span>
+                  </button>
                   <button
                     type="button"
                     onClick={() => next && goTo(next.id)}
@@ -197,6 +206,46 @@ export function StagePalco({
                   >
                     <SkipForward size={16} strokeWidth={2} />
                   </button>
+
+                  {listOpen && (
+                    <>
+                      <button
+                        type="button"
+                        aria-label="Fechar repertório"
+                        onClick={() => setListOpen(false)}
+                        className="fixed inset-0 z-10 cursor-default"
+                      />
+                      <div className="absolute right-0 top-[calc(100%+8px)] z-20 max-h-[62vh] w-72 overflow-y-auto rounded-lg border border-[#f0e9da]/15 bg-[#1a1712] p-1.5 shadow-[0_24px_50px_-20px_rgba(0,0,0,.7)]">
+                        {playlist.map((p, i) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => {
+                              setListOpen(false)
+                              if (p.id !== currentId) goTo(p.id)
+                            }}
+                            className={`flex w-full items-center gap-3 rounded px-2.5 py-2 text-left transition-colors ${
+                              p.id === currentId
+                                ? 'bg-gold/15 text-gold'
+                                : 'text-[#f0e9da]/80 hover:bg-[#f0e9da]/10'
+                            }`}
+                          >
+                            <span className="w-5 font-cifra text-[11px] tabular-nums text-[#f0e9da]/40">
+                              {String(i + 1).padStart(2, '0')}
+                            </span>
+                            <span className="min-w-0 flex-1 truncate font-editorial text-[15px]">
+                              {p.title}
+                            </span>
+                            {p.id === currentId && (
+                              <span className="flex-none font-cifra text-[8px] uppercase tracking-[.12em]">
+                                tocando
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
               <button
