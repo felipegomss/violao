@@ -7,10 +7,24 @@ import { verifySession } from '@/lib/auth'
 import { SongSchema } from '@/lib/validations/song'
 import { parseDirectives } from '@/lib/song/directives'
 import { slugify, uniqueSlug } from '@/lib/slug'
+import { canonicalTerms } from '@/lib/song/terms'
 
 export type SongFormState =
   | { errors?: Record<string, string[]>; message?: string }
   | undefined
+
+// Normaliza gêneros/artistas contra o que já existe no acervo do usuário —
+// adota a grafia existente (evita "samba" duplicar "Samba").
+async function canonical(userId: string, genres: string[], artists: string[], excludeId?: string) {
+  const others = await prisma.song.findMany({
+    where: { userId, ...(excludeId ? { NOT: { id: excludeId } } : {}) },
+    select: { genres: true, artists: true },
+  })
+  return {
+    genres: canonicalTerms(genres, others.flatMap((o) => o.genres)),
+    artists: canonicalTerms(artists, others.flatMap((o) => o.artists)),
+  }
+}
 
 export async function createSong(
   _prev: SongFormState,
@@ -26,8 +40,9 @@ export async function createSong(
     slugify(parsed.data.title),
     async (s) => (await prisma.song.count({ where: { userId, slug: s } })) > 0,
   )
+  const terms = await canonical(userId, parsed.data.genres, parsed.data.artists)
   const song = await prisma.song.create({
-    data: { ...parsed.data, chordContent, userId, slug },
+    data: { ...parsed.data, ...terms, chordContent, userId, slug },
   })
   revalidatePath('/songs')
   redirect(`/songs/${song.slug}`)
@@ -44,9 +59,10 @@ export async function updateSong(
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors }
   }
+  const terms = await canonical(userId, parsed.data.genres, parsed.data.artists, id)
   const { count } = await prisma.song.updateMany({
     where: { id, userId },
-    data: { ...parsed.data, chordContent },
+    data: { ...parsed.data, ...terms, chordContent },
   })
   if (count === 0) notFound()
   // slug é estável (não muda no rename) — busco pra redirecionar pela URL bonita.
