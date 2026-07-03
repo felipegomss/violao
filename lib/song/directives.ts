@@ -1,5 +1,3 @@
-export type ChordFormat = 'TRADICIONAL' | 'GRADE'
-
 export type DerivedFields = {
   title: string
   artists: string[]
@@ -10,7 +8,6 @@ export type DerivedFields = {
   tuning: string
   bpm?: number
   referenceYoutubeUrl?: string
-  chordFormat: ChordFormat
 }
 
 export type DirectiveSpec = {
@@ -30,10 +27,9 @@ export const DIRECTIVES: DirectiveSpec[] = [
   { key: 'afinacao', field: 'tuning', label: 'Afinação' },
   { key: 'bpm', field: 'bpm', label: 'BPM' },
   { key: 'youtube', field: 'referenceYoutubeUrl', label: 'YouTube' },
-  { key: 'tipo', field: 'chordFormat', label: 'Formato' },
 ]
 
-export const PANEL_FIELDS = DIRECTIVES.filter((d) => d.key !== 'tipo')
+export const PANEL_FIELDS = DIRECTIVES
 
 const DIRECTIVE_LINE = /^\s*\{(\w+):\s?(.*)\}\s*$/
 
@@ -70,7 +66,6 @@ export function parseDirectives(content: string): DerivedFields {
     tuning: get('afinacao') || 'standard',
     bpm: toIntOrUndefined(get('bpm')),
     referenceYoutubeUrl: get('youtube') || undefined,
-    chordFormat: get('tipo').toLowerCase() === 'grade' ? 'GRADE' : 'TRADICIONAL',
   }
 }
 
@@ -99,7 +94,7 @@ export function getDirective(content: string, key: string): string {
   return ''
 }
 
-const HEADER = `{title: }
+export const SCAFFOLD = `{title: }
 {artist: }
 {tom: }
 {genero: }
@@ -107,24 +102,5 @@ const HEADER = `{title: }
 {capo: }
 {afinacao: standard}
 {bpm: }
-{youtube: }`
-
-export const SCAFFOLD_TRADICIONAL = `${HEADER}
-{tipo: tradicional}
+{youtube: }
 [C]Cole aqui a letra com os [G]acordes...`
-
-export const SCAFFOLD_GRADE = `${HEADER}
-{tipo: grade}
-{parte: A}
-| C7M | G/B | Am7 | C7/G |`
-
-export function toggleFormat(content: string, target: ChordFormat): string {
-  const pristineOther =
-    target === 'GRADE' ? SCAFFOLD_TRADICIONAL : SCAFFOLD_GRADE
-  // Scaffold intocado (tolerante a espaço/linha em branco nas bordas) → troca o
-  // scaffold inteiro; senão preserva o corpo digitado e só troca {tipo}.
-  if (content.trim() === pristineOther.trim()) {
-    return target === 'GRADE' ? SCAFFOLD_GRADE : SCAFFOLD_TRADICIONAL
-  }
-  return setDirective(content, 'tipo', target === 'GRADE' ? 'grade' : 'tradicional')
-}

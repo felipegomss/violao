@@ -26,7 +26,6 @@ export function CifraStudy({
   sheet,
   parseFailed,
   rawContent,
-  chordFormat,
   songKey,
   bpm,
   referenceYoutubeUrl,
@@ -37,7 +36,6 @@ export function CifraStudy({
   sheet: ChordSheetModel | null
   parseFailed: boolean
   rawContent: string
-  chordFormat: 'TRADICIONAL' | 'GRADE'
   songKey: string
   bpm: number | null
   referenceYoutubeUrl: string | null
@@ -185,24 +183,20 @@ export function CifraStudy({
     <div className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 lg:grid-cols-[1fr_320px] lg:min-h-0">
       {/* Cifra sheet */}
       <div className="px-8 py-8 lg:px-10">
-        {chordFormat === 'TRADICIONAL' ? (
-          shownSheet ? (
-            <EditorialCifra
-              sheet={shownSheet}
-              onChordHover={notation === 'chord' ? onChordHover : undefined}
-            />
-          ) : (
-            <>
-              {parseFailed && (
-                <p className="mb-2 text-sm text-soft">
-                  não foi possível formatar; exibindo texto cru
-                </p>
-              )}
-              {rawPre}
-            </>
-          )
+        {shownSheet ? (
+          <EditorialCifra
+            sheet={shownSheet}
+            onChordHover={notation === 'chord' ? onChordHover : undefined}
+          />
         ) : (
-          rawPre
+          <>
+            {parseFailed && (
+              <p className="mb-2 text-sm text-soft">
+                não foi possível formatar; exibindo texto cru
+              </p>
+            )}
+            {rawPre}
+          </>
         )}
 
         {notes && (
@@ -226,31 +220,6 @@ export function CifraStudy({
         <div className="flex flex-col gap-4 border-b border-ink/12 p-[18px]">
           <div className="font-cifra text-[9px] uppercase tracking-[.2em] text-faint">
             Acompanhamento
-          </div>
-
-          {/* Formato (reflete o formato da música; sem alternância) */}
-          <div>
-            <div className="mb-1.5 font-cifra text-[9px] tracking-[.06em] text-faint">FORMATO</div>
-            <div className="flex overflow-hidden rounded-md border border-ink/22">
-              <button
-                type="button"
-                disabled
-                className={`flex-1 py-2 font-cifra text-[11px] tracking-[.04em] ${
-                  chordFormat === 'TRADICIONAL' ? 'bg-teal font-medium text-folha' : 'text-soft'
-                }`}
-              >
-                Tradicional
-              </button>
-              <button
-                type="button"
-                disabled
-                className={`flex-1 py-2 font-cifra text-[11px] tracking-[.04em] ${
-                  chordFormat === 'GRADE' ? 'bg-teal font-medium text-folha' : 'text-soft'
-                }`}
-              >
-                Grade
-              </button>
-            </div>
           </div>
 
           {/* Notação — FUNCIONAL */}

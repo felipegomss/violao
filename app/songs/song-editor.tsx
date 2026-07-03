@@ -2,18 +2,10 @@
 
 import { useActionState, useState } from 'react'
 import Link from 'next/link'
-import {
-  parseDirectives,
-  setDirective,
-  getDirective,
-  toggleFormat,
-  DIRECTIVES,
-  SCAFFOLD_TRADICIONAL,
-  type ChordFormat,
-} from '@/lib/song/directives'
+import { setDirective, getDirective, DIRECTIVES, SCAFFOLD } from '@/lib/song/directives'
 import type { SongFormState } from '@/app/actions/songs'
 
-const PANEL = DIRECTIVES.filter((d) => d.key !== 'tipo')
+const PANEL = DIRECTIVES
 
 const PLACEHOLDER: Record<string, string> = {
   title: 'digite o título',
@@ -31,7 +23,7 @@ type Action = (state: SongFormState, formData: FormData) => Promise<SongFormStat
 
 export function SongEditor({
   action,
-  initialContent = SCAFFOLD_TRADICIONAL,
+  initialContent = SCAFFOLD,
   submitLabel = 'Criar música',
   title = 'Nova música',
   backHref = '/songs',
@@ -45,7 +37,6 @@ export function SongEditor({
   const [state, formAction, pending] = useActionState<SongFormState, FormData>(action, undefined)
   const [content, setContent] = useState(initialContent)
 
-  const format = parseDirectives(content).chordFormat
   const raw = (key: string) => getDirective(content, key)
 
   const missing = PANEL.filter((d) => d.required && raw(d.key).trim() === '')
@@ -61,23 +52,6 @@ export function SongEditor({
             ‹
           </Link>
           <h2 className="font-editorial font-medium text-[30px] leading-none">{title}</h2>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="font-cifra text-[9px] tracking-[.14em] uppercase text-faint">formato</span>
-          <div className="flex overflow-hidden rounded-md border border-ink/22">
-            {(['TRADICIONAL', 'GRADE'] as ChordFormat[]).map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setContent((c) => toggleFormat(c, f))}
-                className={`font-cifra text-[11px] px-3.5 py-2 ${
-                  format === f ? 'bg-teal text-folha' : 'text-soft'
-                }`}
-              >
-                {f === 'TRADICIONAL' ? 'Tradicional' : 'Grade'}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 

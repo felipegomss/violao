@@ -22,7 +22,8 @@ export async function createSong(
     return { errors: parsed.error.flatten().fieldErrors }
   }
   const song = await prisma.song.create({
-    data: { ...parsed.data, chordContent },
+    // chordFormat é coluna legada (modo grade removido) — sempre TRADICIONAL.
+    data: { ...parsed.data, chordContent, chordFormat: 'TRADICIONAL' },
   })
   revalidatePath('/songs')
   redirect(`/songs/${song.id}`)
@@ -41,7 +42,8 @@ export async function updateSong(
   }
   await prisma.song.update({
     where: { id },
-    data: { ...parsed.data, chordContent },
+    // normaliza registros antigos de grade → sempre TRADICIONAL.
+    data: { ...parsed.data, chordContent, chordFormat: 'TRADICIONAL' },
   })
   revalidatePath('/songs')
   revalidatePath(`/songs/${id}`)

@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  parseDirectives,
-  setDirective,
-  getDirective,
-  toggleFormat,
-  SCAFFOLD_TRADICIONAL,
-  SCAFFOLD_GRADE,
-} from './directives'
+import { parseDirectives, setDirective, getDirective } from './directives'
 
 describe('getDirective (edição bi-direcional)', () => {
   it('lê o valor cru de uma diretiva', () => {
@@ -30,11 +23,10 @@ const tradFull = `{title: Minha Música}
 {afinacao: standard}
 {bpm: 90}
 {youtube: https://youtu.be/abc}
-{tipo: tradicional}
 [C]Terra em [G]transe`
 
 describe('parseDirectives', () => {
-  it('extrai todos os campos de uma cifra tradicional completa', () => {
+  it('extrai todos os campos de uma cifra completa', () => {
     const d = parseDirectives(tradFull)
     expect(d).toMatchObject({
       title: 'Minha Música',
@@ -46,13 +38,7 @@ describe('parseDirectives', () => {
       tuning: 'standard',
       bpm: 90,
       referenceYoutubeUrl: 'https://youtu.be/abc',
-      chordFormat: 'TRADICIONAL',
     })
-  })
-
-  it('mapeia {tipo: grade} para chordFormat GRADE', () => {
-    const d = parseDirectives('{title: X}\n{tipo: grade}\n| C |')
-    expect(d.chordFormat).toBe('GRADE')
   })
 
   it('diretiva ausente → campo vazio/undefined, sem quebrar', () => {
@@ -102,22 +88,5 @@ describe('setDirective (round-trip)', () => {
     expect(c).toContain('[C]Terra em [G]transe')
     expect(parseDirectives(c).key).toBe('D')
     expect(parseDirectives(c).title).toBe('Minha Música')
-  })
-})
-
-describe('toggleFormat', () => {
-  it('scaffold intocado → troca o scaffold inteiro', () => {
-    expect(toggleFormat(SCAFFOLD_TRADICIONAL, 'GRADE')).toBe(SCAFFOLD_GRADE)
-    expect(toggleFormat(SCAFFOLD_GRADE, 'TRADICIONAL')).toBe(SCAFFOLD_TRADICIONAL)
-    // tolerante a \n final vindo da textarea
-    expect(toggleFormat(SCAFFOLD_TRADICIONAL + '\n', 'GRADE')).toBe(SCAFFOLD_GRADE)
-  })
-
-  it('conteúdo editado → só troca {tipo}, preserva o corpo', () => {
-    const edited = setDirective(SCAFFOLD_TRADICIONAL, 'title', 'X') + '\n[Am]coisa'
-    const toggled = toggleFormat(edited, 'GRADE')
-    expect(parseDirectives(toggled).chordFormat).toBe('GRADE')
-    expect(toggled).toContain('[Am]coisa')
-    expect(parseDirectives(toggled).title).toBe('X')
   })
 })

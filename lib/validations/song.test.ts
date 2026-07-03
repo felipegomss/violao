@@ -6,7 +6,6 @@ const valid = {
   artists: ['Toquinho'],
   key: 'C',
   genres: ['MPB'],
-  chordFormat: 'GRADE',
 }
 
 describe('SongSchema', () => {
@@ -25,10 +24,6 @@ describe('SongSchema', () => {
       expect(f.artists).toBeDefined()
       expect(f.key).toBeDefined()
     }
-  })
-
-  it('rejeita chordFormat inválido', () => {
-    expect(SongSchema.safeParse({ ...valid, chordFormat: 'X' }).success).toBe(false)
   })
 
   it('rejeita referenceYoutubeUrl malformada', () => {

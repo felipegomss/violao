@@ -43,12 +43,10 @@ export default async function SongDetailPage({
 
   let sheet: ChordSheetModel | null = null
   let parseFailed = false
-  if (song.chordFormat === 'TRADICIONAL') {
-    try {
-      sheet = parseChordSheet(song.chordContent)
-    } catch {
-      parseFailed = true
-    }
+  try {
+    sheet = parseChordSheet(song.chordContent)
+  } catch {
+    parseFailed = true
   }
 
   return (
@@ -102,7 +100,6 @@ export default async function SongDetailPage({
           sheet={sheet}
           parseFailed={parseFailed}
           rawContent={song.chordContent}
-          chordFormat={song.chordFormat}
           songKey={song.key}
           bpm={song.bpm}
           referenceYoutubeUrl={song.referenceYoutubeUrl}
