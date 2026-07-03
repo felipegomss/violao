@@ -192,7 +192,7 @@ export function CifraStudy({
           <>
             {parseFailed && (
               <p className="mb-2 text-sm text-soft">
-                não foi possível formatar; exibindo texto cru
+                não deu pra formatar. Tá aí o texto cru mesmo.
               </p>
             )}
             {rawPre}
@@ -336,7 +336,7 @@ export function CifraStudy({
                 ))}
               </div>
               <span className="font-cifra text-[13px] font-medium text-ink">
-                {bpm ?? '—'} <span className="text-[9px] text-faint">bpm</span>
+                {bpm ?? '··'} <span className="text-[9px] text-faint">bpm</span>
               </span>
             </div>
           </div>

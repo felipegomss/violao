@@ -201,7 +201,7 @@ export function RepertorioDetalhe({
       <div className="flex-1 overflow-y-auto px-10 pt-2.5 pb-11">
         {items.length === 0 ? (
           <div className="py-14 text-center font-editorial text-[20px] italic text-faint">
-            Repertório vazio — adicione músicas.
+            Repertório vazio. Adiciona umas músicas.
           </div>
         ) : (
           items.map((r, pos) => (

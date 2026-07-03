@@ -15,7 +15,7 @@ export function LoginForm({ linkError }: { linkError?: boolean }) {
         <div className="mb-3.5 font-cifra text-[10px] uppercase tracking-[.24em] text-faint">Quase lá</div>
         <h3 className="font-editorial text-[34px] font-medium leading-tight text-ink">Link enviado</h3>
         <p className="mt-3 font-editorial text-[18px] italic text-soft">
-          Mandamos um link pra <span className="not-italic text-ink">{email}</span>. Confere a caixa (e o spam) — vale por 15 minutos.
+          Mandamos um link pra <span className="not-italic text-ink">{email}</span>. Confere a caixa (e o spam). Ele vale por 15 minutos.
         </p>
         <button type="button" onClick={() => location.reload()} className="mt-8 font-cifra text-[11px] uppercase tracking-[.14em] text-teal">
           usar outro email

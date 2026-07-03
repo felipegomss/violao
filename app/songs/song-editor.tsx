@@ -8,8 +8,8 @@ import type { SongFormState } from '@/app/actions/songs'
 const PANEL = DIRECTIVES
 
 const PLACEHOLDER: Record<string, string> = {
-  title: 'digite o título',
-  artists: 'digite o artista (vírgula separa vários)',
+  title: 'título da música',
+  artists: 'artista (vírgula separa vários)',
   key: 'ex.: G, Am, Dm…',
   genres: 'ex.: bossa, mpb',
   version: 'ex.: v2 · songbook',
@@ -118,7 +118,7 @@ export function SongEditor({
           <div className="border-t border-ink/12 px-5 py-4">
             {hasMissing && (
               <div className="mb-2.5 font-cifra text-[10px] leading-relaxed text-rust">
-                ⚠ preencha o obrigatório: {missing.map((m) => m.label.toLowerCase()).join(', ')}
+                falta preencher: {missing.map((m) => m.label.toLowerCase()).join(', ')}
               </div>
             )}
             {state?.errors && (

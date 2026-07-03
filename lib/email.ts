@@ -40,7 +40,7 @@ function magicLinkHtml(url: string): string {
             <a href="${url}" style="color:#1c3c4c;word-break:break-all;">${url}</a></p>
 
           <div style="margin:30px 0 0;padding-top:18px;border-top:1px solid rgba(38,33,27,.12);font-family:${mono};font-size:12px;letter-spacing:.1em;color:#1c3c4c;opacity:.5;">D#m7(5-)&nbsp;&middot;&nbsp;E/D&nbsp;&middot;&nbsp;C#m7&nbsp;&middot;&nbsp;Cº&nbsp;&middot;&nbsp;Ebº</div>
-          <p style="margin:18px 0 0;font-family:${serif};font-size:12px;color:#a89e8d;">Se não foi você que pediu, pode ignorar este email — nada acontece.</p>
+          <p style="margin:18px 0 0;font-family:${serif};font-size:12px;color:#a89e8d;">Se não foi você que pediu, é só ignorar. Não acontece nada.</p>
 
         </td></tr>
       </table>

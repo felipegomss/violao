@@ -38,7 +38,7 @@ export default async function RepertoriosPage() {
         <div className="px-10 py-8 overflow-y-auto">
           {reps.length === 0 ? (
             <p className="font-editorial italic text-faint text-[16px]">
-              Nenhum repertório ainda — crie o primeiro.
+              Você ainda não tem repertórios. Cria o primeiro.
             </p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">

@@ -274,7 +274,7 @@ export function StagePalco({
                 renderDark(sheet, disp)
               ) : (
                 <div className="font-editorial text-[22px] italic text-[#f0e9da]/60">
-                  cifra não disponível pra este formato.
+                  cifra não disponível.
                 </div>
               )}
             </div>

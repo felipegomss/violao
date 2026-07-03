@@ -88,7 +88,7 @@ export function Acervo({ songs }: { songs: Song[] }) {
       {songs.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-10 py-14 text-center">
           <p className="font-editorial text-[20px] italic text-faint">
-            Nenhuma música ainda — adicione a primeira.
+            Seu acervo tá vazio. Bora adicionar a primeira música?
           </p>
         </div>
       ) : (
@@ -207,7 +207,7 @@ export function Acervo({ songs }: { songs: Song[] }) {
           {filtered.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-4 py-14 text-center">
               <p className="font-editorial text-[20px] italic text-faint">
-                Nada encontrado — tente outra busca.
+                Nada por aqui. Tenta outra busca.
               </p>
             </div>
           ) : (
