@@ -69,7 +69,7 @@ export function Acervo({
   })
 
   return (
-    <div className="mx-auto flex h-full w-full min-w-0 max-w-7xl flex-col">
+    <div className="mx-auto flex min-h-0 w-full min-w-0 max-w-7xl flex-1 flex-col">
       {anyMenuOpen && (
         <button
           type="button"

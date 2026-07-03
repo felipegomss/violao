@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
 import { searchSongs } from '@/app/actions/songs'
-import { AppSidebar } from '@/components/app-sidebar'
+import { AppShell } from '@/components/app-shell'
 import { RepertorioDetalhe } from './repertorio-detalhe'
 
 export async function generateMetadata({
@@ -62,8 +62,7 @@ export default async function RepertorioPage({
   const initialAvailable = await searchSongs({ excludeRepId: rep.id, take: 30 })
 
   return (
-    <div className="flex min-h-screen bg-paper text-ink max-md:pt-12">
-      <AppSidebar active="repert" />
+    <AppShell active="repert" insetClassName="bg-paper text-ink">
       <RepertorioDetalhe
         repertoireId={rep.id}
         repertoireSlug={rep.slug}
@@ -72,6 +71,6 @@ export default async function RepertorioPage({
         rows={rows}
         initialAvailable={initialAvailable}
       />
-    </div>
+    </AppShell>
   )
 }

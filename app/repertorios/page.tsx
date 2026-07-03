@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
-import { AppSidebar } from '@/components/app-sidebar'
+import { AppShell } from '@/components/app-shell'
 import { EmptyState } from '@/components/empty-state'
 import { NovoRepertorio } from './novo-repertorio'
 
@@ -24,8 +24,7 @@ export default async function RepertoriosPage() {
   const totalSongs = reps.reduce((n, r) => n + r.songs.length, 0)
 
   return (
-    <div className="flex min-h-screen bg-paper text-ink max-md:pt-12">
-      <AppSidebar active="repert" />
+    <AppShell active="repert" insetClassName="bg-paper text-ink">
       <main className="mx-auto flex w-full max-w-7xl flex-col min-w-0">
         <header className="px-10 pt-8 flex justify-between items-start">
           <div>
@@ -72,6 +71,6 @@ export default async function RepertoriosPage() {
           )}
         </div>
       </main>
-    </div>
+    </AppShell>
   )
 }

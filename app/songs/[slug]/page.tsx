@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
 import { deleteSong } from '@/app/actions/songs'
 import { parseChordSheet, type ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
-import { AppSidebar } from '@/components/app-sidebar'
+import { AppShell } from '@/components/app-shell'
 import { SongActions } from './song-actions'
 import { StagePalco } from './stage-palco'
 import { CifraStudy } from './cifra-study'
@@ -71,12 +71,11 @@ export default async function SongDetailPage({
   }
 
   return (
-    <div className="flex min-h-screen bg-paper text-ink max-md:pt-12">
-      <AppSidebar
-        active="acervo"
-        context={{ currentSlug: slug, repSlug: rep, repName, setlist: rep ? playlist : undefined }}
-      />
-
+    <AppShell
+      active="acervo"
+      context={{ currentSlug: slug, repSlug: rep, repName, setlist: rep ? playlist : undefined }}
+      insetClassName="bg-paper text-ink"
+    >
       {/* A folha é client (CifraStudy renderiza o header: o "tom" é metadado
           vivo, reflete a transposição). O server só injeta as ações. */}
       <div className="flex w-full min-w-0 flex-col">
@@ -115,6 +114,6 @@ export default async function SongDetailPage({
           }
         />
       </div>
-    </div>
+    </AppShell>
   )
 }

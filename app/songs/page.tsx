@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
 import { searchSongs, songFacets } from '@/app/actions/songs'
-import { AppSidebar } from '@/components/app-sidebar'
+import { AppShell } from '@/components/app-shell'
 import { Acervo } from './acervo'
 
 export const metadata = { title: 'Acervo' }
@@ -21,8 +21,7 @@ export default async function SongsPage({
   ])
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden bg-paper max-md:pt-12">
-      <AppSidebar active="acervo" />
+    <AppShell active="acervo" insetClassName="bg-paper h-svh overflow-hidden">
       <Acervo
         initialSongs={initialSongs}
         genres={facets.genres}
@@ -30,6 +29,6 @@ export default async function SongsPage({
         total={total}
         initialQ={query ?? ''}
       />
-    </div>
+    </AppShell>
   )
 }

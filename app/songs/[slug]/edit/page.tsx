@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
 import { updateSong } from '@/app/actions/songs'
-import { AppSidebar } from '@/components/app-sidebar'
+import { AppShell } from '@/components/app-shell'
 import { SongEditor } from '@/app/songs/song-editor'
 
 export async function generateMetadata({
@@ -28,8 +28,7 @@ export default async function EditSongPage({
   if (!song) notFound()
 
   return (
-    <div className="flex min-h-screen bg-paper text-ink max-md:pt-12">
-      <AppSidebar active="acervo" />
+    <AppShell active="acervo" insetClassName="bg-paper text-ink">
       <SongEditor
         action={updateSong.bind(null, song.id)}
         initialContent={song.chordContent}
@@ -37,6 +36,6 @@ export default async function EditSongPage({
         backHref={`/songs/${song.slug}`}
         submitLabel="Salvar alterações"
       />
-    </div>
+    </AppShell>
   )
 }

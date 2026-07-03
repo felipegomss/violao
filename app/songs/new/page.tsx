@@ -1,7 +1,7 @@
 import { verifySession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createSong } from '@/app/actions/songs'
-import { AppSidebar } from '@/components/app-sidebar'
+import { AppShell } from '@/components/app-shell'
 import { NewSongFlow } from './new-song-flow'
 
 export const metadata = { title: 'Nova música' }
@@ -31,9 +31,8 @@ export default async function NewSongPage({
   }
 
   return (
-    <div className="flex min-h-screen bg-paper text-ink max-md:pt-12">
-      <AppSidebar active="acervo" />
+    <AppShell active="acervo" insetClassName="bg-paper text-ink">
       <NewSongFlow action={createSong} initialContent={initialContent} initialMode={initialMode} />
-    </div>
+    </AppShell>
   )
 }
