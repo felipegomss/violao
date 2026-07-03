@@ -26,31 +26,58 @@ const ROOT_TO_DBKEY: Record<string, string> = {
   B: 'B', Cb: 'B',
 }
 
-// Sufixo (notação BR/variações) → sufixo do chords-db. Sufixo desconhecido tenta
-// casar direto; se não achar, o lookup devolve null (sem diagrama, graceful).
+// Sufixo (notação BR/variações) → sufixo do chords-db. Cifra BR escreve acorde de
+// muitos jeitos (parênteses, - por b, + por #, 7M por maj7, ° por dim7…); aqui a
+// gente normaliza tudo pro vocabulário do db. Sufixo não mapeado tenta casar direto
+// e, se não achar, devolve vazio (→ "sem digitação", graceful).
+// Convenções BR adotadas: 4 = sus4 · 7+ / 7M = maj7 (sétima maior) · +/5+/#5 = aumentado ·
+// °/º/o = dim7 (diminuta de 4 notas) · dim (por extenso) = tríade diminuta · - = menor ou bemol conforme o caso.
 const SUFFIX_MAP: Record<string, string> = {
-  '': 'major', M: 'major', maj: 'major',
-  m: 'minor', '-': 'minor', min: 'minor',
-  '7': '7',
-  m7: 'm7', '-7': 'm7',
-  maj7: 'maj7', '7M': 'maj7', M7: 'maj7', '7+': 'maj7',
-  m7b5: 'm7b5', 'm7(5-)': 'm7b5', 'm7(b5)': 'm7b5', ø: 'm7b5',
-  dim: 'dim', '°': 'dim', o: 'dim',
-  dim7: 'dim7', '°7': 'dim7', o7: 'dim7',
-  '6': '6', m6: 'm6',
-  '9': '9', '7(9)': '9',
-  maj9: 'maj9', '7M(9)': 'maj9',
-  m9: 'm9', 'm7(9)': 'm9',
+  // maior / menor
+  '': 'major', M: 'major', maj: 'major', Maj: 'major',
+  m: 'minor', '-': 'minor', min: 'minor', mi: 'minor',
+  // sétima (dominante) e maior
+  '7': '7', dom7: '7',
+  maj7: 'maj7', Maj7: 'maj7', '7M': 'maj7', M7: 'maj7', '7+': 'maj7', '+7': 'maj7', '7maj': 'maj7',
+  m7: 'm7', '-7': 'm7', min7: 'm7',
+  // meia-diminuta / diminuta
+  m7b5: 'm7b5', 'm7(b5)': 'm7b5', 'm7(5-)': 'm7b5', 'm7(-5)': 'm7b5', 'm7-5': 'm7b5', ø: 'm7b5', '-7(b5)': 'm7b5',
+  dim: 'dim',
+  dim7: 'dim7', '°': 'dim7', º: 'dim7', o: 'dim7', '°7': 'dim7', 'º7': 'dim7', o7: 'dim7',
+  // sextas e 6/9
+  '6': '6', m6: 'm6', '-6': 'm6',
+  '69': '69', '6/9': '69', '6(9)': '69',
+  m69: 'm69', 'm6/9': 'm69', 'm6(9)': 'm69',
+  // nonas
+  '9': '9', '7(9)': '9', '7/9': '9',
+  maj9: 'maj9', '7M(9)': 'maj9', '7M9': 'maj9',
+  m9: 'm9', 'm7(9)': 'm9', '-9': 'm9',
+  add9: 'add9', add2: 'add9', madd9: 'madd9', 'm(add9)': 'madd9',
+  '9b5': '9b5', '9(b5)': '9b5', '9(5-)': '9b5',
+  '9#11': '9#11', '9(#11)': '9#11', '9(11+)': '9#11',
+  // suspensos
   sus4: 'sus4', sus: 'sus4', '4': 'sus4',
   sus2: 'sus2', '2': 'sus2',
-  '7sus4': '7sus4', '7(4)': '7sus4',
-  add9: 'add9',
-  '11': '11',
-  '13': '13', '7(13)': '13',
-  aug: 'aug', '+': 'aug',
-  '7b9': '7b9', '7(9-)': '7b9', '7(b9)': '7b9',
+  '7sus4': '7sus4', '7sus': '7sus4', '7(4)': '7sus4', 'sus4(7)': '7sus4',
+  // 11 / 13
+  '11': '11', m11: 'm11', 'm7(11)': 'm11', maj11: 'maj11', mmaj11: 'mmaj11',
+  '13': '13', '7(13)': '13', maj13: 'maj13',
+  // aumentados
+  aug: 'aug', '+': 'aug', '#5': 'aug', '(#5)': 'aug', '5+': 'aug', '(5+)': 'aug',
+  aug7: 'aug7', '7#5': 'aug7', '7(#5)': 'aug7', '7+5': 'aug7', '7(5+)': 'aug7',
+  aug9: 'aug9', '9#5': 'aug9', '9(#5)': 'aug9',
+  // dominantes alterados
+  '7b9': '7b9', '7(b9)': '7b9', '7(9-)': '7b9',
   '7#9': '7#9', '7(#9)': '7#9', '7(9+)': '7#9',
-  '7b5': '7b5', '7(5-)': '7b5', '7(b5)': '7b5',
+  '7b5': '7b5', '7(b5)': '7b5', '7(5-)': '7b5', '7(-5)': '7b5', '7-5': '7b5',
+  alt: 'alt', '7alt': 'alt',
+  // maiores alterados
+  maj7b5: 'maj7b5', '7M(b5)': 'maj7b5', '7M(5-)': 'maj7b5',
+  'maj7#5': 'maj7#5', '7M(#5)': 'maj7#5', '7M(5+)': 'maj7#5',
+  // menor com sétima maior
+  mmaj7: 'mmaj7', 'm(maj7)': 'mmaj7', m7M: 'mmaj7', 'm(7M)': 'mmaj7', '-7M': 'mmaj7',
+  mmaj9: 'mmaj9', 'm(maj9)': 'mmaj9', 'm7M(9)': 'mmaj9',
+  mmaj7b5: 'mmaj7b5',
 }
 
 type DbChord = { suffix: string; positions: ChordShape[] }

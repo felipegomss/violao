@@ -18,6 +18,37 @@ describe('chordDiagram', () => {
     expect(chordDiagram('C7M')).not.toBeNull() // 7M → maj7
   })
 
+  it('normaliza as várias grafias pro mesmo acorde', () => {
+    // cada grafia à esquerda tem que cair no mesmo shape da forma canônica à direita
+    const pares: [string, string][] = [
+      ['C4', 'Csus4'],
+      ['C7(4)', 'C7sus4'],
+      ['C7+', 'Cmaj7'],
+      ['CMaj7', 'Cmaj7'],
+      ['C7(9)', 'C9'],
+      ['C6/9', 'C69'],
+      ['Cm7(b5)', 'Cm7b5'],
+      ['Cm7(-5)', 'Cm7b5'],
+      ['C7(#5)', 'Caug7'],
+      ['C+', 'Caug'],
+      ['C°', 'Cdim7'],
+      ['Cº', 'Cdim7'],
+      ['Co', 'Cdim7'],
+      ['Cm(7M)', 'Cmmaj7'],
+      ['C7(b9)', 'C7b9'],
+      ['C7(9+)', 'C7#9'],
+    ]
+    for (const [escrita, canonico] of pares) {
+      expect(chordDiagram(escrita), `${escrita} → ${canonico}`).toEqual(chordDiagram(canonico))
+      expect(chordDiagram(escrita), `${escrita} devia existir`).not.toBeNull()
+    }
+  })
+
+  it('° (grau) é dim7, não a tríade dim', () => {
+    expect(chordDiagram('C°')).toEqual(chordDiagram('Cdim7'))
+    expect(chordDiagram('Cdim')).not.toEqual(chordDiagram('Cdim7'))
+  })
+
   it('resolve enarmonia da fundamental (Bb, Ab)', () => {
     expect(chordDiagram('Bbm7')).not.toBeNull()
     expect(chordDiagram('Ab7')).not.toBeNull()
