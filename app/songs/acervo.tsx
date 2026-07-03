@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { Plus, Search } from 'lucide-react'
 
 type Song = {
   id: string
@@ -80,7 +81,7 @@ export function Acervo({ songs }: { songs: Song[] }) {
           href="/songs/new"
           className="flex items-center gap-2 rounded-lg bg-teal px-5 py-3 font-cifra text-[12px] uppercase tracking-[.14em] text-[#f0e9da]"
         >
-          <span className="text-[16px] leading-none">+</span> Nova música
+          <Plus size={16} strokeWidth={2.25} /> Nova música
         </Link>
       </div>
 
@@ -94,7 +95,7 @@ export function Acervo({ songs }: { songs: Song[] }) {
         <div className="flex flex-1 flex-col overflow-y-auto px-10 pb-10">
           {/* Search */}
           <div className="mt-6 flex items-center gap-3 border-b-[1.5px] border-ink/35 pb-2.5">
-            <span className="font-editorial text-[20px] text-faint">⌕</span>
+            <Search size={19} strokeWidth={2} className="shrink-0 text-faint" />
             <input
               type="text"
               value={q}

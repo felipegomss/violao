@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Plus } from 'lucide-react'
 import { createRepertoire } from '@/app/actions/repertoires'
 
 export function NovoRepertorio() {
@@ -39,7 +40,7 @@ export function NovoRepertorio() {
       onClick={() => setOpen(true)}
       className="flex items-center gap-2 font-cifra text-[12px] tracking-[.14em] uppercase text-[#f0e9da] bg-teal px-5 py-3 rounded-lg"
     >
-      <span>+</span>
+      <Plus size={16} strokeWidth={2.25} />
       Novo repertório
     </button>
   )

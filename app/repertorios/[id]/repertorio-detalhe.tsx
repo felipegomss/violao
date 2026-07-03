@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import Link from 'next/link'
+import { ChevronLeft, Ellipsis, GripVertical, Plus, SquarePen, Trash2, X } from 'lucide-react'
 import {
   reorderRepertoireSongs,
   removeSongFromRepertoire,
@@ -114,8 +115,12 @@ export function RepertorioDetalhe({
     <main className="mx-auto flex w-full min-w-0 max-w-7xl flex-col">
       {/* header */}
       <div className="border-b border-ink/12 px-10 pt-6 pb-5">
-        <Link href="/repertorios" className="font-cifra text-[11px] text-faint hover:text-ink">
-          ‹ repertórios
+        <Link
+          href="/repertorios"
+          className="inline-flex items-center gap-1 font-cifra text-[11px] text-faint hover:text-ink"
+        >
+          <ChevronLeft size={13} strokeWidth={2} />
+          repertórios
         </Link>
         <div className="mt-2.5 flex items-end justify-between gap-6">
           <div>
@@ -139,7 +144,9 @@ export function RepertorioDetalhe({
               <h2 className="font-editorial text-[36px] font-medium leading-none">{displayName}</h2>
             )}
             <div className="mt-2 font-cifra text-[12px] tracking-wide text-faint">
-              {items.length} músicas · arraste <span className="text-teal">⠿</span> pra reordenar
+              {items.length} músicas · arraste{' '}
+              <GripVertical size={13} strokeWidth={2} className="inline-block align-middle text-teal" />{' '}
+              pra reordenar
             </div>
           </div>
           <div className="relative flex gap-2.5">
@@ -148,14 +155,15 @@ export function RepertorioDetalhe({
               onClick={() => setPickerOpen(true)}
               className="flex items-center gap-2 rounded-lg border border-teal/40 px-4 py-2.5 font-cifra text-[11px] uppercase tracking-[.12em] text-teal"
             >
-              <span className="text-[15px] leading-none">+</span> Adicionar música
+              <Plus size={15} strokeWidth={2.25} /> Adicionar música
             </button>
             <button
               type="button"
               onClick={() => setMenuOpen((o) => !o)}
-              className="rounded-lg border border-ink/22 px-3.5 font-cifra text-[16px] text-soft"
+              aria-label="Ações do repertório"
+              className="flex items-center rounded-lg border border-ink/22 px-3 text-soft transition-colors hover:text-ink"
             >
-              ⋯
+              <Ellipsis size={18} strokeWidth={2} />
             </button>
             {menuOpen && (
               <div className="absolute right-0 top-[calc(100%+6px)] z-20 w-40 rounded-lg border border-ink/20 bg-folha p-1.5 shadow-[0_16px_34px_-14px_rgba(38,33,27,.5)]">
@@ -165,8 +173,9 @@ export function RepertorioDetalhe({
                     setRenaming(true)
                     setMenuOpen(false)
                   }}
-                  className="block w-full rounded px-2.5 py-2 text-left font-cifra text-[11px] hover:bg-[#f1eadb]"
+                  className="flex w-full items-center gap-2 rounded px-2.5 py-2 text-left font-cifra text-[11px] hover:bg-[#f1eadb]"
                 >
+                  <SquarePen size={14} strokeWidth={2} />
                   renomear
                 </button>
                 <form action={deleteRepertoire.bind(null, repertoireId)}>
@@ -176,8 +185,9 @@ export function RepertorioDetalhe({
                       if (!confirm('Apagar este repertório? As músicas continuam no acervo.'))
                         e.preventDefault()
                     }}
-                    className="block w-full rounded px-2.5 py-2 text-left font-cifra text-[11px] text-rust hover:bg-[#f1eadb]"
+                    className="flex w-full items-center gap-2 rounded px-2.5 py-2 text-left font-cifra text-[11px] text-rust hover:bg-[#f1eadb]"
                   >
+                    <Trash2 size={14} strokeWidth={2} />
                     apagar
                   </button>
                 </form>
@@ -216,7 +226,9 @@ export function RepertorioDetalhe({
                 dragIndex === pos ? 'bg-[#efe7d5] opacity-40' : ''
               }`}
             >
-              <span className="cursor-grab select-none font-cifra text-[17px] text-[#b0a696]">⠿</span>
+              <span className="cursor-grab select-none text-[#b0a696]">
+                <GripVertical size={16} strokeWidth={2} />
+              </span>
               <span className="w-[26px] font-cifra text-[13px] text-[#b0a696]">
                 {String(pos + 1).padStart(2, '0')}
               </span>
@@ -247,9 +259,10 @@ export function RepertorioDetalhe({
               <button
                 type="button"
                 onClick={() => remove(r.songId)}
-                className="w-5 cursor-pointer text-center font-cifra text-[15px] text-[#b0a696] hover:text-rust"
+                aria-label="Remover do repertório"
+                className="flex w-5 cursor-pointer items-center justify-center text-[#b0a696] hover:text-rust"
               >
-                ✕
+                <X size={15} strokeWidth={2} />
               </button>
             </div>
           ))
@@ -273,9 +286,10 @@ export function RepertorioDetalhe({
               <button
                 type="button"
                 onClick={() => setPickerOpen(false)}
-                className="font-cifra text-[13px] text-faint"
+                aria-label="Fechar"
+                className="flex text-faint transition-colors hover:text-ink"
               >
-                ✕
+                <X size={16} strokeWidth={2} />
               </button>
             </div>
             <input
