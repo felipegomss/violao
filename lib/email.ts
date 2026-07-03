@@ -20,7 +20,12 @@ function magicLinkHtml(url: string): string {
       <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;border-collapse:collapse;background:#f8f3e8;border:1px solid rgba(38,33,27,.14);border-radius:16px;overflow:hidden;">
         <tr><td style="padding:38px 42px;">
 
-          <div style="font-family:${mono};font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:#1c3c4c;">◍ Compasso</div>
+          <div style="line-height:1;">
+            <svg width="24" height="18" viewBox="8 11 24 18" style="vertical-align:-2px;margin-right:9px;">
+              <ellipse cx="20" cy="20" rx="12" ry="8.4" fill="#1c3c4c"></ellipse>
+              <ellipse cx="20" cy="20" rx="7.9" ry="3.1" transform="rotate(-28 20 20)" fill="#f8f3e8"></ellipse>
+            </svg><span style="font-family:${serif};font-size:25px;font-weight:600;letter-spacing:-.005em;color:#26211b;">Compasso</span>
+          </div>
 
           <h1 style="margin:16px 0 0;font-family:${serif};font-size:29px;font-weight:600;line-height:1.12;color:#26211b;">Seu link de acesso</h1>
           <p style="margin:14px 0 0;font-family:${serif};font-size:17px;font-style:italic;line-height:1.5;color:#5f574a;">Clique pra entrar no seu caderno. O link vale por 15 minutos e só funciona uma vez.</p>
@@ -34,8 +39,7 @@ function magicLinkHtml(url: string): string {
           <p style="margin:22px 0 0;font-family:${serif};font-size:13px;line-height:1.5;color:#8a8073;">ou cole no navegador:<br>
             <a href="${url}" style="color:#1c3c4c;word-break:break-all;">${url}</a></p>
 
-          <div style="margin:30px 0 0;padding-top:18px;border-top:1px solid rgba(38,33,27,.12);font-family:${mono};font-size:12px;letter-spacing:.1em;color:#1c3c4c;opacity:.55;">D#m7(5-)&nbsp;&middot;&nbsp;E/D&nbsp;&middot;&nbsp;C#m7&nbsp;&middot;&nbsp;Cº&nbsp;&middot;&nbsp;Ebº</div>
-          <div style="margin:6px 0 0;font-family:${serif};font-size:13px;font-style:italic;color:#a89e8d;">o mundo é um moinho</div>
+          <div style="margin:30px 0 0;padding-top:18px;border-top:1px solid rgba(38,33,27,.12);font-family:${mono};font-size:12px;letter-spacing:.1em;color:#1c3c4c;opacity:.5;">D#m7(5-)&nbsp;&middot;&nbsp;E/D&nbsp;&middot;&nbsp;C#m7&nbsp;&middot;&nbsp;Cº&nbsp;&middot;&nbsp;Ebº</div>
           <p style="margin:18px 0 0;font-family:${serif};font-size:12px;color:#a89e8d;">Se não foi você que pediu, pode ignorar este email — nada acontece.</p>
 
         </td></tr>

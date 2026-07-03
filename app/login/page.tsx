@@ -21,16 +21,11 @@ export default async function LoginPage({
             As músicas que você toca, num lugar só.
           </h2>
 
-          {/* assinatura */}
-          <div>
-            <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-[#f0e9da]/15 pt-4 font-cifra text-[13px] text-[#f0e9da]/55">
-              {MOINHO.map((chord) => (
-                <span key={chord}>{chord}</span>
-              ))}
-            </div>
-            <div className="mt-2 font-editorial text-[14px] italic text-[#f0e9da]/45">
-              o mundo é um moinho
-            </div>
+          {/* assinatura — acordes como referência sutil */}
+          <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-[#f0e9da]/15 pt-4 font-cifra text-[13px] text-[#f0e9da]/50">
+            {MOINHO.map((chord) => (
+              <span key={chord}>{chord}</span>
+            ))}
           </div>
         </div>
 
