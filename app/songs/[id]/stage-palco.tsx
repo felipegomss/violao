@@ -51,7 +51,7 @@ function renderDark(sheet: ChordSheetModel, disp: (c: string) => string) {
               >
                 {it.chord ? disp(it.chord) : ' '}
               </span>
-              <span className="whitespace-pre font-editorial text-[28px] leading-[1.3] text-[#f0e9da]">
+              <span className="whitespace-pre font-cifra text-[20px] leading-[1.55] text-[#f0e9da]">
                 {it.lyrics || ' '}
               </span>
             </span>
