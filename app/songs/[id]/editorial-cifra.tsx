@@ -6,7 +6,7 @@ function isChordOnlyRow(items: { chord: string | null; lyrics: string }[]) {
 
 export function EditorialCifra({ sheet }: { sheet: ChordSheetModel }) {
   return (
-    <div className="flex max-w-[640px] flex-col gap-6">
+    <div className="max-w-[640px]">
       {sheet.lines.map((line, i) => {
         if (line.type === 'empty') {
           return <div key={i} className="h-3" aria-hidden />
@@ -16,7 +16,7 @@ export function EditorialCifra({ sheet }: { sheet: ChordSheetModel }) {
           return (
             <div
               key={i}
-              className="mb-2.5 border-b border-dotted border-ink/20 pb-1 font-cifra text-[10px] uppercase tracking-[.22em] text-rust"
+              className="mt-6 mb-2 border-b border-dotted border-ink/20 pb-1 font-cifra text-[10px] uppercase tracking-[.22em] text-rust first:mt-0"
             >
               {line.text}
             </div>
@@ -25,11 +25,11 @@ export function EditorialCifra({ sheet }: { sheet: ChordSheetModel }) {
 
         if (isChordOnlyRow(line.items)) {
           return (
-            <div key={i} className="flex flex-wrap gap-3">
+            <div key={i} className="my-1.5 flex flex-wrap gap-2.5">
               {line.items.map((item, j) => (
                 <span
                   key={j}
-                  className="rounded-md border border-teal/30 bg-folha px-2.5 py-1.5 font-cifra text-[14px] font-medium text-teal"
+                  className="rounded-md border border-teal/30 bg-folha px-2 py-1 font-cifra text-[13px] font-medium text-teal"
                 >
                   {item.chord}
                 </span>
@@ -42,10 +42,10 @@ export function EditorialCifra({ sheet }: { sheet: ChordSheetModel }) {
           <div key={i} className="flex flex-wrap items-end">
             {line.items.map((item, j) => (
               <span key={j} className="inline-flex flex-col items-start">
-                <span className="font-cifra text-[13px] font-medium leading-tight text-teal">
-                  {item.chord ?? ' '}
+                <span className="h-[15px] font-cifra text-[12px] font-medium leading-none text-teal">
+                  {item.chord ?? ' '}
                 </span>
-                <span className="whitespace-pre font-editorial text-[21px] leading-[1.35] text-ink">
+                <span className="whitespace-pre font-editorial text-[19px] leading-[1.25] text-ink">
                   {item.lyrics}
                 </span>
               </span>

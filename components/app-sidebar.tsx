@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { logout } from '@/app/actions/auth'
 
-type ActiveSection = 'acervo' | 'repert' | 'progr'
+type ActiveSection = 'acervo' | 'repert'
 
 export function AppSidebar({ active }: { active: ActiveSection }) {
   return (
@@ -41,21 +41,6 @@ export function AppSidebar({ active }: { active: ActiveSection }) {
         />
         <span className="font-cifra text-[8px] uppercase tracking-wide">repertório</span>
       </Link>
-
-      <div
-        className={
-          active === 'progr'
-            ? 'flex w-full flex-col items-center gap-1.5 border-l-2 border-teal bg-folha py-2.5 text-teal'
-            : 'flex w-full flex-col items-center gap-1.5 py-2.5 text-faint'
-        }
-      >
-        <span className="flex h-5 w-5 items-end gap-[2px]">
-          <span className={`h-2 flex-1 ${active === 'progr' ? 'bg-teal' : 'bg-faint'}`} />
-          <span className={`h-3.5 flex-1 ${active === 'progr' ? 'bg-teal' : 'bg-faint'}`} />
-          <span className={`h-5 flex-1 ${active === 'progr' ? 'bg-teal' : 'bg-faint'}`} />
-        </span>
-        <span className="font-cifra text-[8px] uppercase tracking-wide">progresso</span>
-      </div>
 
       <form action={logout} className="mt-auto flex w-full flex-col items-center">
         <button
