@@ -10,6 +10,11 @@ import {
   renameRepertoire,
   deleteRepertoire,
 } from '@/app/actions/repertoires'
+import { Btn } from '@/components/btn'
+import { EmptyState } from '@/components/empty-state'
+
+const FOCUS =
+  'focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
 
 type Row = {
   songId: string
@@ -137,34 +142,31 @@ export function RepertorioDetalhe({
                   name="name"
                   defaultValue={displayName}
                   autoFocus
-                  className="border-b border-ink/30 bg-transparent font-editorial text-[36px] font-medium leading-none outline-none"
+                  className="border-b border-ink/30 bg-transparent font-editorial text-[32px] font-semibold leading-none outline-none"
                 />
               </form>
             ) : (
-              <h2 className="font-editorial text-[36px] font-medium leading-none">{displayName}</h2>
+              <h2 className="font-editorial text-[32px] font-semibold leading-none">{displayName}</h2>
             )}
-            <div className="mt-2 font-cifra text-[12px] tracking-wide text-faint">
+            <div className="mt-2 font-cifra text-[12px] lowercase text-faint">
               {items.length} músicas · arraste{' '}
               <GripVertical size={13} strokeWidth={2} className="inline-block align-middle text-teal" />{' '}
               pra reordenar
             </div>
           </div>
           <div className="relative flex gap-2.5">
-            <button
+            <Btn type="button" variant="secondary" onClick={() => setPickerOpen(true)}>
+              <Plus size={16} strokeWidth={2.25} /> Adicionar música
+            </Btn>
+            <Btn
               type="button"
-              onClick={() => setPickerOpen(true)}
-              className="flex items-center gap-2 rounded-lg border border-teal/40 px-4 py-2.5 font-cifra text-[11px] uppercase tracking-[.12em] text-teal"
-            >
-              <Plus size={15} strokeWidth={2.25} /> Adicionar música
-            </button>
-            <button
-              type="button"
+              variant="secondary"
               onClick={() => setMenuOpen((o) => !o)}
               aria-label="Ações do repertório"
-              className="flex items-center rounded-lg border border-ink/22 px-3 text-soft transition-colors hover:text-ink"
+              className="w-11 px-0"
             >
               <Ellipsis size={18} strokeWidth={2} />
-            </button>
+            </Btn>
             {menuOpen && (
               <div className="absolute right-0 top-[calc(100%+6px)] z-20 w-40 rounded-lg border border-ink/20 bg-folha p-1.5 shadow-[0_16px_34px_-14px_rgba(38,33,27,.5)]">
                 <button
@@ -200,9 +202,7 @@ export function RepertorioDetalhe({
       {/* list */}
       <div className="flex-1 overflow-y-auto px-10 pt-2.5 pb-11">
         {items.length === 0 ? (
-          <div className="py-14 text-center font-editorial text-[20px] italic text-faint">
-            Repertório vazio. Adiciona umas músicas.
-          </div>
+          <EmptyState title="Repertório vazio. Adiciona umas músicas." />
         ) : (
           items.map((r, pos) => (
             <div
@@ -222,38 +222,38 @@ export function RepertorioDetalhe({
                 setDragIndex(null)
                 persistOrder()
               }}
-              className={`flex items-center gap-4 rounded-md border-b border-ink/10 px-2.5 py-3.5 hover:bg-[#f1eadb] ${
+              className={`flex items-center gap-4 border-b border-dotted border-ink/15 px-2.5 py-3 transition-colors duration-150 hover:bg-folha ${
                 dragIndex === pos ? 'bg-[#efe7d5] opacity-40' : ''
               }`}
             >
-              <span className="cursor-grab select-none text-[#b0a696]">
+              <span className="flex h-11 w-11 cursor-grab select-none items-center justify-center text-faint">
                 <GripVertical size={16} strokeWidth={2} />
               </span>
-              <span className="w-[26px] font-cifra text-[13px] text-[#b0a696]">
+              <span className="w-[26px] font-cifra text-[13px] text-faint">
                 {String(pos + 1).padStart(2, '0')}
               </span>
               <Link
                 href={`/songs/${r.songId}?palco=1&rep=${repertoireId}`}
                 className="min-w-0 flex-1"
               >
-                <div className="font-editorial text-[22px] font-medium leading-tight">{r.title}</div>
+                <div className="font-editorial text-[19px] font-semibold leading-tight">{r.title}</div>
                 <div className="mt-0.5 flex items-center gap-2.5">
-                  <span className="font-editorial text-[15px] italic text-[#7a7061]">{r.artist}</span>
+                  <span className="font-editorial text-[14px] italic text-soft">{r.artist}</span>
                   {r.also.length > 0 && (
-                    <span className="font-cifra text-[9px] text-[#9a9082]">
+                    <span className="font-cifra text-[11px] text-faint">
                       ↳ também em {r.also.join(', ')}
                     </span>
                   )}
                 </div>
               </Link>
-              <span className="rounded bg-teal px-2.5 py-1 font-cifra text-[13px] font-medium text-folha">
+              <span className="font-cifra text-[13px] font-medium text-teal">
                 {r.key}
               </span>
-              <span className="flex w-[110px] gap-1">
+              <span className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <span
                     key={n}
-                    className={`h-[9px] w-[18px] rounded-[1px] ${
+                    className={`h-1.5 w-4 rounded-sm ${
                       n <= (r.comoEstouTocando ?? 0) ? 'bg-teal' : 'bg-ink/16'
                     }`}
                   />
@@ -263,7 +263,7 @@ export function RepertorioDetalhe({
                 type="button"
                 onClick={() => remove(r.songId)}
                 aria-label="Remover do repertório"
-                className="flex w-5 cursor-pointer items-center justify-center text-[#b0a696] hover:text-rust"
+                className={`flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-faint transition-colors duration-150 hover:text-rust ${FOCUS}`}
               >
                 <X size={15} strokeWidth={2} />
               </button>
@@ -290,7 +290,7 @@ export function RepertorioDetalhe({
                 type="button"
                 onClick={() => setPickerOpen(false)}
                 aria-label="Fechar"
-                className="flex text-faint transition-colors hover:text-ink"
+                className={`-mr-3 -mt-2 flex h-11 w-11 items-center justify-center rounded-lg text-faint transition-colors duration-150 hover:text-ink ${FOCUS}`}
               >
                 <X size={16} strokeWidth={2} />
               </button>
@@ -300,7 +300,7 @@ export function RepertorioDetalhe({
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="buscar no acervo…"
-              className="w-full rounded-md border border-ink/22 bg-[#fbf7ee] px-3 py-2 font-cifra text-[14px] outline-none focus:border-teal"
+              className={`h-11 w-full rounded-lg border border-ink/22 bg-[#fbf7ee] px-3 font-cifra text-[14px] outline-none transition-colors duration-150 focus:border-teal ${FOCUS}`}
             />
             <div className="mt-3 max-h-[320px] overflow-y-auto">
               {filteredAvail.length === 0 ? (
@@ -319,7 +319,7 @@ export function RepertorioDetalhe({
                       <span className="font-editorial text-[16px] font-medium">{s.title}</span>{' '}
                       <span className="font-editorial text-[13px] italic text-soft">{s.artist}</span>
                     </span>
-                    <span className="shrink-0 rounded bg-teal px-2 py-0.5 font-cifra text-[11px] text-folha">
+                    <span className="shrink-0 font-cifra text-[11px] font-medium text-teal">
                       {s.key}
                     </span>
                   </button>

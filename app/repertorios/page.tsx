@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
 import { AppSidebar } from '@/components/app-sidebar'
+import { EmptyState } from '@/components/empty-state'
 import { NovoRepertorio } from './novo-repertorio'
 
 export default async function RepertoriosPage() {
@@ -25,9 +26,10 @@ export default async function RepertoriosPage() {
       <main className="mx-auto flex w-full max-w-7xl flex-col min-w-0">
         <header className="px-10 pt-8 flex justify-between items-start">
           <div>
-            <h2 className="font-editorial font-medium text-[38px] leading-none">
+            <h2 className="font-editorial font-semibold text-[32px] leading-none">
               Repertórios
             </h2>
+            {/* único eyebrow da tela */}
             <div className="font-cifra text-[12px] text-faint mt-2 tracking-wide">
               {reps.length} pastas · {totalSongs} músicas no total
             </div>
@@ -37,9 +39,7 @@ export default async function RepertoriosPage() {
 
         <div className="px-10 py-8 overflow-y-auto">
           {reps.length === 0 ? (
-            <p className="font-editorial italic text-faint text-[16px]">
-              Você ainda não tem repertórios. Cria o primeiro.
-            </p>
+            <EmptyState title="Você ainda não tem repertórios. Cria o primeiro." />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {reps.map((rep) => {
@@ -49,21 +49,20 @@ export default async function RepertoriosPage() {
                   <Link
                     key={rep.id}
                     href={`/repertorios/${rep.id}`}
-                    className="block bg-[#fbf7ee] border border-ink/16 rounded-[4px] p-5 shadow-[4px_4px_0_#e6dcc8,8px_8px_0_#ded2bc] transition hover:-translate-x-0.5 hover:-translate-y-0.5"
+                    className="relative block overflow-hidden rounded-xl border border-ink/16 bg-[#fbf7ee] p-6 transition-shadow duration-150 hover:shadow-[0_8px_24px_-12px_rgba(38,33,27,.35)]"
                   >
+                    {/* lombada do caderno */}
+                    <span aria-hidden className="absolute inset-y-0 left-0 w-1 bg-teal" />
                     <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-editorial font-medium text-[25px] leading-tight">
+                      <h3 className="font-editorial font-semibold text-[24px] leading-tight">
                         {rep.name}
                       </h3>
-                      <span className="font-cifra text-[11px] text-folha bg-ink px-2 py-0.5 rounded shrink-0">
+                      <span className="font-cifra text-[12px] text-teal shrink-0">
                         {count} músicas
                       </span>
                     </div>
-                    <div className="font-cifra text-[11.5px] leading-relaxed text-[#9a9082] mt-3.5 truncate">
+                    <div className="font-cifra text-[11px] leading-relaxed text-faint mt-3.5 truncate">
                       {preview}
-                    </div>
-                    <div className="font-cifra text-[10px] uppercase tracking-[.1em] text-rust mt-3">
-                      abrir pasta →
                     </div>
                   </Link>
                 )

@@ -1,7 +1,29 @@
 'use client'
 
-import { Minus, Pause, Play, Plus, Timer } from 'lucide-react'
+import { Minus, Pause, Play, Plus } from 'lucide-react'
 import { transposeChord } from '@/lib/chords/transform'
+
+// O lucide não tem metrônomo — este segue o traço da família (stroke 2,
+// round, currentColor): corpo trapezoidal + pêndulo com peso.
+function MetronomeIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M10 3h4l4.2 18H5.8L10 3Z" />
+      <path d="M12 15.5 17.5 5" />
+      <circle cx="18" cy="4.2" r="1.4" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
 
 type Notation = 'chord' | 'degree'
 
@@ -184,7 +206,7 @@ export function StudyBar({
             aria-label="metrônomo"
             className={`${ICON_BTN} ${metronomeOn ? 'text-teal' : ''}`}
           >
-            <Timer size={18} strokeWidth={2} />
+            <MetronomeIcon size={18} />
           </button>
           <span className="flex-none font-cifra text-[13px] tabular-nums text-soft">{bpm}</span>
         </>

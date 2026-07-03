@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Plus, Search } from 'lucide-react'
+import { ChevronDown, Plus, Search } from 'lucide-react'
+import { EmptyState } from '@/components/empty-state'
 
 type Song = {
   id: string
@@ -20,6 +21,13 @@ const SORT_LABELS: Record<SortKey, string> = {
   artista: 'Artista',
   toco: 'Como toco',
 }
+
+const FOCUS =
+  'focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
+
+// Espelho do <Btn variant="primary" size="md"> pra usar em <Link> (Btn é <button>).
+const BTN_PRIMARY_LINK =
+  'inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-transparent bg-teal px-5 font-cifra text-[13px] lowercase tracking-[.02em] text-folha transition-colors duration-150 hover:bg-[#16323f] focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
 
 export function Acervo({ songs }: { songs: Song[] }) {
   const [q, setQ] = useState('')
@@ -72,52 +80,55 @@ export function Acervo({ songs }: { songs: Song[] }) {
 
       <div className="flex items-start justify-between gap-6 px-10 pt-8">
         <div>
-          <h2 className="font-editorial text-[38px] font-medium leading-none">Acervo</h2>
-          <div className="mt-2 font-cifra text-[12px] tracking-wide text-faint">
+          <h2 className="font-editorial text-[32px] font-semibold leading-none">Acervo</h2>
+          {/* único eyebrow da tela */}
+          <div className="mt-2 font-cifra text-[11px] uppercase tracking-[.18em] text-faint">
             {filtered.length} de {songs.length} músicas
           </div>
         </div>
-        <Link
-          href="/songs/new"
-          className="flex items-center gap-2 rounded-lg bg-teal px-5 py-3 font-cifra text-[12px] uppercase tracking-[.14em] text-[#f0e9da]"
-        >
+        <Link href="/songs/new" className={BTN_PRIMARY_LINK}>
           <Plus size={16} strokeWidth={2.25} /> Nova música
         </Link>
       </div>
 
       {songs.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-10 py-14 text-center">
-          <p className="font-editorial text-[20px] italic text-faint">
-            Seu acervo tá vazio. Bora adicionar a primeira música?
-          </p>
+        <div className="flex flex-1 flex-col items-center justify-center px-10 py-14">
+          <EmptyState
+            title="Seu acervo tá vazio. Bora adicionar a primeira música?"
+            action={
+              <Link href="/songs/new" className={BTN_PRIMARY_LINK}>
+                <Plus size={16} strokeWidth={2.25} /> adicionar música
+              </Link>
+            }
+          />
         </div>
       ) : (
         <div className="flex flex-1 flex-col overflow-y-auto px-10 pb-10">
           {/* Search */}
-          <div className="mt-6 flex items-center gap-3 border-b-[1.5px] border-ink/35 pb-2.5">
+          <div className="mb-2 mt-8 flex items-center gap-3 border-b-[1.5px] border-ink/35 pb-2.5">
             <Search size={19} strokeWidth={2} className="shrink-0 text-faint" />
             <input
               type="text"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Buscar por título ou artista…"
-              className="flex-1 border-0 bg-transparent font-editorial text-[20px] text-ink outline-none placeholder:text-faint"
+              className="flex-1 border-0 bg-transparent font-editorial text-[20px] text-ink caret-teal outline-none placeholder:text-faint"
             />
           </div>
 
           {/* Filter row */}
-          <div className="mt-5 flex flex-wrap items-center gap-4">
-            <span className="font-cifra text-[10px] uppercase tracking-wide text-faint">
-              gênero
-            </span>
-            <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-x-4">
+            <span className="font-cifra text-[11px] lowercase text-faint">gênero</span>
+            <div className="flex flex-wrap gap-x-3">
               {genres.map((g) => (
                 <button
                   key={g}
                   type="button"
                   onClick={() => setGenre(g)}
-                  className={`rounded-md px-2.5 py-1.5 font-cifra text-[11px] ${
-                    genre === g ? 'bg-teal text-folha' : 'border border-ink/22 text-soft'
+                  className={`inline-flex h-11 items-center font-cifra text-[12px] lowercase transition-colors duration-150 ${FOCUS} ${
+                    genre === g
+                      ? 'text-teal underline underline-offset-4'
+                      : 'text-soft hover:text-ink'
                   }`}
                 >
                   {g === 'todos' ? 'Todos' : g}
@@ -135,9 +146,10 @@ export function Acervo({ songs }: { songs: Song[] }) {
                   setSortOpen(false)
                   setArtistOpen((v) => !v)
                 }}
-                className="rounded-md border border-ink/22 px-3 py-1.5 font-cifra text-[11px] uppercase tracking-wide text-soft"
+                className={`inline-flex h-11 items-center gap-1 font-cifra text-[12px] lowercase text-soft transition-colors duration-150 hover:text-ink ${FOCUS}`}
               >
-                artista {artist === 'todos' ? 'todos' : artist} ▾
+                artista {artist === 'todos' ? 'todos' : artist}
+                <ChevronDown size={14} strokeWidth={2} />
               </button>
               {artistOpen && (
                 <div className="absolute right-0 z-20 mt-1.5 max-h-64 w-56 overflow-y-auto rounded-lg border border-ink/20 bg-folha p-1.5 shadow-[0_16px_34px_-14px_rgba(38,33,27,.5)]">
@@ -168,9 +180,10 @@ export function Acervo({ songs }: { songs: Song[] }) {
                   setArtistOpen(false)
                   setSortOpen((v) => !v)
                 }}
-                className="rounded-md border border-ink/22 px-3 py-1.5 font-cifra text-[11px] uppercase tracking-wide text-soft"
+                className={`inline-flex h-11 items-center gap-1 font-cifra text-[12px] lowercase text-soft transition-colors duration-150 hover:text-ink ${FOCUS}`}
               >
-                ordem {SORT_LABELS[sort]} ▾
+                ordem {SORT_LABELS[sort]}
+                <ChevronDown size={14} strokeWidth={2} />
               </button>
               {sortOpen && (
                 <div className="absolute right-0 z-20 mt-1.5 w-44 rounded-lg border border-ink/20 bg-folha p-1.5 shadow-[0_16px_34px_-14px_rgba(38,33,27,.5)]">
@@ -194,62 +207,44 @@ export function Acervo({ songs }: { songs: Song[] }) {
             </div>
           </div>
 
-          {/* Column header */}
-          <div className="mt-5 flex items-center gap-5 border-b border-ink/16 pb-2 font-cifra text-[9px] uppercase tracking-wide text-[#a89e8d]">
-            <span className="w-[34px]">#</span>
-            <span className="flex-1">música</span>
-            <span className="w-[110px]">gênero</span>
-            <span className="w-[56px] text-center">tom</span>
-            <span className="w-[130px]">como toco</span>
-          </div>
-
           {/* List */}
           {filtered.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center gap-4 py-14 text-center">
-              <p className="font-editorial text-[20px] italic text-faint">
-                Nada por aqui. Tenta outra busca.
-              </p>
-            </div>
+            <EmptyState title="Nada por aqui. Tenta outra busca." />
           ) : (
-            <div>
+            <div className="mt-2">
               {filtered.map((s, i) => (
                 <Link
                   key={s.id}
                   href={`/songs/${s.id}`}
-                  className="-mx-2 flex items-center gap-5 rounded border-b border-ink/10 px-2 py-[15px] hover:bg-[#f1eadb]"
+                  style={{ animationDelay: `${Math.min(i, 5) * 40}ms`, animationDuration: '200ms' }}
+                  className="animate-in fade-in slide-in-from-bottom-1 fill-mode-both -mx-2 flex items-center gap-5 border-b border-dotted border-ink/15 px-2 py-3 transition-colors duration-150 hover:bg-folha"
                 >
-                  <span className="w-[34px] font-cifra text-[13px] text-[#b0a696]">
+                  <span className="w-[34px] font-cifra text-[13px] text-faint">
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-editorial text-[23px] font-medium leading-tight">
+                    <span className="block truncate font-editorial text-[19px] font-semibold leading-tight">
                       {s.title}
                     </span>
-                    <span className="block truncate font-editorial text-[16px] italic text-[#7a7061]">
+                    <span className="block truncate font-editorial text-[14px] italic text-soft">
                       {s.artists.join(', ')}
                     </span>
                   </span>
-                  <span className="w-[110px]">
-                    {s.genres[0] && (
-                      <span className="inline-block rounded border border-ink/24 px-2 py-0.5 font-cifra text-[10px] uppercase text-soft">
-                        {s.genres[0]}
-                      </span>
-                    )}
+                  <span className="w-10 text-right font-cifra text-[13px] font-medium text-teal">
+                    {s.key}
                   </span>
-                  <span className="w-[56px] text-center">
-                    <span className="rounded bg-teal px-2.5 py-1 font-cifra text-[13px] font-medium text-folha">
-                      {s.key}
-                    </span>
-                  </span>
-                  <span className="flex w-[130px] gap-1">
+                  <span className="flex gap-1">
                     {[1, 2, 3, 4, 5].map((n) => (
                       <span
                         key={n}
-                        className={`h-[9px] w-[18px] rounded-[1px] ${
+                        className={`h-1.5 w-4 rounded-sm ${
                           n <= (s.comoEstouTocando ?? 0) ? 'bg-teal' : 'bg-ink/16'
                         }`}
                       />
                     ))}
+                  </span>
+                  <span className="w-[90px] truncate font-cifra text-[11px] text-faint">
+                    {s.genres[0] ?? ''}
                   </span>
                 </Link>
               ))}
