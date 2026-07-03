@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { Library, ListMusic, LogOut, type LucideIcon } from 'lucide-react'
 import { Semibreve } from '@/components/semibreve'
+import { NameGate } from '@/components/name-gate'
+import { getSession } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { logout } from '@/app/actions/auth'
 
 type ActiveSection = 'acervo' | 'repert'
@@ -30,9 +33,16 @@ function SideLink({
   )
 }
 
-export function AppSidebar({ active }: { active: ActiveSection }) {
+export async function AppSidebar({ active }: { active: ActiveSection }) {
+  const session = await getSession()
+  const user = session
+    ? await prisma.user.findUnique({ where: { id: session.userId }, select: { name: true } })
+    : null
+
   return (
-    <nav className="sticky top-0 hidden h-screen w-[76px] flex-none flex-col items-center gap-1 self-start overflow-y-auto border-r border-ink/12 bg-[#efe7d5] py-5 md:flex">
+    <>
+      <NameGate needsName={!!session && !user?.name} />
+      <nav className="sticky top-0 hidden h-screen w-[76px] flex-none flex-col items-center gap-1 self-start overflow-y-auto border-r border-ink/12 bg-[#efe7d5] py-5 md:flex">
       <Link
         href="/songs"
         aria-label="Compasso — início"
@@ -58,6 +68,7 @@ export function AppSidebar({ active }: { active: ActiveSection }) {
           <span className="font-cifra text-[11px] lowercase">sair</span>
         </button>
       </form>
-    </nav>
+      </nav>
+    </>
   )
 }

@@ -14,6 +14,7 @@ export default async function PublicRepertoirePage({
   const rep = await prisma.repertoire.findFirst({
     where: { shareSlug: share },
     include: {
+      user: { select: { name: true } },
       songs: {
         orderBy: { order: 'asc' },
         include: { song: { select: { slug: true, title: true, artists: true, key: true } } },
@@ -29,9 +30,16 @@ export default async function PublicRepertoirePage({
           <Link href="/" aria-label="Compasso" className="text-ink">
             <CompassoWordmark size={22} />
           </Link>
-          <span className="font-cifra text-[11px] lowercase text-faint">
-            repertório compartilhado
-          </span>
+          <div className="text-right">
+            <span className="block font-cifra text-[11px] lowercase text-faint">
+              repertório compartilhado
+            </span>
+            {rep.user.name && (
+              <span className="mt-0.5 block font-editorial text-[14px] italic text-soft">
+                por {rep.user.name}
+              </span>
+            )}
+          </div>
         </div>
 
         <header className="mt-8">
