@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import { chordPositions, looksLikeChord } from '@/lib/chords/diagram'
+import { chordPositions, looksLikeChord, chordRootPitch } from '@/lib/chords/diagram'
 import { ChordDiagram } from './chord-diagram'
 
 const FOCUS =
@@ -24,9 +24,11 @@ export function ChordGrid({
 
   // mostra acordes com digitação e também os que "parecem acorde" mas ainda não
   // temos (placeholder "sem digitação"); ignora tokens que nem são acorde (N.C.…)
+  // ordenado por nota da fundamental (C, C#, D, … B); empate mantém ordem de aparição
   const known = chords
     .map((name) => ({ name, positions: chordPositions(name) }))
     .filter((c) => c.positions.length > 0 || looksLikeChord(c.name))
+    .sort((a, b) => (chordRootPitch(a.name) ?? 99) - (chordRootPitch(b.name) ?? 99))
 
   if (known.length === 0) return null
 

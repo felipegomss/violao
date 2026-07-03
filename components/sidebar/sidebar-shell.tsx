@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { Semibreve } from '@/components/semibreve'
+import { CompassoWordmark } from '@/components/compasso-wordmark'
 import { logout } from '@/app/actions/auth'
 import { searchSongs, type SongRow } from '@/app/actions/songs'
 import { useDebouncedValue } from '@/lib/hooks/use-debounced-value'
@@ -149,14 +150,14 @@ function Panel({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {/* Header: logo + recolher/fechar */}
+      {/* Header: logo escrito + recolher/fechar */}
       <div className="flex items-center justify-between px-4 pb-3 pt-5">
         <Link
           href="/songs"
           aria-label="Compasso — início"
-          className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink text-folha transition-transform duration-150 hover:-translate-y-0.5"
+          className={`flex h-11 items-center rounded-lg px-1 text-ink transition-transform duration-150 hover:-translate-y-0.5 ${FOCUS}`}
         >
-          <Semibreve size={24} />
+          <CompassoWordmark size={23} />
         </Link>
         <button
           type="button"

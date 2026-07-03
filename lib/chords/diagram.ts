@@ -138,6 +138,17 @@ export function looksLikeChord(token: string): boolean {
   return !!(m && ROOT_TO_DBKEY[m[1]])
 }
 
+// Classe de altura da fundamental (C=0 … B=11), pra ordenar o grid por nota
+// (C, C#, D, … B). Usa a tríade antes da barra. null se não parece acorde.
+export function chordRootPitch(token: string): number | null {
+  const full = token.trim()
+  const sm = SLASH_RE.exec(full)
+  const mainPart = (sm ? sm[1] : full).trim()
+  const m = ROOT_RE.exec(mainPart)
+  if (!m) return null
+  return NOTE_PC[m[1]] ?? null
+}
+
 // Todas as digitações conhecidas do acorde. NÃO gera nada: vem de override ou do
 // chords-db. Acorde-com-baixo só se existe (override do token, ou tríade /X do db);
 // senão devolve vazio — o grid mostra "sem digitação" e o usuário manda pra adicionar.
