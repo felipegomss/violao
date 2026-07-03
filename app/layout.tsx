@@ -17,8 +17,8 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Estudo de Violão',
-  description: 'Repertório, cifras e prática de violão',
+  title: 'Compasso',
+  description: 'Cifras, repertórios e prática de violão',
 }
 
 export default function RootLayout({

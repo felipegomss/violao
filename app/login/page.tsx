@@ -1,12 +1,17 @@
 import { LoginForm } from './login-form'
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ erro?: string }>
+}) {
+  const { erro } = await searchParams
   return (
     <main className="flex min-h-screen items-center justify-center bg-paper p-4">
       <div className="grid w-full max-w-[900px] min-h-[560px] overflow-hidden rounded-xl border border-ink/18 bg-folha shadow-[0_30px_60px_-28px_rgba(38,33,27,.45)] md:grid-cols-2">
         <div className="flex flex-col justify-between bg-teal p-12 text-[#f0e9da] md:p-14">
           <div className="font-cifra text-[10px] uppercase tracking-[.28em] text-[#f0e9da]/55">
-            Caderno pessoal · violão
+            Compasso · seu caderno de violão
           </div>
 
           <div>
@@ -14,9 +19,7 @@ export default function LoginPage() {
               EST. 2026
             </div>
             <h2 className="font-editorial text-[52px] leading-[.98] font-medium tracking-[-.015em]">
-              Caderno
-              <br />
-              de Violão
+              Compasso
             </h2>
             <p className="mt-5 max-w-[300px] font-editorial text-[20px] leading-snug text-[#f0e9da]/70 italic">
               Suas cifras, seu repertório, seu estudo — reunidos num só
@@ -43,7 +46,7 @@ export default function LoginPage() {
         </div>
 
         <div className="flex flex-col justify-center p-12 md:p-16">
-          <LoginForm />
+          <LoginForm linkError={erro === 'link'} />
         </div>
       </div>
     </main>
