@@ -5,10 +5,7 @@ import { youtubeId, formatTime } from '@/lib/song/youtube'
 
 type YTPlayer = {
   getCurrentTime: () => number
-  getDuration: () => number
   seekTo: (seconds: number, allowSeekAhead: boolean) => void
-  playVideo: () => void
-  pauseVideo: () => void
   destroy: () => void
 }
 
@@ -47,14 +44,13 @@ export function YoutubePlayer({ url }: { url: string | null }) {
   const playerRef = useRef<YTPlayer | null>(null)
 
   const [ready, setReady] = useState(false)
-  const [playing, setPlaying] = useState(false)
   const [current, setCurrent] = useState(0)
-  const [duration, setDuration] = useState(0)
   const [a, setA] = useState<number | null>(null)
   const [b, setB] = useState<number | null>(null)
   const [loopOn, setLoopOn] = useState(false)
 
-  // Cria o player e faz polling do tempo atual (a API é imperativa).
+  // Play/pause e seek ficam por conta dos controles nativos do próprio iframe.
+  // Aqui só criamos o player e fazemos polling do tempo pro A-B loop.
   useEffect(() => {
     if (!videoId) return
     let cancelled = false
@@ -68,16 +64,7 @@ export function YoutubePlayer({ url }: { url: string | null }) {
         height: '100%',
         playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
         events: {
-          onReady: (e: { target: YTPlayer }) => {
-            setDuration(e.target.getDuration())
-            setReady(true)
-          },
-          onStateChange: (e: { data: number }) => {
-            setPlaying(e.data === YT().PlayerState.PLAYING)
-            if (e.data === YT().PlayerState.PLAYING) {
-              setDuration(playerRef.current?.getDuration() ?? 0)
-            }
-          },
+          onReady: () => setReady(true),
         },
       })
       playerRef.current = player
@@ -119,21 +106,6 @@ export function YoutubePlayer({ url }: { url: string | null }) {
     )
   }
 
-  const frac = (t: number) => (duration > 0 ? Math.min(1, Math.max(0, t / duration)) * 100 : 0)
-
-  const seek = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ready || duration <= 0) return
-    const rect = e.currentTarget.getBoundingClientRect()
-    const ratio = (e.clientX - rect.left) / rect.width
-    playerRef.current?.seekTo(ratio * duration, true)
-  }
-
-  const toggle = () => {
-    if (!ready) return
-    if (playing) playerRef.current?.pauseVideo()
-    else playerRef.current?.playVideo()
-  }
-
   return (
     <div className="border-b border-ink/12 p-[18px]">
       <div className="mb-2.5 font-cifra text-[9px] uppercase tracking-[.2em] text-faint">
@@ -144,53 +116,8 @@ export function YoutubePlayer({ url }: { url: string | null }) {
         <div ref={hostRef} className="h-full w-full" />
       </div>
 
-      {/* barra de progresso + região A-B */}
-      <div
-        onClick={seek}
-        className="relative mt-3 h-2.5 cursor-pointer rounded bg-ink/[.14]"
-      >
-        {lo != null && hi != null && (
-          <div
-            className="absolute inset-y-0 rounded bg-teal/[.32]"
-            style={{ left: `${frac(lo)}%`, right: `${100 - frac(hi)}%` }}
-          />
-        )}
-        {a != null && (
-          <div className="absolute -top-1 h-[18px] w-0.5 bg-teal" style={{ left: `${frac(a)}%` }} />
-        )}
-        {b != null && (
-          <div className="absolute -top-1 h-[18px] w-0.5 bg-teal" style={{ left: `${frac(b)}%` }} />
-        )}
-        <div
-          className="absolute -top-[3px] h-3 w-3 -translate-x-1/2 rounded-full bg-ink"
-          style={{ left: `${frac(current)}%` }}
-        />
-      </div>
-
-      <div className="mt-2 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={toggle}
-          disabled={!ready}
-          aria-label={playing ? 'pausar' : 'tocar'}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-ink/[.82] disabled:opacity-40"
-        >
-          {playing ? (
-            <span className="flex gap-[3px]">
-              <span className="h-3 w-[3px] bg-folha" />
-              <span className="h-3 w-[3px] bg-folha" />
-            </span>
-          ) : (
-            <span className="ml-[2px] h-0 w-0 border-y-[6px] border-l-[9px] border-y-transparent border-l-folha" />
-          )}
-        </button>
-        <span className="font-cifra text-[11px] tabular-nums text-soft">
-          {formatTime(current)} / {duration > 0 ? formatTime(duration) : '—'}
-        </span>
-      </div>
-
-      {/* A-B loop */}
-      <div className="mt-2.5 flex items-center gap-1.5">
+      {/* A-B loop — o que o player nativo não faz */}
+      <div className="mt-3 flex items-center gap-1.5">
         <button
           type="button"
           onClick={() => ready && setA(current)}
