@@ -30,6 +30,12 @@ const B7SUS4: ChordShape[] = [
   { frets: [-1, -1, 1, 3, 2, 4], fingers: [0, 0, 1, 3, 2, 4], baseFret: 9, barres: [], bassString: 2 },
 ]
 
+// A7sus4(9) (= A7(4/9)): notas A D E G B (sus4 add9, sem 3ª — não confundir com A11 do db, que tem 3ª).
+const A7SUS4_9: ChordShape[] = [
+  { frets: [-1, 0, 0, 0, 0, 0], fingers: [0, 0, 0, 0, 0, 0], baseFret: 1, barres: [], bassString: 1 },
+  { frets: [-1, 0, 0, 2, 0, 3], fingers: [0, 0, 0, 1, 0, 3], baseFret: 1, barres: [], bassString: 1 },
+]
+
 export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   // E7 com baixo em B: forma aberta do E7 com a 6ª abafada (B na 5ª corda). oolimo "must know".
   'E7/B': [
@@ -37,4 +43,6 @@ export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   ],
   B7sus4: B7SUS4,
   'B7(4)': B7SUS4,
+  'A7sus4(9)': A7SUS4_9,
+  'A7(4/9)': A7SUS4_9,
 }

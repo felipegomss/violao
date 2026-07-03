@@ -97,6 +97,16 @@ describe('chordDiagram', () => {
     expect(chordDiagram('C', 99)).toEqual(pos[0])
   })
 
+  it('A7(4/9) e A7sus4(9) são a mesma coisa e não têm 3ª (não é o A11 do db)', () => {
+    const a = chordPositions('A7(4/9)')
+    expect(a).toEqual(chordPositions('A7sus4(9)'))
+    expect(a.length).toBeGreaterThan(0)
+    // primeira digitação é a aberta x00000
+    expect(a[0].frets).toEqual([-1, 0, 0, 0, 0, 0])
+    // db "11" (que tem 3ª) não é o que usamos
+    expect(a).not.toEqual(chordPositions('A11'))
+  })
+
   it('E7/B vem do override embutido (x20100, baixo na 5ª corda)', () => {
     const p = chordDiagram('E7/B')!
     expect(p.frets).toEqual([-1, 2, 0, 1, 0, 0])
