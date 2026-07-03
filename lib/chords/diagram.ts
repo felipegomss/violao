@@ -64,7 +64,9 @@ const SUFFIX_MAP: Record<string, string> = {
   '13': '13', '7(13)': '13', maj13: 'maj13',
   // aumentados
   aug: 'aug', '+': 'aug', '#5': 'aug', '(#5)': 'aug', '5+': 'aug', '(5+)': 'aug',
+  // aug7 (7#5). b13 e #5 são a mesma nota; a 5ª justa costuma ser omitida → mesmo shape.
   aug7: 'aug7', '7#5': 'aug7', '7(#5)': 'aug7', '7+5': 'aug7', '7(5+)': 'aug7',
+  '7b13': 'aug7', '7(b13)': 'aug7', '7(13-)': 'aug7', '7(13b)': 'aug7',
   aug9: 'aug9', '9#5': 'aug9', '9(#5)': 'aug9',
   // dominantes alterados
   '7b9': '7b9', '7(b9)': '7b9', '7(9-)': '7b9',

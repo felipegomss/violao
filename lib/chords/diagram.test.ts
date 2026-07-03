@@ -44,6 +44,14 @@ describe('chordDiagram', () => {
     }
   })
 
+  it('6(9)/6/9 caem no 69 do db, e 7(b13)/7(13-) no aug7', () => {
+    expect(chordDiagram('D6(9)')).toEqual(chordDiagram('D69'))
+    expect(chordDiagram('D6/9')).toEqual(chordDiagram('D69'))
+    expect(chordDiagram('F#7(b13)')).toEqual(chordDiagram('F#aug7'))
+    expect(chordDiagram('F#7(13-)')).toEqual(chordDiagram('F#aug7'))
+    expect(chordDiagram('F#7(b13)')).not.toBeNull()
+  })
+
   it('° (grau) é dim7, não a tríade dim', () => {
     expect(chordDiagram('C°')).toEqual(chordDiagram('Cdim7'))
     expect(chordDiagram('Cdim')).not.toEqual(chordDiagram('Cdim7'))
