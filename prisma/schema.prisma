@@ -19,21 +19,20 @@ model Song {
   tuning              String   @default("standard")
   bpm                 Int?
   comoEstouTocando    Int?     // 1-5, marcado depois na view da cifra
-  chordFormat         ChordFormat
   chordContent        String   @db.Text
   referenceYoutubeUrl String?
   notes               String?  @db.Text
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   recordings       Recording[]
   practiceSessions PracticeSession[]
   repertoires      RepertoireSong[]
-}
 
-enum ChordFormat {
-  TRADICIONAL
-  GRADE
+  @@index([userId])
 }
 
 model Recording {
@@ -65,7 +64,38 @@ model Repertoire {
   name        String
   description String?
   createdAt   DateTime @default(now())
-  songs       RepertoireSong[]
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  songs RepertoireSong[]
+
+  @@index([userId])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+
+  songs       Song[]
+  repertoires Repertoire[]
+  tokens      MagicLinkToken[]
+}
+
+model MagicLinkToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  email     String
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email])
+  @@index([userId])
 }
 
 model RepertoireSong {
