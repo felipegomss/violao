@@ -149,8 +149,14 @@ export function CifraStudy({
         window.scrollBy(0, px)
         carry -= px
       }
-      const atCifraEnd = window.scrollY + window.innerHeight >= cifraBottomDoc() - 1
-      if (atCifraEnd) {
+      // Para com a última linha ~no meio da tela (margem a mais), não colada no
+      // rodapé. Rola pra dentro do que houver abaixo (grade de acordes) — o
+      // grid não conta no cálculo de velocidade, só serve de espaço pra margem.
+      // Trava também se chegou no fim da página (caso não haja espaço abaixo).
+      const atEnd =
+        window.scrollY + window.innerHeight * 0.5 >= cifraBottomDoc() - 1 ||
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 1
+      if (atEnd) {
         setAutoScroll(false)
         return
       }
