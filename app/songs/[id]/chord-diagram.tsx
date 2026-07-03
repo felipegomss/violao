@@ -9,16 +9,26 @@ const FOLHA = '#f8f3e8'
 const FAINT = '#8a8073'
 const SOFT = '#5f574a'
 
-export function ChordDiagram({ name, shape }: { name: string; shape: ChordShape }) {
+export function ChordDiagram({
+  name,
+  shape,
+  compact = false,
+}: {
+  name: string
+  shape: ChordShape
+  compact?: boolean
+}) {
   const { frets, fingers, baseFret, barres } = shape
 
-  const W = 110
-  const padX = 17
-  const nutY = 32
-  const fretH = 22
+  const W = compact ? 72 : 110
+  const padX = compact ? 11 : 17
+  const nutY = compact ? 24 : 32
+  const fretH = compact ? 15 : 22
+  const nameSize = compact ? 12 : 16
+  const dotR = compact ? 4.5 : 6.5
   const stringGap = (W - 2 * padX) / 5
   const boardBottom = nutY + FRETS * fretH
-  const H = boardBottom + 16
+  const H = boardBottom + (compact ? 6 : 16)
 
   const sx = (i: number) => padX + i * stringGap
   const rowCenter = (row: number) => nutY + (row - 0.5) * fretH
@@ -27,21 +37,21 @@ export function ChordDiagram({ name, shape }: { name: string; shape: ChordShape 
     <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="block">
       <text
         x={W / 2}
-        y={17}
+        y={compact ? 13 : 17}
         textAnchor="middle"
         fill={TEAL}
-        style={{ fontFamily: 'var(--font-cifra)', fontSize: 16, fontWeight: 700 }}
+        style={{ fontFamily: 'var(--font-cifra)', fontSize: nameSize, fontWeight: 700 }}
       >
         {name}
       </text>
 
       {baseFret > 1 && (
         <text
-          x={padX - 6}
+          x={padX - (compact ? 4 : 6)}
           y={rowCenter(1) + 3}
           textAnchor="end"
           fill={FAINT}
-          style={{ fontFamily: 'var(--font-cifra)', fontSize: 8 }}
+          style={{ fontFamily: 'var(--font-cifra)', fontSize: compact ? 7 : 8 }}
         >
           {baseFret}ª
         </text>
@@ -89,10 +99,10 @@ export function ChordDiagram({ name, shape }: { name: string; shape: ChordShape 
           <text
             key={i}
             x={sx(i)}
-            y={nutY - 6}
+            y={nutY - (compact ? 4 : 6)}
             textAnchor="middle"
             fill={SOFT}
-            style={{ fontFamily: 'var(--font-cifra)', fontSize: 9 }}
+            style={{ fontFamily: 'var(--font-cifra)', fontSize: compact ? 7 : 9 }}
           >
             {f === 0 ? 'o' : 'x'}
           </text>
@@ -110,11 +120,11 @@ export function ChordDiagram({ name, shape }: { name: string; shape: ChordShape 
         return (
           <rect
             key={k}
-            x={x1 - 5}
-            y={rowCenter(row) - 5}
-            width={x2 - x1 + 10}
-            height={10}
-            rx={5}
+            x={x1 - dotR + 1.5}
+            y={rowCenter(row) - dotR + 1.5}
+            width={x2 - x1 + 2 * dotR - 3}
+            height={2 * dotR - 3}
+            rx={dotR - 1.5}
             fill={TEAL}
           />
         )
@@ -127,8 +137,8 @@ export function ChordDiagram({ name, shape }: { name: string; shape: ChordShape 
         if (row < 1 || row > FRETS) return null
         return (
           <g key={i}>
-            <circle cx={sx(i)} cy={rowCenter(row)} r={6.5} fill={TEAL} />
-            {fingers[i] > 0 && (
+            <circle cx={sx(i)} cy={rowCenter(row)} r={dotR} fill={TEAL} />
+            {!compact && fingers[i] > 0 && (
               <text
                 x={sx(i)}
                 y={rowCenter(row) + 3}
@@ -143,19 +153,20 @@ export function ChordDiagram({ name, shape }: { name: string; shape: ChordShape 
         )
       })}
 
-      {/* nomes das cordas */}
-      {STRINGS.map((s, i) => (
-        <text
-          key={i}
-          x={sx(i)}
-          y={boardBottom + 11}
-          textAnchor="middle"
-          fill={FAINT}
-          style={{ fontFamily: 'var(--font-cifra)', fontSize: 8 }}
-        >
-          {s}
-        </text>
-      ))}
+      {/* nomes das cordas (só no tamanho cheio; no compacto vira ruído) */}
+      {!compact &&
+        STRINGS.map((s, i) => (
+          <text
+            key={i}
+            x={sx(i)}
+            y={boardBottom + 11}
+            textAnchor="middle"
+            fill={FAINT}
+            style={{ fontFamily: 'var(--font-cifra)', fontSize: 8 }}
+          >
+            {s}
+          </text>
+        ))}
     </svg>
   )
 }

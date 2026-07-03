@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { ChevronDown } from 'lucide-react'
 import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
 import { chordDiagram, type ChordShape } from '@/lib/chords/diagram'
@@ -8,6 +9,8 @@ import { suggestScrollSpeed } from '@/lib/song/autoscroll'
 import { setComoEstouTocando } from '@/app/actions/songs'
 import { EditorialCifra } from './editorial-cifra'
 import { ChordDiagram } from './chord-diagram'
+import { ChordStrip } from './chord-strip'
+import { StudyBar, type FontScale } from './study-bar'
 import { YoutubePlayer } from './youtube-player'
 
 type Notation = 'chord' | 'degree'
@@ -21,8 +24,21 @@ const RATING_WORDS: Record<number, string> = {
   5: 'de olhos fechados',
 }
 
+const FOCUS =
+  'focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
+
+// A folha inteira (header incluso) é client: o "tom" do header é um metadado
+// vivo — reflete a transposição da régua — então o header mora aqui e o
+// page.tsx (server) só injeta as ações (palco, ⋯) como ReactNode.
 export function CifraStudy({
   songId,
+  title,
+  artists,
+  genres,
+  capo,
+  tuning,
+  version,
+  actions,
   sheet,
   parseFailed,
   rawContent,
@@ -33,6 +49,13 @@ export function CifraStudy({
   comoEstouTocando,
 }: {
   songId: string
+  title: string
+  artists: string[]
+  genres: string[]
+  capo: number | null
+  tuning: string
+  version: string | null
+  actions?: ReactNode
   sheet: ChordSheetModel | null
   parseFailed: boolean
   rawContent: string
@@ -44,12 +67,12 @@ export function CifraStudy({
 }) {
   const [notation, setNotation] = useState<Notation>('chord')
   const [transpose, setTranspose] = useState(0)
+  const [fontScale, setFontScale] = useState<FontScale>(1)
   const [autoScroll, setAutoScroll] = useState(false)
   const [pxPerSec, setPxPerSec] = useState(14)
   const suggestedOnce = useRef(false)
   const [rating, setRating] = useState(comoEstouTocando ?? 0)
   const [metronomeOn, setMetronomeOn] = useState(false)
-  const [beat, setBeat] = useState(0)
   const [hover, setHover] = useState<
     { name: string; shape: ChordShape; top: number; left: number } | null
   >(null)
@@ -76,7 +99,7 @@ export function CifraStudy({
   }
 
   // Mede a página no mount e sugere a velocidade pela BPM (a folha inteira rola
-  // ~na duração da música). Roda uma vez; depois o usuário ajusta no slider.
+  // ~na duração da música). Roda uma vez; depois o usuário ajusta na régua.
   useEffect(() => {
     if (suggestedOnce.current) return
     const rows = sheet ? sheet.lines.filter((l) => l.type === 'row').length : 0
@@ -116,6 +139,21 @@ export function CifraStudy({
     return () => cancelAnimationFrame(raf)
   }, [autoScroll, pxPerSec])
 
+  // Espaço alterna o auto-scroll — exceto quando o foco está num controle
+  // (input/textarea/select/botão/summary/contenteditable), que fica com a tecla.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== 'Space') return
+      const t = e.target as HTMLElement | null
+      if (t?.closest('input, textarea, select, button, a, summary') || t?.isContentEditable)
+        return
+      e.preventDefault()
+      setAutoScroll((v) => !v)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   // Metrônomo: tick de áudio (Web Audio) no BPM, acentuando o tempo 1 (compasso 4/4).
   useEffect(() => {
     if (!metronomeOn || !bpm) return
@@ -134,7 +172,6 @@ export function CifraStudy({
       osc.connect(gain).connect(ctx.destination)
       osc.start(t)
       osc.stop(t + 0.05)
-      setBeat(b % 4)
       b += 1
     }
     tick()
@@ -145,32 +182,75 @@ export function CifraStudy({
     }
   }, [metronomeOn, bpm])
 
-  const displayChord = (chord: string) =>
-    notation === 'degree' ? degreeChord(chord, songKey) : transposeChord(chord, transpose)
+  const shownSheet: ChordSheetModel | null = useMemo(() => {
+    if (!sheet) return null
+    const displayChord = (chord: string) =>
+      notation === 'degree' ? degreeChord(chord, songKey) : transposeChord(chord, transpose)
+    return {
+      lines: sheet.lines.map((line) =>
+        line.type === 'row'
+          ? {
+              type: 'row' as const,
+              items: line.items.map((it) => ({
+                chord: it.chord ? displayChord(it.chord) : it.chord,
+                lyrics: it.lyrics,
+              })),
+            }
+          : line,
+      ),
+    }
+  }, [sheet, notation, transpose, songKey])
 
-  const shownSheet: ChordSheetModel | null = sheet && {
-    lines: sheet.lines.map((line) =>
-      line.type === 'row'
-        ? {
-            type: 'row' as const,
-            items: line.items.map((it) => ({
-              chord: it.chord ? displayChord(it.chord) : it.chord,
-              lyrics: it.lyrics,
-            })),
-          }
-        : line,
-    ),
-  }
-
-  const transposeLabel =
-    notation === 'degree'
-      ? 'graus'
-      : `${transpose > 0 ? '+' : ''}${transpose} · ${transposeChord(songKey, transpose)}`
+  // Acordes únicos (já transpostos), na ordem de aparição — alimenta a linha
+  // de diagramas. Em modo grau os tokens viram graus e nenhum tem shape.
+  const uniqueChords = useMemo(() => {
+    if (!shownSheet) return []
+    const seen = new Set<string>()
+    const out: string[] = []
+    for (const line of shownSheet.lines) {
+      if (line.type !== 'row') continue
+      for (const it of line.items) {
+        if (it.chord && !seen.has(it.chord)) {
+          seen.add(it.chord)
+          out.push(it.chord)
+        }
+      }
+    }
+    return out
+  }, [shownSheet])
 
   const rate = (n: number) => {
     setRating(n)
     void setComoEstouTocando(songId, n)
   }
+
+  const shownKey = transposeChord(songKey, transpose)
+
+  const tomNode =
+    notation === 'chord' && transpose !== 0 ? (
+      <span className="inline-flex items-center gap-2">
+        <span>
+          tom {songKey} → <span className="font-medium text-teal">{shownKey}</span>
+        </span>
+        <button
+          type="button"
+          onClick={() => setTranspose(0)}
+          className={`-my-2 py-2 font-cifra text-[11px] lowercase text-teal underline underline-offset-4 transition-colors duration-150 ease-out hover:text-ink ${FOCUS}`}
+        >
+          restaurar
+        </button>
+      </span>
+    ) : (
+      <span>
+        tom <span className="font-medium text-teal">{songKey}</span>
+      </span>
+    )
+
+  const metaParts: ReactNode[] = [tomNode]
+  if (capo != null && capo > 0) metaParts.push(`capo ${capo}ª`)
+  metaParts.push(tuning)
+  if (version) metaParts.push(`v. ${version}`)
+  if (genres.length > 0) metaParts.push(genres.join(', '))
 
   const rawPre = (
     <pre className="overflow-x-auto whitespace-pre-wrap rounded-md border border-ink/15 bg-folha p-4 font-cifra text-[13px] text-ink">
@@ -180,197 +260,138 @@ export function CifraStudy({
 
   return (
     <>
-    <div className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 lg:grid-cols-[1fr_320px] lg:min-h-0">
-      {/* Cifra sheet */}
-      <div className="px-8 py-8 lg:px-10">
-        {shownSheet ? (
-          <EditorialCifra
-            sheet={shownSheet}
-            onChordHover={notation === 'chord' ? onChordHover : undefined}
-          />
-        ) : (
-          <>
-            {parseFailed && (
-              <p className="mb-2 text-sm text-soft">
-                não deu pra formatar. Tá aí o texto cru mesmo.
-              </p>
-            )}
-            {rawPre}
-          </>
+      <div className="mx-auto w-full max-w-[760px] flex-1 px-6 pt-8 pb-32 md:px-8">
+        {/* Header editorial */}
+        <header className="flex items-start justify-between gap-6">
+          <div className="min-w-0">
+            <h1 className="font-editorial text-[40px] font-semibold leading-none">{title}</h1>
+            <div className="mt-2 font-editorial text-[19px] italic text-teal">
+              {artists.join(', ')}
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 font-cifra text-[13px] text-soft">
+              {metaParts.map((part, i) => (
+                <span key={i} className="inline-flex items-center gap-x-2">
+                  {i > 0 && (
+                    <span aria-hidden className="text-faint">
+                      ·
+                    </span>
+                  )}
+                  {part}
+                </span>
+              ))}
+            </div>
+          </div>
+          {actions && <div className="flex flex-none items-center gap-3">{actions}</div>}
+        </header>
+
+        {/* Vídeo de referência — colapsável, só existe quando há vídeo */}
+        {referenceYoutubeUrl && (
+          <details className="group mt-6">
+            <summary
+              className={`flex h-11 w-fit cursor-pointer list-none items-center gap-2 font-cifra text-[11px] lowercase text-soft transition-colors duration-150 ease-out hover:text-ink [&::-webkit-details-marker]:hidden ${FOCUS}`}
+            >
+              <ChevronDown
+                size={16}
+                strokeWidth={2}
+                className="transition-transform duration-150 ease-out group-open:rotate-180"
+              />
+              vídeo de referência
+            </summary>
+            <div className="mt-2">
+              <YoutubePlayer url={referenceYoutubeUrl} />
+            </div>
+          </details>
         )}
 
+        {/* Linha de diagramas dos acordes usados */}
+        {uniqueChords.length > 0 && (
+          <div className="mt-6">
+            <ChordStrip chords={uniqueChords} />
+          </div>
+        )}
+
+        {/* Cifra — o wrapper controla o A−/A+ da régua (EditorialCifra usa em) */}
+        <div className="mt-8" style={{ fontSize: `${fontScale}em` }}>
+          {shownSheet ? (
+            <EditorialCifra
+              sheet={shownSheet}
+              onChordHover={notation === 'chord' ? onChordHover : undefined}
+            />
+          ) : (
+            <>
+              {parseFailed && (
+                <p className="mb-2 text-sm text-soft">
+                  não deu pra formatar. Tá aí o texto cru mesmo.
+                </p>
+              )}
+              {rawPre}
+            </>
+          )}
+        </div>
+
         {notes && (
-          <div className="mt-9 max-w-[640px] rounded-r-md border-l-[3px] border-rust bg-[#efe7d5] px-5 py-4">
-            <div className="mb-2 font-cifra text-[10px] uppercase tracking-[.2em] text-faint">
-              Anotações do professor
+          <div className="mt-8 max-w-[640px] rounded-r-md border-l-2 border-rust bg-[#efe7d5] px-4 py-4">
+            <div className="mb-2 font-cifra text-[11px] lowercase text-faint">
+              anotações do professor
             </div>
-            <p className="font-editorial text-[17px] italic leading-relaxed text-[#3a342c]">
+            <p className="font-editorial text-[16px] italic leading-relaxed text-[#3a342c]">
               {notes}
             </p>
           </div>
         )}
-      </div>
 
-      {/* Right rail */}
-      <div className="flex flex-col border-t border-ink/12 bg-[#efe7d5] lg:border-l lg:border-t-0">
-        {/* Player · referência — FUNCIONAL (YouTube IFrame + A-B loop) */}
-        <YoutubePlayer url={referenceYoutubeUrl} />
-
-        {/* Acompanhamento */}
-        <div className="flex flex-col gap-4 border-b border-ink/12 p-[18px]">
-          <div className="font-cifra text-[9px] uppercase tracking-[.2em] text-faint">
-            Acompanhamento
-          </div>
-
-          {/* Notação — FUNCIONAL */}
-          <div>
-            <div className="mb-1.5 font-cifra text-[9px] tracking-[.06em] text-faint">NOTAÇÃO</div>
-            <div className="flex overflow-hidden rounded-md border border-ink/22">
-              <button
-                type="button"
-                onClick={() => setNotation('chord')}
-                className={`flex-1 py-2 font-cifra text-[11px] tracking-[.04em] ${
-                  notation === 'chord' ? 'bg-teal font-medium text-folha' : 'text-soft'
-                }`}
-              >
-                Acorde
-              </button>
-              <button
-                type="button"
-                onClick={() => setNotation('degree')}
-                className={`flex-1 py-2 font-cifra text-[11px] tracking-[.04em] ${
-                  notation === 'degree' ? 'bg-teal font-medium text-folha' : 'text-soft'
-                }`}
-              >
-                Grau
-              </button>
-            </div>
-          </div>
-
-          {/* Transpor — FUNCIONAL (desabilitado no modo grau) */}
-          <div>
-            <div className="mb-1.5 font-cifra text-[9px] tracking-[.06em] text-faint">TRANSPOR</div>
-            <div className="flex items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => setTranspose((t) => Math.max(-6, t - 1))}
-                disabled={notation === 'degree'}
-                className="h-[34px] w-[34px] rounded-md border border-ink/22 bg-folha font-cifra text-base text-ink disabled:opacity-40"
-              >
-                −
-              </button>
-              <span className="flex-1 text-center font-cifra text-sm font-medium text-teal">
-                {transposeLabel}
-              </span>
-              <button
-                type="button"
-                onClick={() => setTranspose((t) => Math.min(6, t + 1))}
-                disabled={notation === 'degree'}
-                className="h-[34px] w-[34px] rounded-md border border-ink/22 bg-folha font-cifra text-base text-ink disabled:opacity-40"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          {/* Auto-scroll — FUNCIONAL */}
-          <div>
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="font-cifra text-[9px] tracking-[.06em] text-faint">AUTO-SCROLL</span>
-              <button
-                type="button"
-                onClick={() => setAutoScroll((v) => !v)}
-                className={`rounded border px-2 py-0.5 font-cifra text-[9px] uppercase tracking-[.1em] ${
-                  autoScroll
-                    ? 'border-transparent bg-rust text-folha'
-                    : 'border-ink/22 text-soft'
-                }`}
-              >
-                {autoScroll ? 'on' : 'off'}
-              </button>
-            </div>
-            <input
-              type="range"
-              min={4}
-              max={80}
-              step={1}
-              value={pxPerSec}
-              onChange={(e) => setPxPerSec(Number(e.target.value))}
-              className="w-full"
-            />
-            <div className="mt-0.5 flex justify-between font-cifra text-[8px] text-faint">
-              <span>lento</span>
-              <span>{pxPerSec} px/s</span>
-              <span>rápido</span>
-            </div>
-          </div>
-
-          {/* Metrônomo — FUNCIONAL (Web Audio) */}
-          <div className="flex items-center justify-between">
-            <span className="font-cifra text-[9px] tracking-[.06em] text-faint">METRÔNOMO</span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => bpm && setMetronomeOn((v) => !v)}
-                disabled={!bpm}
-                className={`rounded border px-2 py-0.5 font-cifra text-[9px] uppercase tracking-[.1em] disabled:opacity-40 ${
-                  metronomeOn ? 'border-transparent bg-rust text-folha' : 'border-ink/22 text-soft'
-                }`}
-              >
-                {metronomeOn ? 'on' : 'off'}
-              </button>
-              <div className="flex gap-[3px]">
-                {[0, 1, 2, 3].map((i) => (
-                  <span
-                    key={i}
-                    className={`h-1.5 w-1.5 rounded-full ${
-                      metronomeOn && i === beat
-                        ? i === 0
-                          ? 'bg-rust'
-                          : 'bg-teal'
-                        : i === 0
-                          ? 'bg-rust/40'
-                          : 'bg-ink/20'
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="font-cifra text-[13px] font-medium text-ink">
-                {bpm ?? '··'} <span className="text-[9px] text-faint">bpm</span>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Como estou tocando — FUNCIONAL */}
-        <div className="p-[18px]">
-          <div className="mb-2.5 font-cifra text-[9px] uppercase tracking-[.2em] text-faint">
-            Como estou tocando
-          </div>
-          <div className="mb-2 flex gap-1.5">
+        {/* Como estou tocando — linha editorial no fim da folha */}
+        <div className="mt-12 flex max-w-[640px] flex-wrap items-center gap-x-4 gap-y-2 border-t border-dotted border-ink/15 pt-6">
+          <span className="font-cifra text-[11px] lowercase text-faint">como estou tocando</span>
+          <div className="flex items-center gap-1.5">
             {[1, 2, 3, 4, 5].map((n) => (
               <button
                 key={n}
                 type="button"
                 aria-label={`nota ${n}`}
+                aria-pressed={n <= rating}
                 onClick={() => rate(n)}
-                className={`h-3 w-[26px] rounded-sm ${n <= rating ? 'bg-teal' : 'bg-ink/[.16]'}`}
-              />
+                className={`flex h-11 w-[26px] items-center ${FOCUS}`}
+              >
+                <span
+                  className={`h-3 w-full rounded-sm transition-colors duration-150 ease-out ${
+                    n <= rating ? 'bg-teal' : 'bg-ink/[.16]'
+                  }`}
+                />
+              </button>
             ))}
           </div>
-          <div className="font-editorial text-[15px] italic text-soft">{RATING_WORDS[rating]}</div>
+          <span className="font-editorial text-[14px] italic text-soft">
+            {RATING_WORDS[rating]}
+          </span>
         </div>
       </div>
-    </div>
 
-    {hover && (
-      <div
-        className="pointer-events-none fixed z-40 rounded-xl border border-ink/20 bg-folha px-3 py-2.5 shadow-[0_18px_40px_-18px_rgba(22,19,15,.55)]"
-        style={{ top: hover.top, left: hover.left }}
-      >
-        <ChordDiagram name={hover.name} shape={hover.shape} />
-      </div>
-    )}
+      <StudyBar
+        songKey={songKey}
+        notation={notation}
+        onNotation={setNotation}
+        transpose={transpose}
+        onTranspose={setTranspose}
+        fontScale={fontScale}
+        onFontScale={setFontScale}
+        autoScroll={autoScroll}
+        onToggleAutoScroll={() => setAutoScroll((v) => !v)}
+        pxPerSec={pxPerSec}
+        onPxPerSec={setPxPerSec}
+        bpm={bpm}
+        metronomeOn={metronomeOn}
+        onToggleMetronome={() => setMetronomeOn((v) => !v)}
+      />
+
+      {hover && (
+        <div
+          className="pointer-events-none fixed z-40 rounded-xl border border-ink/20 bg-folha px-3 py-2.5 shadow-[0_18px_40px_-18px_rgba(38,33,27,.55)]"
+          style={{ top: hover.top, left: hover.left }}
+        >
+          <ChordDiagram name={hover.name} shape={hover.shape} />
+        </div>
+      )}
     </>
   )
 }

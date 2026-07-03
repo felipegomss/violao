@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { Repeat, X } from 'lucide-react'
 import { youtubeId, formatTime } from '@/lib/song/youtube'
 
 type YTPlayer = {
@@ -91,39 +92,23 @@ export function YoutubePlayer({ url }: { url: string | null }) {
     }
   }, [current, loopOn, lo, hi])
 
-  if (!videoId) {
-    return (
-      <div className="border-b border-ink/12 p-[18px]">
-        <div className="mb-2.5 font-cifra text-[9px] uppercase tracking-[.2em] text-faint">
-          Player · referência
-        </div>
-        <div className="flex aspect-video items-center justify-center rounded-md border border-dashed border-ink/20 bg-folha/40">
-          <span className="font-editorial text-[14px] italic text-soft">
-            sem vídeo de referência
-          </span>
-        </div>
-      </div>
-    )
-  }
+  // Sem vídeo não há player — quem decide mostrar ou não é o pai.
+  if (!videoId) return null
 
   return (
-    <div className="border-b border-ink/12 p-[18px]">
-      <div className="mb-2.5 font-cifra text-[9px] uppercase tracking-[.2em] text-faint">
-        Player · referência
-      </div>
-
-      <div className="aspect-video overflow-hidden rounded-md border border-ink/15 bg-ink/5">
+    <div>
+      <div className="aspect-video overflow-hidden rounded-lg border border-ink/15 bg-ink/5">
         <div ref={hostRef} className="h-full w-full" />
       </div>
 
       {/* A-B loop — o que o player nativo não faz */}
-      <div className="mt-3 flex items-center gap-1.5">
+      <div className="mt-3 flex items-center gap-2">
         <button
           type="button"
           onClick={() => ready && setA(current)}
           disabled={!ready}
-          className={`flex-1 rounded border py-1 font-cifra text-[10px] tracking-[.06em] disabled:opacity-40 ${
-            a != null ? 'border-teal/40 bg-teal/10 text-teal' : 'border-ink/22 text-soft'
+          className={`h-9 flex-1 rounded-lg border font-cifra text-[11px] transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2 ${
+            a != null ? 'border-teal/40 bg-teal/10 text-teal' : 'border-ink/22 text-soft hover:text-ink'
           }`}
         >
           A {a != null && <span className="tabular-nums">{formatTime(a)}</span>}
@@ -132,8 +117,8 @@ export function YoutubePlayer({ url }: { url: string | null }) {
           type="button"
           onClick={() => ready && setB(current)}
           disabled={!ready}
-          className={`flex-1 rounded border py-1 font-cifra text-[10px] tracking-[.06em] disabled:opacity-40 ${
-            b != null ? 'border-teal/40 bg-teal/10 text-teal' : 'border-ink/22 text-soft'
+          className={`h-9 flex-1 rounded-lg border font-cifra text-[11px] transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2 ${
+            b != null ? 'border-teal/40 bg-teal/10 text-teal' : 'border-ink/22 text-soft hover:text-ink'
           }`}
         >
           B {b != null && <span className="tabular-nums">{formatTime(b)}</span>}
@@ -142,11 +127,12 @@ export function YoutubePlayer({ url }: { url: string | null }) {
           type="button"
           onClick={() => setLoopOn((v) => !v)}
           disabled={lo == null || hi == null || hi <= lo}
-          className={`rounded border px-2 py-1 font-cifra text-[9px] uppercase tracking-[.1em] disabled:opacity-40 ${
-            loopOn ? 'border-transparent bg-rust text-folha' : 'border-ink/22 text-soft'
+          className={`flex h-9 items-center gap-1.5 rounded-lg border px-3 font-cifra text-[11px] lowercase transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2 ${
+            loopOn ? 'border-transparent bg-teal text-folha' : 'border-ink/22 text-soft hover:text-ink'
           }`}
         >
-          ◱ loop
+          <Repeat size={12} strokeWidth={2} />
+          loop
         </button>
         {(a != null || b != null) && (
           <button
@@ -157,9 +143,9 @@ export function YoutubePlayer({ url }: { url: string | null }) {
               setLoopOn(false)
             }}
             aria-label="limpar A-B"
-            className="rounded border border-ink/22 px-1.5 py-1 font-cifra text-[11px] text-faint hover:text-ink"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-ink/22 text-faint transition-colors duration-150 ease-out hover:text-ink focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2"
           >
-            ✕
+            <X size={14} strokeWidth={2} />
           </button>
         )}
       </div>

@@ -2,12 +2,17 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ListMusic, Presentation, SkipBack, SkipForward } from 'lucide-react'
+import { ListMusic, Pause, Play, Presentation, SkipBack, SkipForward } from 'lucide-react'
 import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
 import { suggestScrollSpeed } from '@/lib/song/autoscroll'
+import { Btn } from '@/components/btn'
 
 type Notation = 'chord' | 'degree'
+
+// Foco no palco usa gold (teal não tem contraste no fundo escuro).
+const FOCUS_PALCO =
+  'focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2'
 
 function renderDark(sheet: ChordSheetModel, disp: (c: string) => string) {
   return sheet.lines.map((line, i) => {
@@ -16,7 +21,7 @@ function renderDark(sheet: ChordSheetModel, disp: (c: string) => string) {
       return (
         <div
           key={i}
-          className="mt-7 mb-2 font-cifra text-[11px] uppercase tracking-[.2em] text-gold/70 first:mt-0"
+          className="mt-8 mb-3 border-l-2 border-gold/40 pl-2.5 font-cifra text-[12px] uppercase tracking-[.08em] text-gold/70 first:mt-0"
         >
           {line.text}
         </div>
@@ -51,7 +56,7 @@ function renderDark(sheet: ChordSheetModel, disp: (c: string) => string) {
               >
                 {it.chord ? disp(it.chord) : ' '}
               </span>
-              <span className="whitespace-pre font-cifra text-[20px] leading-[1.55] text-[#f0e9da]">
+              <span className="whitespace-pre font-cifra text-[22px] leading-[1.8] text-[#f0e9da]">
                 {it.lyrics || ' '}
               </span>
             </span>
@@ -161,17 +166,13 @@ export function StagePalco({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-2 rounded-md bg-ink px-4 py-2.5 font-cifra text-[11px] uppercase tracking-wide text-folha"
-      >
-        <Presentation size={15} strokeWidth={2} />
+      <Btn variant="secondary" onClick={() => setOpen(true)}>
+        <Presentation size={16} strokeWidth={2} />
         modo palco
-      </button>
+      </Btn>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-palco">
+        <div className="fixed inset-0 z-50 flex flex-col bg-palco animate-in fade-in zoom-in-[.98] duration-250 ease-out">
           {/* topo */}
           <div className="flex items-center justify-between gap-4 border-b border-[#f0e9da]/10 px-6 py-4 md:px-8">
             <div className="min-w-0">
@@ -192,7 +193,7 @@ export function StagePalco({
                     disabled={!prev}
                     aria-label="Música anterior"
                     title={prev ? prev.title : undefined}
-                    className="flex h-9 w-9 items-center justify-center rounded-md border border-[#f0e9da]/25 text-[#f0e9da] transition disabled:opacity-30"
+                    className={`flex h-11 w-11 items-center justify-center rounded-lg border border-[#f0e9da]/25 text-[#f0e9da] transition-colors duration-150 ease-out disabled:opacity-30 ${FOCUS_PALCO}`}
                   >
                     <SkipBack size={16} strokeWidth={2} />
                   </button>
@@ -200,7 +201,7 @@ export function StagePalco({
                     type="button"
                     onClick={() => setListOpen((o) => !o)}
                     aria-label="Ver repertório"
-                    className="flex min-w-[68px] items-center justify-center gap-1.5 rounded-md border border-[#f0e9da]/25 px-2 py-2 font-cifra text-[11px] tracking-[.08em] tabular-nums text-[#f0e9da]/80 transition hover:text-[#f0e9da]"
+                    className={`flex h-11 min-w-[68px] items-center justify-center gap-1.5 rounded-lg border border-[#f0e9da]/25 px-2 font-cifra text-[11px] tracking-[.08em] tabular-nums text-[#f0e9da]/80 transition-colors duration-150 ease-out hover:text-[#f0e9da] ${FOCUS_PALCO}`}
                   >
                     <ListMusic size={14} strokeWidth={2} />
                     {idx + 1} / {playlist.length}
@@ -211,7 +212,7 @@ export function StagePalco({
                     disabled={!next}
                     aria-label="Próxima música"
                     title={next ? next.title : undefined}
-                    className="flex h-9 w-9 items-center justify-center rounded-md border border-[#f0e9da]/25 text-[#f0e9da] transition disabled:opacity-30"
+                    className={`flex h-11 w-11 items-center justify-center rounded-lg border border-[#f0e9da]/25 text-[#f0e9da] transition-colors duration-150 ease-out disabled:opacity-30 ${FOCUS_PALCO}`}
                   >
                     <SkipForward size={16} strokeWidth={2} />
                   </button>
@@ -246,7 +247,7 @@ export function StagePalco({
                               {p.title}
                             </span>
                             {p.id === currentId && (
-                              <span className="flex-none font-cifra text-[8px] uppercase tracking-[.12em]">
+                              <span className="flex-none font-cifra text-[11px] lowercase">
                                 tocando
                               </span>
                             )}
@@ -260,7 +261,7 @@ export function StagePalco({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-md bg-gold px-4 py-2.5 font-cifra text-[11px] uppercase tracking-wide text-palco"
+                className={`h-11 rounded-lg bg-gold px-5 font-cifra text-[13px] lowercase text-palco transition-colors duration-150 ease-out hover:bg-gold/90 ${FOCUS_PALCO}`}
               >
                 sair do palco
               </button>
@@ -280,35 +281,15 @@ export function StagePalco({
             </div>
           </div>
 
-          {/* controles */}
-          <div className="flex flex-wrap items-center justify-center gap-5 border-t border-[#f0e9da]/10 bg-[#100e0b] px-6 py-4">
-            <div className="flex overflow-hidden rounded-md border border-[#f0e9da]/25">
-              <button
-                type="button"
-                onClick={() => setNotation('chord')}
-                className={`px-3.5 py-2 font-cifra text-[11px] ${
-                  notation === 'chord' ? 'bg-gold text-palco' : 'text-[#f0e9da]'
-                }`}
-              >
-                Acorde
-              </button>
-              <button
-                type="button"
-                onClick={() => setNotation('degree')}
-                className={`px-3.5 py-2 font-cifra text-[11px] ${
-                  notation === 'degree' ? 'bg-gold text-palco' : 'text-[#f0e9da]'
-                }`}
-              >
-                Grau
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2.5">
+          {/* controles — mesma ordem da régua de estudo: transpor · notação · scroll */}
+          <div className="flex flex-wrap items-center justify-center gap-6 border-t border-[#f0e9da]/10 bg-[#100e0b] px-6 py-4">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setTranspose((t) => Math.max(-6, t - 1))}
                 disabled={notation === 'degree'}
-                className="h-10 w-10 rounded-lg border border-[#f0e9da]/25 font-cifra text-lg text-[#f0e9da] disabled:opacity-40"
+                aria-label="descer meio tom"
+                className={`h-11 w-11 rounded-lg border border-[#f0e9da]/25 font-cifra text-lg text-[#f0e9da] transition-colors duration-150 ease-out disabled:opacity-40 ${FOCUS_PALCO}`}
               >
                 −
               </button>
@@ -319,9 +300,31 @@ export function StagePalco({
                 type="button"
                 onClick={() => setTranspose((t) => Math.min(6, t + 1))}
                 disabled={notation === 'degree'}
-                className="h-10 w-10 rounded-lg border border-[#f0e9da]/25 font-cifra text-lg text-[#f0e9da] disabled:opacity-40"
+                aria-label="subir meio tom"
+                className={`h-11 w-11 rounded-lg border border-[#f0e9da]/25 font-cifra text-lg text-[#f0e9da] transition-colors duration-150 ease-out disabled:opacity-40 ${FOCUS_PALCO}`}
               >
                 +
+              </button>
+            </div>
+
+            <div className="flex overflow-hidden rounded-lg border border-[#f0e9da]/25">
+              <button
+                type="button"
+                onClick={() => setNotation('chord')}
+                className={`h-11 px-4 font-cifra text-[11px] lowercase transition-colors duration-150 ease-out ${FOCUS_PALCO} ${
+                  notation === 'chord' ? 'bg-gold text-palco' : 'text-[#f0e9da]'
+                }`}
+              >
+                acorde
+              </button>
+              <button
+                type="button"
+                onClick={() => setNotation('degree')}
+                className={`h-11 px-4 font-cifra text-[11px] lowercase transition-colors duration-150 ease-out ${FOCUS_PALCO} ${
+                  notation === 'degree' ? 'bg-gold text-palco' : 'text-[#f0e9da]'
+                }`}
+              >
+                grau
               </button>
             </div>
 
@@ -330,17 +333,15 @@ export function StagePalco({
                 type="button"
                 onClick={() => setAutoScroll((v) => !v)}
                 title="auto-scroll"
-                className={`flex h-12 w-12 items-center justify-center rounded-full ${
+                aria-label={autoScroll ? 'pausar rolagem automática' : 'iniciar rolagem automática'}
+                className={`flex h-12 w-12 items-center justify-center rounded-full text-palco transition-colors duration-150 ease-out ${FOCUS_PALCO} ${
                   autoScroll ? 'bg-stageblue' : 'bg-gold'
                 }`}
               >
                 {autoScroll ? (
-                  <span className="flex gap-1">
-                    <span className="h-4 w-1 bg-palco" />
-                    <span className="h-4 w-1 bg-palco" />
-                  </span>
+                  <Pause size={20} strokeWidth={2} fill="currentColor" />
                 ) : (
-                  <span className="ml-1 h-0 w-0 border-y-[10px] border-l-[15px] border-y-transparent border-l-palco" />
+                  <Play size={20} strokeWidth={2} fill="currentColor" className="ml-0.5" />
                 )}
               </button>
               <input

@@ -18,7 +18,7 @@ function Chord({
       <span
         onMouseEnter={(e) => onHover(chord, e.currentTarget)}
         onMouseLeave={() => onHover('', null)}
-        className={`${className} cursor-help transition hover:opacity-60`}
+        className={`${className} cursor-help transition duration-150 ease-out hover:opacity-60`}
       >
         {chord}
       </span>
@@ -27,6 +27,9 @@ function Chord({
   return <span className={className}>{chord}</span>
 }
 
+// Acordes e letra usam `em` (base 16px no wrapper): assim o A−/A+ da régua
+// (font-size no wrapper) escala a cifra inteira mantendo o alinhamento.
+// Labels de seção e blocos de tab ficam em px fixo — são sinalização, não leitura.
 export function EditorialCifra({
   sheet,
   onChordHover,
@@ -38,14 +41,14 @@ export function EditorialCifra({
     <div className="max-w-[640px]">
       {sheet.lines.map((line, i) => {
         if (line.type === 'empty') {
-          return <div key={i} className="h-3" aria-hidden />
+          return <div key={i} className="h-5" aria-hidden />
         }
 
         if (line.type === 'label') {
           return (
             <div
               key={i}
-              className="mt-6 mb-2 border-b border-dotted border-ink/20 pb-1 font-cifra text-[10px] uppercase tracking-[.22em] text-rust first:mt-0"
+              className="mt-8 mb-3 border-l-2 border-rust pl-2.5 font-cifra text-[12px] uppercase tracking-[.08em] text-rust first:mt-0"
             >
               {line.text}
             </div>
@@ -56,7 +59,7 @@ export function EditorialCifra({
           return (
             <pre
               key={i}
-              className="my-3 w-fit max-w-full overflow-x-auto rounded-md border border-ink/12 bg-[#efe7d5] px-4 py-3 font-cifra text-[12px] leading-[1.5] text-ink"
+              className="my-3 w-fit max-w-full overflow-x-auto rounded-md border border-ink/12 bg-[#efe7d5] px-4 py-3 font-cifra text-[13px] leading-[1.5] text-ink"
             >
               {line.lines.join('\n')}
             </pre>
@@ -71,7 +74,7 @@ export function EditorialCifra({
                   key={j}
                   chord={item.chord ?? ''}
                   onHover={onChordHover}
-                  className="rounded-md border border-teal/30 bg-folha px-2 py-1 font-cifra text-[13px] font-medium text-teal"
+                  className="rounded-md border border-teal/30 bg-folha px-2 py-1 font-cifra text-[.875em] font-medium text-teal"
                 />
               ))}
             </div>
@@ -90,13 +93,13 @@ export function EditorialCifra({
                     <Chord
                       chord={item.chord}
                       onHover={onChordHover}
-                      className="h-[15px] pr-2.5 font-cifra text-[12px] font-medium leading-none text-teal"
+                      className="h-[1.375em] pr-2.5 font-cifra text-[1em] font-bold leading-none text-teal"
                     />
                   ) : (
-                    <span className="h-[15px] font-cifra text-[12px] leading-none">{' '}</span>
+                    <span className="h-[1.375em] font-cifra text-[1em] leading-none">{' '}</span>
                   )}
-                  <span className="whitespace-pre font-cifra text-[15px] leading-[1.5] text-ink">
-                    {item.lyrics || ' '}
+                  <span className="whitespace-pre font-cifra text-[1em] leading-[1.9] text-ink">
+                    {item.lyrics || ' '}
                   </span>
                 </span>
               )
