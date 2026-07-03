@@ -232,7 +232,10 @@ export function RepertorioDetalhe({
               <span className="w-[26px] font-cifra text-[13px] text-[#b0a696]">
                 {String(pos + 1).padStart(2, '0')}
               </span>
-              <Link href={`/songs/${r.songId}`} className="min-w-0 flex-1">
+              <Link
+                href={`/songs/${r.songId}?palco=1&rep=${repertoireId}`}
+                className="min-w-0 flex-1"
+              >
                 <div className="font-editorial text-[22px] font-medium leading-tight">{r.title}</div>
                 <div className="mt-0.5 flex items-center gap-2.5">
                   <span className="font-editorial text-[15px] italic text-[#7a7061]">{r.artist}</span>

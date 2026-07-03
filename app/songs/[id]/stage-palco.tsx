@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Presentation, SkipBack, SkipForward } from 'lucide-react'
 import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
 import { suggestScrollSpeed } from '@/lib/song/autoscroll'
@@ -56,13 +58,30 @@ export function StagePalco({
   title,
   songKey,
   bpm,
+  currentId,
+  playlist = [],
+  repertoireId,
+  autoOpen = false,
 }: {
   sheet: ChordSheetModel | null
   title: string
   songKey: string
   bpm: number | null
+  currentId: string
+  playlist?: { id: string; title: string }[]
+  repertoireId?: string
+  autoOpen?: boolean
 }) {
-  const [open, setOpen] = useState(false)
+  const router = useRouter()
+  const [open, setOpen] = useState(autoOpen)
+
+  // Playlist (só quando o palco veio de um repertório). idx = posição atual.
+  const idx = playlist.findIndex((p) => p.id === currentId)
+  const hasList = playlist.length > 1 && idx >= 0
+  const prev = hasList && idx > 0 ? playlist[idx - 1] : null
+  const next = hasList && idx < playlist.length - 1 ? playlist[idx + 1] : null
+  const goTo = (id: string) =>
+    router.push(`/songs/${id}?palco=1${repertoireId ? `&rep=${repertoireId}` : ''}`)
   const [notation, setNotation] = useState<Notation>('chord')
   const [transpose, setTranspose] = useState(0)
   const [autoScroll, setAutoScroll] = useState(false)
@@ -107,15 +126,18 @@ export function StagePalco({
     return () => cancelAnimationFrame(raf)
   }, [open, autoScroll, pxPerSec])
 
-  // Esc sai do palco.
+  // Teclado: Esc sai; ←/→ navegam a playlist (quando veio de um repertório).
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false)
+      else if (e.key === 'ArrowRight' && next) goTo(next.id)
+      else if (e.key === 'ArrowLeft' && prev) goTo(prev.id)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, next, prev])
 
   const disp = (c: string) =>
     notation === 'degree' ? degreeChord(c, songKey) : transposeChord(c, transpose)
@@ -132,7 +154,7 @@ export function StagePalco({
         onClick={() => setOpen(true)}
         className="flex items-center gap-2 rounded-md bg-ink px-4 py-2.5 font-cifra text-[11px] uppercase tracking-wide text-folha"
       >
-        <span className="inline-block h-[9px] w-[9px] rounded-[2px] border-[1.5px] border-folha" />
+        <Presentation size={15} strokeWidth={2} />
         modo palco
       </button>
 
@@ -145,15 +167,46 @@ export function StagePalco({
               <div className="font-cifra text-[11px] tracking-[.1em] text-stageblue">
                 TOM {keyLabel}
                 {bpm ? ` · ${bpm} BPM` : ''}
+                {hasList ? ' · repertório' : ''}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="flex-none rounded-md bg-gold px-4 py-2.5 font-cifra text-[11px] uppercase tracking-wide text-palco"
-            >
-              sair do palco
-            </button>
+
+            <div className="flex flex-none items-center gap-3">
+              {hasList && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => prev && goTo(prev.id)}
+                    disabled={!prev}
+                    aria-label="Música anterior"
+                    title={prev ? prev.title : undefined}
+                    className="flex h-9 w-9 items-center justify-center rounded-md border border-[#f0e9da]/25 text-[#f0e9da] transition disabled:opacity-30"
+                  >
+                    <SkipBack size={16} strokeWidth={2} />
+                  </button>
+                  <span className="min-w-[52px] text-center font-cifra text-[11px] tracking-[.1em] text-[#f0e9da]/70 tabular-nums">
+                    {idx + 1} / {playlist.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => next && goTo(next.id)}
+                    disabled={!next}
+                    aria-label="Próxima música"
+                    title={next ? next.title : undefined}
+                    className="flex h-9 w-9 items-center justify-center rounded-md border border-[#f0e9da]/25 text-[#f0e9da] transition disabled:opacity-30"
+                  >
+                    <SkipForward size={16} strokeWidth={2} />
+                  </button>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-md bg-gold px-4 py-2.5 font-cifra text-[11px] uppercase tracking-wide text-palco"
+              >
+                sair do palco
+              </button>
+            </div>
           </div>
 
           {/* corpo */}

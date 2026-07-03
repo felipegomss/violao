@@ -11,15 +11,33 @@ import { CifraStudy } from './cifra-study'
 
 export default async function SongDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ palco?: string; rep?: string }>
 }) {
   await verifySession()
   const { id } = await params
+  const { palco, rep } = await searchParams
   const song = await prisma.song.findUnique({ where: { id } })
   if (!song) notFound()
 
   const deleteThis = deleteSong.bind(null, song.id)
+
+  // Vindo de um repertório: passa a lista ordenada pro palco navegar como playlist.
+  let playlist: { id: string; title: string }[] = []
+  if (rep) {
+    const repertoire = await prisma.repertoire.findUnique({
+      where: { id: rep },
+      include: {
+        songs: {
+          orderBy: { order: 'asc' },
+          include: { song: { select: { id: true, title: true } } },
+        },
+      },
+    })
+    if (repertoire) playlist = repertoire.songs.map((s) => ({ id: s.song.id, title: s.song.title }))
+  }
 
   const afinacao = song.tuning === 'standard' ? 'E A D G B E' : song.tuning
 
@@ -62,7 +80,17 @@ export default async function SongDetailPage({
           </div>
 
           <div className="flex flex-none items-center gap-3">
-            <StagePalco sheet={sheet} title={song.title} songKey={song.key} bpm={song.bpm} />
+            <StagePalco
+              key={song.id}
+              sheet={sheet}
+              title={song.title}
+              songKey={song.key}
+              bpm={song.bpm}
+              currentId={song.id}
+              playlist={playlist}
+              repertoireId={rep}
+              autoOpen={palco === '1'}
+            />
             <SongActions songId={song.id} deleteAction={deleteThis} />
           </div>
           </div>
