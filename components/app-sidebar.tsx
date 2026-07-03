@@ -25,7 +25,7 @@ function SideLink({
       }`}
     >
       <Icon size={20} strokeWidth={active ? 2 : 1.75} />
-      <span className="font-cifra text-[8px] uppercase tracking-wide">{label}</span>
+      <span className="font-cifra text-[11px] lowercase">{label}</span>
     </Link>
   )
 }
@@ -36,9 +36,9 @@ export function AppSidebar({ active }: { active: ActiveSection }) {
       <Link
         href="/songs"
         aria-label="Compasso — início"
-        className="mb-4 flex h-10 w-10 items-center justify-center rounded-[11px] bg-ink text-folha transition-transform hover:-translate-y-0.5"
+        className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-ink text-folha transition-transform duration-150 hover:-translate-y-0.5"
       >
-        <Semibreve size={22} />
+        <Semibreve size={24} />
       </Link>
 
       <SideLink href="/songs" label="acervo" active={active === 'acervo'} Icon={Library} />
@@ -55,7 +55,7 @@ export function AppSidebar({ active }: { active: ActiveSection }) {
           className="flex w-full flex-col items-center gap-1.5 py-2.5 text-faint transition-colors hover:text-ink"
         >
           <LogOut size={20} strokeWidth={1.75} />
-          <span className="font-cifra text-[8px] uppercase tracking-wide">sair</span>
+          <span className="font-cifra text-[11px] lowercase">sair</span>
         </button>
       </form>
     </nav>
