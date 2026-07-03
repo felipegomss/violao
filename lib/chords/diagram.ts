@@ -78,10 +78,12 @@ const clone = (p: ChordShape): ChordShape => ({
   fingers: [...p.fingers],
   baseFret: p.baseFret,
   barres: [...p.barres],
+  ...(p.bassString != null ? { bassString: p.bassString } : {}),
 })
 
-// Casa absoluta no braço (frets são relativas ao baseFret: casa 1 = 1ª exibida).
-const absFret = (baseFret: number, f: number) => (baseFret > 1 ? baseFret - 1 + f : f)
+// Casa absoluta no braço. Corda solta (0) é sempre solta; casa N (>=1) é relativa
+// ao baseFret (casa 1 = 1ª exibida), então vale baseFret + N - 1.
+const absFret = (baseFret: number, f: number) => (f <= 0 ? f : baseFret > 1 ? baseFret - 1 + f : f)
 const noteAt = (p: ChordShape, i: number) =>
   p.frets[i] < 0 ? null : (OPEN_PC[i] + absFret(p.baseFret, p.frets[i])) % 12
 const lowestPlayed = (p: ChordShape) => {
@@ -89,12 +91,27 @@ const lowestPlayed = (p: ChordShape) => {
   return -1
 }
 
-// Ajusta a digitação p/ o baixo pedido e marca a corda do baixo. Se a corda mais
-// grave já soa o baixo, só marca; senão põe o baixo na corda mais grave possível
-// (dentro da janela do diagrama) e muta as abaixo. Não achou → devolve como está.
+// Tocável: no máx. 4 dedos (barra conta 1) e vão de até 4 casas.
+function isPlayable(frets: number[], barres: number[]): boolean {
+  const vals = frets.filter((f) => f > 0)
+  if (vals.length === 0) return true
+  if (Math.max(...vals) - Math.min(...vals) > 3) return false
+  const barreFrets = new Set(barres)
+  const fingers = barreFrets.size + vals.filter((f) => !barreFrets.has(f)).length
+  return fingers <= 4
+}
+
+// Ajusta a digitação p/ o baixo pedido e marca a corda do baixo. Ordem:
+//   1) a corda mais grave já soa o baixo → só marca
+//   2) dá pra pôr o baixo numa corda grave mantendo o acorde inteiro e ficando
+//      tocável → usa (preserva as notas, ex.: mantém a 7ª em E7/G#)
+//   3) senão, abafa as cordas abaixo de um baixo que já existe na forma (sempre
+//      tocável, mas pode perder alguma nota, ex.: E7/B → x20100)
+//   4) não deu → devolve como está (sem marcar; filtrado depois)
 function withBass(p: ChordShape, bassPc: number): ChordShape {
   const lo = lowestPlayed(p)
   if (lo >= 0 && noteAt(p, lo) === bassPc) return { ...p, bassString: lo }
+
   const limit = lo < 0 ? 5 : lo
   for (let i = 0; i <= limit; i++) {
     for (let f = 0; f <= WINDOW; f++) {
@@ -106,7 +123,19 @@ function withBass(p: ChordShape, bassPc: number): ChordShape {
         fingers[j] = 0
       }
       frets[i] = f
-      fingers[i] = 0 // dedilhado do baixo desconhecido → sem número
+      fingers[i] = p.frets[i] === f ? fingers[i] : 0 // dedilhado do baixo novo desconhecido
+      if (isPlayable(frets, p.barres)) return { ...p, frets, fingers, bassString: i }
+    }
+  }
+
+  for (let i = 0; i < 6; i++) {
+    if (p.frets[i] >= 0 && noteAt(p, i) === bassPc) {
+      const frets = [...p.frets]
+      const fingers = [...p.fingers]
+      for (let j = 0; j < i; j++) {
+        frets[j] = -1
+        fingers[j] = 0
+      }
       return { ...p, frets, fingers, bassString: i }
     }
   }
@@ -115,16 +144,14 @@ function withBass(p: ChordShape, bassPc: number): ChordShape {
 
 // Todas as digitações conhecidas do acorde (várias posições no braço). Acordes com
 // baixo (D/F#, E7/G#) refletem o baixo: usa a entrada do chords-db quando existe,
-// senão injeta a nota do baixo. Override colapsa pra uma única digitação.
+// senão injeta a nota do baixo, sempre mantendo tocável. Override tem precedência.
 export function chordPositions(token: string): ChordShape[] {
   const full = token.trim()
-  if (CHORD_OVERRIDES[full]) return [CHORD_OVERRIDES[full]]
+  if (CHORD_OVERRIDES[full]) return CHORD_OVERRIDES[full].map(clone)
 
   const sm = SLASH_RE.exec(full)
   const mainPart = (sm ? sm[1] : full).trim()
   const bassPart = sm ? sm[2] : ''
-
-  if (CHORD_OVERRIDES[mainPart]) return [CHORD_OVERRIDES[mainPart]]
 
   const m = ROOT_RE.exec(mainPart)
   if (!m) return []
@@ -133,16 +160,20 @@ export function chordPositions(token: string): ChordShape[] {
 
   const quality = m[2]
   const suffix = SUFFIX_MAP[quality] ?? quality
-  const basePositions = (chords[dbKey]?.find((c) => c.suffix === suffix)?.positions ?? []).map(clone)
+  // override do acorde base tem precedência sobre o chords-db
+  const basePositions = (
+    CHORD_OVERRIDES[mainPart] ?? chords[dbKey]?.find((c) => c.suffix === suffix)?.positions ?? []
+  ).map(clone)
 
   if (!bassPart) return basePositions
 
   const bassPc = NOTE_PC[bassPart]
   if (bassPc == null) return basePositions
 
-  // 1) acorde-com-baixo pronto no chords-db (tríades maior/menor: /G#, m/C…)
+  // 1) acorde-com-baixo pronto no chords-db (tríades maior/menor: /G#, m/C…).
+  // Pulado se o acorde base tem override — aí o baixo vai em cima do seu shape.
   const slashQ = SLASH_QUALITY[quality]
-  if (slashQ != null) {
+  if (slashQ != null && !CHORD_OVERRIDES[mainPart]) {
     const slash = chords[dbKey]?.find((c) => c.suffix === `${slashQ}/${SHARP[bassPc]}`)
     if (slash) return slash.positions.map((p) => withBass(clone(p), bassPc))
   }
