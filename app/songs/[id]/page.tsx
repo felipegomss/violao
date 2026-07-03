@@ -6,6 +6,7 @@ import { deleteSong } from '@/app/actions/songs'
 import { parseChordSheet, type ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { AppSidebar } from '@/components/app-sidebar'
 import { SongActions } from './song-actions'
+import { StagePalco } from './stage-palco'
 import { CifraStudy } from './cifra-study'
 
 export default async function SongDetailPage({
@@ -61,15 +62,7 @@ export default async function SongDetailPage({
           </div>
 
           <div className="flex flex-none items-center gap-3">
-            <button
-              type="button"
-              disabled
-              title="em breve"
-              className="flex items-center gap-2 rounded-md bg-ink px-4 py-2.5 font-cifra text-[11px] uppercase tracking-wide text-folha disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <span className="inline-block h-[9px] w-[9px] rounded-[2px] border-[1.5px] border-folha" />
-              modo palco
-            </button>
+            <StagePalco sheet={sheet} title={song.title} songKey={song.key} bpm={song.bpm} />
             <SongActions songId={song.id} deleteAction={deleteThis} />
           </div>
           </div>
