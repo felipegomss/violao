@@ -88,7 +88,7 @@ export function EditorialCifra({
                     <span className="h-[15px] font-cifra text-[12px] leading-none">{' '}</span>
                   )}
                   <span className="whitespace-pre font-editorial text-[19px] leading-[1.25] text-ink">
-                    {item.lyrics}
+                    {item.lyrics || ' '}
                   </span>
                 </span>
               )
