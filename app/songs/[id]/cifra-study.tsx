@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react'
 import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
-import type { ChordShape } from '@/lib/chords/diagram'
+import { chordDiagram, type ChordShape } from '@/lib/chords/diagram'
 import { setComoEstouTocando } from '@/app/actions/songs'
-import { getChordDiagram } from '@/app/actions/chords'
 import { EditorialCifra } from './editorial-cifra'
 import { ChordDiagram } from './chord-diagram'
 
@@ -50,15 +49,29 @@ export function CifraStudy({
   const [rating, setRating] = useState(comoEstouTocando ?? 0)
   const [metronomeOn, setMetronomeOn] = useState(false)
   const [beat, setBeat] = useState(0)
-  const [diagram, setDiagram] = useState<
-    { name: string; shape: ChordShape | null; loading: boolean } | null
+  const [hover, setHover] = useState<
+    { name: string; shape: ChordShape; top: number; left: number } | null
   >(null)
 
-  const showDiagram = (chord: string) => {
-    setDiagram({ name: chord, shape: null, loading: true })
-    void getChordDiagram(chord).then((shape) =>
-      setDiagram({ name: chord, shape, loading: false }),
-    )
+  // Hover num acorde → posiciona o diagrama perto dele. O lookup é client-side
+  // (chords-db gzipa em ~26KB), então é instantâneo — sem round-trip por hover.
+  const onChordHover = (chord: string, el: HTMLElement | null) => {
+    if (!chord || !el) {
+      setHover(null)
+      return
+    }
+    const shape = chordDiagram(chord)
+    if (!shape) {
+      setHover(null)
+      return
+    }
+    const r = el.getBoundingClientRect()
+    const TIP_W = 130
+    const TIP_H = 168
+    const left = Math.max(8, Math.min(r.left, window.innerWidth - TIP_W - 8))
+    const top =
+      r.bottom + 6 + TIP_H > window.innerHeight ? r.top - TIP_H - 6 : r.bottom + 6
+    setHover({ name: chord, shape, top, left })
   }
 
   // Auto-scroll: rola a JANELA (na view normal a página cresce e quem rola é a
@@ -158,7 +171,7 @@ export function CifraStudy({
           shownSheet ? (
             <EditorialCifra
               sheet={shownSheet}
-              onChordClick={notation === 'chord' ? showDiagram : undefined}
+              onChordHover={notation === 'chord' ? onChordHover : undefined}
             />
           ) : (
             <>
@@ -397,33 +410,12 @@ export function CifraStudy({
       </div>
     </div>
 
-    {diagram && (
+    {hover && (
       <div
-        className="fixed inset-0 z-40 flex items-center justify-center bg-[rgba(22,19,15,.35)] p-4"
-        onClick={() => setDiagram(null)}
+        className="pointer-events-none fixed z-40 rounded-xl border border-ink/20 bg-folha px-3 py-2.5 shadow-[0_18px_40px_-18px_rgba(22,19,15,.55)]"
+        style={{ top: hover.top, left: hover.left }}
       >
-        <div
-          className="relative rounded-xl border border-ink/20 bg-folha px-6 py-5 shadow-[0_24px_50px_-20px_rgba(22,19,15,.6)]"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            type="button"
-            onClick={() => setDiagram(null)}
-            className="absolute right-3 top-3 font-cifra text-[13px] text-faint hover:text-ink"
-          >
-            ✕
-          </button>
-          {diagram.loading ? (
-            <div className="w-[200px] py-10 text-center font-cifra text-[12px] text-soft">…</div>
-          ) : diagram.shape ? (
-            <ChordDiagram name={diagram.name} shape={diagram.shape} />
-          ) : (
-            <div className="w-[200px] py-10 text-center font-editorial text-[15px] italic text-soft">
-              sem diagrama pra{' '}
-              <span className="font-cifra not-italic text-ink">{diagram.name}</span>
-            </div>
-          )}
-        </div>
+        <ChordDiagram name={hover.name} shape={hover.shape} />
       </div>
     )}
     </>

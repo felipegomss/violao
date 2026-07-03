@@ -6,22 +6,22 @@ function isChordOnlyRow(items: { chord: string | null; lyrics: string }[]) {
 
 function Chord({
   chord,
-  onClick,
+  onHover,
   className,
 }: {
   chord: string
-  onClick?: (chord: string) => void
+  onHover?: (chord: string, el: HTMLElement | null) => void
   className: string
 }) {
-  if (onClick) {
+  if (onHover) {
     return (
-      <button
-        type="button"
-        onClick={() => onClick(chord)}
-        className={`${className} cursor-pointer transition hover:opacity-60`}
+      <span
+        onMouseEnter={(e) => onHover(chord, e.currentTarget)}
+        onMouseLeave={() => onHover('', null)}
+        className={`${className} cursor-help transition hover:opacity-60`}
       >
         {chord}
-      </button>
+      </span>
     )
   }
   return <span className={className}>{chord}</span>
@@ -29,10 +29,10 @@ function Chord({
 
 export function EditorialCifra({
   sheet,
-  onChordClick,
+  onChordHover,
 }: {
   sheet: ChordSheetModel
-  onChordClick?: (chord: string) => void
+  onChordHover?: (chord: string, el: HTMLElement | null) => void
 }) {
   return (
     <div className="max-w-[640px]">
@@ -59,7 +59,7 @@ export function EditorialCifra({
                 <Chord
                   key={j}
                   chord={item.chord ?? ''}
-                  onClick={onChordClick}
+                  onHover={onChordHover}
                   className="rounded-md border border-teal/30 bg-folha px-2 py-1 font-cifra text-[13px] font-medium text-teal"
                 />
               ))}
@@ -74,7 +74,7 @@ export function EditorialCifra({
                 {item.chord ? (
                   <Chord
                     chord={item.chord}
-                    onClick={onChordClick}
+                    onHover={onChordHover}
                     className="h-[15px] font-cifra text-[12px] font-medium leading-none text-teal"
                   />
                 ) : (
