@@ -7,6 +7,7 @@ import { chordDiagram, type ChordShape } from '@/lib/chords/diagram'
 import { setComoEstouTocando } from '@/app/actions/songs'
 import { EditorialCifra } from './editorial-cifra'
 import { ChordDiagram } from './chord-diagram'
+import { YoutubePlayer } from './youtube-player'
 
 type Notation = 'chord' | 'degree'
 
@@ -201,42 +202,8 @@ export function CifraStudy({
 
       {/* Right rail */}
       <div className="flex flex-col border-t border-ink/12 bg-[#efe7d5] lg:border-l lg:border-t-0">
-        {/* Player · referência (stub) */}
-        <div className="border-b border-ink/12 p-[18px]">
-          <div className="mb-2.5 font-cifra text-[9px] uppercase tracking-[.2em] text-faint">
-            Player · referência
-          </div>
-          <div
-            className="relative flex aspect-video items-center justify-center rounded-md border border-ink/15"
-            style={{
-              background:
-                'repeating-linear-gradient(135deg,#ddd2bd,#ddd2bd 9px,#d5c9b2 9px,#d5c9b2 18px)',
-            }}
-          >
-            <div className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-ink/[.82]">
-              <span className="ml-[3px] h-0 w-0 border-y-[8px] border-l-[12px] border-y-transparent border-l-folha" />
-            </div>
-            {referenceYoutubeUrl ? (
-              <span className="absolute bottom-1.5 left-2 font-cifra text-[8px] tracking-wide text-teal">
-                referência ↗
-              </span>
-            ) : (
-              <span className="absolute bottom-1.5 left-2 font-cifra text-[8px] tracking-wide text-soft">
-                vídeo do artista
-              </span>
-            )}
-          </div>
-          <div className="relative mt-3 h-1.5 rounded bg-ink/[.14]">
-            <div className="absolute inset-y-0 left-[28%] right-[38%] rounded bg-teal/[.32]" />
-            <div className="absolute left-[28%] -top-1 h-3.5 w-0.5 bg-teal" />
-            <div className="absolute left-[62%] -top-1 h-3.5 w-0.5 bg-teal" />
-            <div className="absolute left-[44%] -top-[3px] h-3 w-3 rounded-full bg-ink" />
-          </div>
-          <div className="mt-2 flex justify-between font-cifra text-[10px] text-soft">
-            <span className="font-medium text-teal">◱ A–B loop</span>
-            <span>0:00 / —</span>
-          </div>
-        </div>
+        {/* Player · referência — FUNCIONAL (YouTube IFrame + A-B loop) */}
+        <YoutubePlayer url={referenceYoutubeUrl} />
 
         {/* Acompanhamento */}
         <div className="flex flex-col gap-4 border-b border-ink/12 p-[18px]">
