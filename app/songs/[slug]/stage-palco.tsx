@@ -141,6 +141,18 @@ export function StagePalco({
     return () => cancelAnimationFrame(raf)
   }, [open, autoScroll, pxPerSec])
 
+  // Trava o scroll da página de trás enquanto o palco está aberto — sem isso
+  // ficam DOIS scrolls (o do body e o do corpo do palco), e o auto-scroll da
+  // folha (window.scrollBy) segue rolando invisível por baixo do overlay.
+  useEffect(() => {
+    if (!open) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prevOverflow
+    }
+  }, [open])
+
   // Teclado: Esc sai; ←/→ navegam a playlist (quando veio de um repertório).
   useEffect(() => {
     if (!open) return
@@ -269,7 +281,10 @@ export function StagePalco({
           </div>
 
           {/* corpo */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-8 md:px-16">
+          <div
+            ref={scrollRef}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-8 md:px-16"
+          >
             <div className="mx-auto max-w-3xl">
               {sheet ? (
                 renderDark(sheet, disp)
