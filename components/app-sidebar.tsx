@@ -31,7 +31,7 @@ function SideLink({
 
 export function AppSidebar({ active }: { active: ActiveSection }) {
   return (
-    <nav className="hidden min-h-screen w-[76px] flex-none flex-col items-center gap-1 border-r border-ink/12 bg-[#efe7d5] py-5 md:flex">
+    <nav className="sticky top-0 hidden h-screen w-[76px] flex-none flex-col items-center gap-1 self-start overflow-y-auto border-r border-ink/12 bg-[#efe7d5] py-5 md:flex">
       <Link
         href="/songs"
         aria-label="Caderno de Violão — início"
