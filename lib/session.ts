@@ -1,4 +1,3 @@
-import { createHash, timingSafeEqual } from 'node:crypto'
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose'
 
 const encodedKey = () => {
@@ -27,12 +26,4 @@ export async function decrypt(
   } catch {
     return null
   }
-}
-
-export function verifyPassword(input: string): boolean {
-  const expected = process.env.APP_PASSWORD
-  if (!expected) throw new Error('APP_PASSWORD não configurada')
-  const a = createHash('sha256').update(input).digest()
-  const b = createHash('sha256').update(expected).digest()
-  return timingSafeEqual(a, b)
 }

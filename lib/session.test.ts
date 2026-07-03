@@ -1,9 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { encrypt, decrypt, verifyPassword } from './session'
+import { encrypt, decrypt } from './session'
 
 beforeAll(() => {
   process.env.SESSION_SECRET = 'test-secret-please-change-32bytes-long'
-  process.env.APP_PASSWORD = 'senha-correta'
 })
 
 describe('encrypt/decrypt', () => {
@@ -33,17 +32,5 @@ describe('encrypt/decrypt', () => {
       .setExpirationTime('-1s')
       .sign(key)
     expect(await decrypt(expired)).toBeNull()
-  })
-})
-
-describe('verifyPassword', () => {
-  it('aceita a senha correta', () => {
-    expect(verifyPassword('senha-correta')).toBe(true)
-  })
-  it('rejeita senha errada', () => {
-    expect(verifyPassword('errada')).toBe(false)
-  })
-  it('rejeita senha de tamanho diferente', () => {
-    expect(verifyPassword('x')).toBe(false)
   })
 })

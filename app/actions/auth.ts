@@ -3,30 +3,9 @@
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
-import { verifyPassword } from '@/lib/session'
-import { createSession, deleteSession } from '@/lib/auth'
+import { deleteSession } from '@/lib/auth'
 import { generateToken, hashToken, TOKEN_TTL_MS } from '@/lib/tokens'
 import { sendMagicLink } from '@/lib/email'
-
-export type LoginState = { error?: string } | undefined
-
-// TRANSITÓRIO — removido na Fase 5, junto com a senha. Mapeia a senha ao
-// único usuário existente enquanto o magic link não entra.
-export async function login(
-  _prev: LoginState,
-  formData: FormData,
-): Promise<LoginState> {
-  const password = String(formData.get('password') ?? '')
-  if (!verifyPassword(password)) {
-    return { error: 'Senha incorreta.' }
-  }
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    return { error: 'Nenhuma conta configurada.' }
-  }
-  await createSession(user.id)
-  redirect('/songs')
-}
 
 const EmailSchema = z.email()
 export type MagicState = { sent?: boolean; error?: string } | undefined
