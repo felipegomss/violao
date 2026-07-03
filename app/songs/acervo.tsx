@@ -27,13 +27,15 @@ export function Acervo({
   genres: facetGenres,
   artists: facetArtists,
   total,
+  initialQ = '',
 }: {
   initialSongs: SongRow[]
   genres: string[]
   artists: string[]
   total: number
+  initialQ?: string
 }) {
-  const [q, setQ] = useState('')
+  const [q, setQ] = useState(initialQ)
   const [genre, setGenre] = useState('todos')
   const [artist, setArtist] = useState('todos')
   const [sort, setSort] = useState<SortKey>('titulo')
@@ -67,7 +69,7 @@ export function Acervo({
   })
 
   return (
-    <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col">
+    <div className="mx-auto flex h-full w-full min-w-0 max-w-7xl flex-col">
       {anyMenuOpen && (
         <button
           type="button"
@@ -96,9 +98,11 @@ export function Acervo({
           />
         </div>
       ) : (
-        <div ref={listRef} className="flex flex-1 flex-col overflow-y-auto px-10 pb-10">
+        <>
+          {/* Busca + filtros — ficam fixos; só a lista rola */}
+          <div className="px-10 pt-8">
           {/* Search */}
-          <div className="mb-2 mt-8 flex items-center gap-3 border-b-[1.5px] border-ink/35 pb-2.5">
+          <div className="mb-2 flex items-center gap-3 border-b-[1.5px] border-ink/35 pb-2.5">
             <Search size={19} strokeWidth={2} className="shrink-0 text-faint" />
             <input
               type="text"
@@ -199,8 +203,10 @@ export function Acervo({
               )}
             </div>
           </div>
+          </div>
 
-          {/* List */}
+          {/* Lista — único trecho que rola */}
+          <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto px-10 pb-10">
           {items.length === 0 && !loading ? (
             <EmptyState title="Nada por aqui. Tenta outra busca." />
           ) : (
@@ -249,7 +255,8 @@ export function Acervo({
               )}
             </div>
           )}
-        </div>
+          </div>
+        </>
       )}
     </div>
   )

@@ -19,7 +19,6 @@ import { CompassoWordmark } from '@/components/compasso-wordmark'
 import { logout } from '@/app/actions/auth'
 import { searchSongs, type SongRow } from '@/app/actions/songs'
 import { useDebouncedValue } from '@/lib/hooks/use-debounced-value'
-import { useInfiniteSongs } from '@/lib/hooks/use-infinite-songs'
 
 const FOCUS = 'focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
 
@@ -141,15 +140,25 @@ function Panel({
   const anim = animate ? ITEM_ANIM : ''
   const [q, setQ] = useState('')
   const debouncedQ = useDebouncedValue(q, 250)
-  const params = { q: debouncedQ.trim() || undefined }
-  const listRef = useRef<HTMLDivElement>(null)
-  const { items, loading, sentinelRef } = useInfiniteSongs({
-    initialItems: songs,
-    params,
-    pageSize: 30,
-    fetchPage: (skip) => searchSongs({ ...params, skip, take: 30 }),
-    rootRef: listRef,
-  })
+  // mostra no máx. 5; busca 6 pra saber se há mais → "ver mais" vai pro acervo
+  const [items, setItems] = useState<SongRow[]>(songs)
+  const firstRun = useRef(true)
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false
+      return
+    }
+    let alive = true
+    void searchSongs({ q: debouncedQ.trim() || undefined, take: 6 }).then((rows) => {
+      if (alive) setItems(rows)
+    })
+    return () => {
+      alive = false
+    }
+  }, [debouncedQ])
+  const shown = items.slice(0, 5)
+  const hasMore = items.length > 5
+  const moreHref = debouncedQ.trim() ? `/songs?q=${encodeURIComponent(debouncedQ.trim())}` : '/songs'
   const setlist = context?.setlist ?? []
 
   return (
@@ -240,14 +249,14 @@ function Panel({
             className="w-full border-0 bg-transparent font-editorial text-[15px] text-ink caret-teal outline-none placeholder:text-faint"
           />
         </div>
-        <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto px-2 py-1">
-          {items.length === 0 && !loading ? (
+        <div className="min-h-0 flex-1 overflow-y-auto px-2 py-1">
+          {shown.length === 0 ? (
             <div className="px-2 py-6 text-center font-cifra text-[11px] lowercase text-faint">
               nada por aqui
             </div>
           ) : (
             <>
-              {items.map((s) => {
+              {shown.map((s) => {
                 const cur = context?.currentSlug === s.slug
                 return (
                   <Link
@@ -276,11 +285,13 @@ function Panel({
                   </Link>
                 )
               })}
-              <div ref={sentinelRef} aria-hidden className="h-1" />
-              {loading && (
-                <div className="px-2 py-3 text-center font-cifra text-[11px] lowercase text-faint">
-                  carregando…
-                </div>
+              {hasMore && (
+                <Link
+                  href={moreHref}
+                  className={`mt-1 flex items-center justify-center rounded-md px-2 py-2 font-cifra text-[11px] lowercase text-teal transition-colors duration-150 hover:bg-folha ${FOCUS}`}
+                >
+                  ver mais no acervo →
+                </Link>
               )}
             </>
           )}

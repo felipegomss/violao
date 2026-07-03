@@ -22,7 +22,7 @@ export async function AppSidebar({
     session
       ? prisma.user.findUnique({ where: { id: session.userId }, select: { name: true } })
       : null,
-    session ? searchSongs({ take: 30 }) : [],
+    session ? searchSongs({ take: 6 }) : [],
     cookies(),
   ])
 
