@@ -31,9 +31,9 @@ const B7SUS4: ChordShape[] = [
 ]
 
 // A7sus4(9) (= A7(4/9)): notas A D E G B (sus4 add9, sem 3ª — não confundir com A11 do db, que tem 3ª).
+// Só digitações vindas do print do usuário — nada reconstruído/inventado.
 const A7SUS4_9: ChordShape[] = [
   { frets: [-1, 0, 0, 0, 0, 0], fingers: [0, 0, 0, 0, 0, 0], baseFret: 1, barres: [], bassString: 1 },
-  { frets: [-1, 0, 0, 2, 0, 3], fingers: [0, 0, 0, 1, 0, 3], baseFret: 1, barres: [], bassString: 1 },
 ]
 
 export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
