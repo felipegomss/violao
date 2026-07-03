@@ -34,6 +34,14 @@ const B7SUS4: ChordShape[] = [
 // Só digitações vindas do print do usuário — nada reconstruído/inventado.
 const A7SUS4_9: ChordShape[] = [
   { frets: [-1, 0, 0, 0, 0, 0], fingers: [0, 0, 0, 0, 0, 0], baseFret: 1, barres: [], bassString: 1 },
+  { frets: [5, -1, 5, 4, 3, -1], fingers: [3, 0, 4, 2, 1, 0], baseFret: 1, barres: [], bassString: 0 },
+]
+
+// E7/B: notas E G# B D, baixo B. Digitações vindas dos prints do usuário.
+const E7_B: ChordShape[] = [
+  { frets: [-1, 2, 0, 1, 0, 0], fingers: [0, 2, 0, 1, 0, 0], baseFret: 1, barres: [], bassString: 1 },
+  { frets: [-1, 2, -1, 1, 3, 0], fingers: [0, 2, 0, 1, 3, 0], baseFret: 1, barres: [], bassString: 1 },
+  { frets: [3, -1, 2, 3, 1, -1], fingers: [3, 0, 2, 4, 1, 0], baseFret: 5, barres: [], bassString: 0 },
 ]
 
 // D(add9)/F# (o "D9/F#" das cifras): notas D F# A E, baixo F#. Lido do braço do oolimo.
@@ -42,10 +50,7 @@ const DADD9_F: ChordShape[] = [
 ]
 
 export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
-  // E7 com baixo em B: forma aberta do E7 com a 6ª abafada (B na 5ª corda). oolimo "must know".
-  'E7/B': [
-    { frets: [-1, 2, 0, 1, 0, 0], fingers: [0, 2, 0, 1, 0, 0], baseFret: 1, barres: [], bassString: 1 },
-  ],
+  'E7/B': E7_B,
   B7sus4: B7SUS4,
   'B7(4)': B7SUS4,
   'A7sus4(9)': A7SUS4_9,
