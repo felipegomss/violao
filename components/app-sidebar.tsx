@@ -1,28 +1,9 @@
 import Link from 'next/link'
 import { Library, ListMusic, LogOut, type LucideIcon } from 'lucide-react'
+import { Semibreve } from '@/components/semibreve'
 import { logout } from '@/app/actions/auth'
 
 type ActiveSection = 'acervo' | 'repert'
-
-// Marca do Compasso: uma semibreve (nota inteira) — furo inclinado clássico.
-function Semibreve({ size = 22 }: { size?: number }) {
-  return (
-    <svg viewBox="0 0 40 40" width={size} height={size} aria-hidden="true">
-      <mask id="sidebar-semibreve-hole">
-        <rect width="40" height="40" fill="#fff" />
-        <ellipse cx="20" cy="20" rx="7.9" ry="3.1" transform="rotate(-28 20 20)" fill="#000" />
-      </mask>
-      <ellipse
-        cx="20"
-        cy="20"
-        rx="12"
-        ry="8.4"
-        fill="currentColor"
-        mask="url(#sidebar-semibreve-hole)"
-      />
-    </svg>
-  )
-}
 
 function SideLink({
   href,

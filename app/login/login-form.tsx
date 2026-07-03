@@ -12,10 +12,10 @@ export function LoginForm({ linkError }: { linkError?: boolean }) {
   if (magic?.sent) {
     return (
       <div className="w-full max-w-[340px]">
-        <div className="mb-3.5 font-cifra text-[10px] uppercase tracking-[.24em] text-faint">Confira seu email</div>
+        <div className="mb-3.5 font-cifra text-[10px] uppercase tracking-[.24em] text-faint">Quase lá</div>
         <h3 className="font-editorial text-[34px] font-medium leading-tight text-ink">Link enviado</h3>
         <p className="mt-3 font-editorial text-[18px] italic text-soft">
-          Enviamos um link de acesso pra <span className="not-italic text-ink">{email}</span>. Abra sua caixa (e o spam) — vale por 15 minutos.
+          Mandamos um link pra <span className="not-italic text-ink">{email}</span>. Confere a caixa (e o spam) — vale por 15 minutos.
         </p>
         <button type="button" onClick={() => location.reload()} className="mt-8 font-cifra text-[11px] uppercase tracking-[.14em] text-teal">
           usar outro email
@@ -26,14 +26,17 @@ export function LoginForm({ linkError }: { linkError?: boolean }) {
 
   return (
     <div className="w-full max-w-[340px]">
-      <div className="mb-3.5 font-cifra text-[10px] uppercase tracking-[.24em] text-faint">Entrar</div>
-      <h3 className="font-editorial text-[38px] font-medium leading-none text-ink">Compasso</h3>
-      <p className="mt-2.5 font-editorial text-[19px] italic text-soft">
-        {mode === 'email' ? 'Digite seu email e a gente manda um link de acesso.' : 'Entre com sua senha.'}
+      <h3 className="font-editorial text-[34px] font-medium leading-none text-ink">Entrar</h3>
+      <p className="mt-3 font-editorial text-[19px] italic text-soft">
+        {mode === 'email'
+          ? 'Coloca seu email que a gente te manda um link pra entrar.'
+          : 'Entre com sua senha.'}
       </p>
 
       {linkError && (
-        <p role="alert" className="mt-4 font-cifra text-[12px] text-rust">Link inválido ou expirado. Peça um novo.</p>
+        <p role="alert" className="mt-4 font-cifra text-[12px] text-rust">
+          Esse link já foi usado ou expirou. Pede um novo.
+        </p>
       )}
 
       {mode === 'email' ? (
@@ -44,7 +47,7 @@ export function LoginForm({ linkError }: { linkError?: boolean }) {
             className="w-full border-0 border-b-[1.5px] border-ink/40 bg-transparent pt-2 pb-2.5 font-cifra text-[16px] text-ink outline-none placeholder:text-[#a89e8d] focus:border-teal" />
           {magic?.error && <p role="alert" className="mt-3 font-cifra text-[12px] text-rust">{magic.error}</p>}
           <button type="submit" disabled={magicPending} className="mt-7 w-full rounded-lg bg-teal py-3.5 font-cifra text-[12px] uppercase tracking-[.14em] text-[#f0e9da] disabled:opacity-50">
-            {magicPending ? 'Enviando…' : 'Enviar link de acesso'}
+            {magicPending ? 'Enviando…' : 'Enviar link'}
           </button>
           <button type="button" onClick={() => setMode('senha')} className="mt-4 block font-cifra text-[10px] uppercase tracking-[.12em] text-faint hover:text-ink">
             entrar com senha

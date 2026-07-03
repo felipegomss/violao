@@ -34,8 +34,9 @@ function magicLinkHtml(url: string): string {
           <p style="margin:22px 0 0;font-family:${serif};font-size:13px;line-height:1.5;color:#8a8073;">ou cole no navegador:<br>
             <a href="${url}" style="color:#1c3c4c;word-break:break-all;">${url}</a></p>
 
-          <div style="margin:30px 0 0;padding-top:18px;border-top:1px solid rgba(38,33,27,.12);font-family:${mono};font-size:12px;letter-spacing:.14em;color:#1c3c4c;opacity:.55;">G&nbsp;&middot;&nbsp;Em7&nbsp;&middot;&nbsp;Am7&nbsp;&middot;&nbsp;D7</div>
-          <p style="margin:14px 0 0;font-family:${serif};font-size:12px;color:#a89e8d;">Se não foi você que pediu, pode ignorar este email — nada acontece.</p>
+          <div style="margin:30px 0 0;padding-top:18px;border-top:1px solid rgba(38,33,27,.12);font-family:${mono};font-size:12px;letter-spacing:.1em;color:#1c3c4c;opacity:.55;">D#m7(5-)&nbsp;&middot;&nbsp;E/D&nbsp;&middot;&nbsp;C#m7&nbsp;&middot;&nbsp;Cº&nbsp;&middot;&nbsp;Ebº</div>
+          <div style="margin:6px 0 0;font-family:${serif};font-size:13px;font-style:italic;color:#a89e8d;">o mundo é um moinho</div>
+          <p style="margin:18px 0 0;font-family:${serif};font-size:12px;color:#a89e8d;">Se não foi você que pediu, pode ignorar este email — nada acontece.</p>
 
         </td></tr>
       </table>
