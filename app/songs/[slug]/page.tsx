@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
@@ -7,6 +8,22 @@ import { AppSidebar } from '@/components/app-sidebar'
 import { SongActions } from './song-actions'
 import { StagePalco } from './stage-palco'
 import { CifraStudy } from './cifra-study'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { userId } = await verifySession()
+  const { slug } = await params
+  const song = await prisma.song.findFirst({
+    where: { slug, userId },
+    select: { title: true, artists: true },
+  })
+  if (!song) return {}
+  const artist = song.artists[0]
+  return { title: artist ? `${song.title} — ${artist}` : song.title }
+}
 
 export default async function SongDetailPage({
   params,

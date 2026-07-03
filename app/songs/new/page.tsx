@@ -4,6 +4,8 @@ import { createSong } from '@/app/actions/songs'
 import { AppSidebar } from '@/components/app-sidebar'
 import { NewSongFlow } from './new-song-flow'
 
+export const metadata = { title: 'Nova música' }
+
 export default async function NewSongPage({
   searchParams,
 }: {

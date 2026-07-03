@@ -5,6 +5,8 @@ import { AppSidebar } from '@/components/app-sidebar'
 import { EmptyState } from '@/components/empty-state'
 import { NovoRepertorio } from './novo-repertorio'
 
+export const metadata = { title: 'Repertórios' }
+
 export default async function RepertoriosPage() {
   const { userId } = await verifySession()
   const reps = await prisma.repertoire.findMany({

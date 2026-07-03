@@ -3,6 +3,8 @@ import { LoginForm } from './login-form'
 
 const MOINHO = ['D#m7(5-)', 'E/D', 'C#m7', 'Cº', 'Ebº']
 
+export const metadata = { title: 'Entrar' }
+
 export default async function LoginPage({
   searchParams,
 }: {

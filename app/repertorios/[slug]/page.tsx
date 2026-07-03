@@ -1,8 +1,20 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
 import { AppSidebar } from '@/components/app-sidebar'
 import { RepertorioDetalhe } from './repertorio-detalhe'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { userId } = await verifySession()
+  const { slug } = await params
+  const rep = await prisma.repertoire.findFirst({ where: { slug, userId }, select: { name: true } })
+  return { title: rep?.name ?? 'Repertório' }
+}
 
 export default async function RepertorioPage({
   params,

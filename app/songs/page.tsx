@@ -3,6 +3,8 @@ import { verifySession } from '@/lib/auth'
 import { AppSidebar } from '@/components/app-sidebar'
 import { Acervo } from './acervo'
 
+export const metadata = { title: 'Acervo' }
+
 export default async function SongsPage() {
   const { userId } = await verifySession()
   const songs = await prisma.song.findMany({

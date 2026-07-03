@@ -1,7 +1,22 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { CompassoWordmark } from '@/components/compasso-wordmark'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ share: string }>
+}): Promise<Metadata> {
+  const { share } = await params
+  const rep = await prisma.repertoire.findFirst({
+    where: { shareSlug: share },
+    select: { name: true, user: { select: { name: true } } },
+  })
+  if (!rep) return {}
+  return { title: rep.user.name ? `${rep.name} — por ${rep.user.name}` : rep.name }
+}
 
 // Rota PÚBLICA — sem verifySession, sem userId. A posse é validada só pelo
 // shareSlug: quem tem o link vê, deslogado inclusive (o proxy libera /r/*).

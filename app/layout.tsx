@@ -17,7 +17,10 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Compasso',
+  title: {
+    default: 'Compasso',
+    template: '%s · Compasso',
+  },
   description: 'Cifras, repertórios e prática de violão',
 }
 

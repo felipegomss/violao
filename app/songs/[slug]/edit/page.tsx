@@ -1,9 +1,21 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
 import { updateSong } from '@/app/actions/songs'
 import { AppSidebar } from '@/components/app-sidebar'
 import { SongEditor } from '@/app/songs/song-editor'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { userId } = await verifySession()
+  const { slug } = await params
+  const song = await prisma.song.findFirst({ where: { slug, userId }, select: { title: true } })
+  return { title: song ? `Editar ${song.title}` : 'Editar música' }
+}
 
 export default async function EditSongPage({
   params,
