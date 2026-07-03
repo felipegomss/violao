@@ -1,8 +1,28 @@
 import Link from 'next/link'
-import { Guitar, Library, ListMusic, LogOut, type LucideIcon } from 'lucide-react'
+import { Library, ListMusic, LogOut, type LucideIcon } from 'lucide-react'
 import { logout } from '@/app/actions/auth'
 
 type ActiveSection = 'acervo' | 'repert'
+
+// Marca do Compasso: uma semibreve (nota inteira) — furo inclinado clássico.
+function Semibreve({ size = 22 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 40 40" width={size} height={size} aria-hidden="true">
+      <mask id="sidebar-semibreve-hole">
+        <rect width="40" height="40" fill="#fff" />
+        <ellipse cx="20" cy="20" rx="7.9" ry="3.1" transform="rotate(-28 20 20)" fill="#000" />
+      </mask>
+      <ellipse
+        cx="20"
+        cy="20"
+        rx="12"
+        ry="8.4"
+        fill="currentColor"
+        mask="url(#sidebar-semibreve-hole)"
+      />
+    </svg>
+  )
+}
 
 function SideLink({
   href,
@@ -34,10 +54,10 @@ export function AppSidebar({ active }: { active: ActiveSection }) {
     <nav className="sticky top-0 hidden h-screen w-[76px] flex-none flex-col items-center gap-1 self-start overflow-y-auto border-r border-ink/12 bg-[#efe7d5] py-5 md:flex">
       <Link
         href="/songs"
-        aria-label="Caderno de Violão — início"
+        aria-label="Compasso — início"
         className="mb-4 flex h-10 w-10 items-center justify-center rounded-[11px] bg-ink text-folha transition-transform hover:-translate-y-0.5"
       >
-        <Guitar size={21} strokeWidth={1.75} />
+        <Semibreve size={22} />
       </Link>
 
       <SideLink href="/songs" label="acervo" active={active === 'acervo'} Icon={Library} />
