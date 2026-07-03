@@ -5,7 +5,7 @@ import { verifySession } from '@/lib/auth'
 import { deleteSong } from '@/app/actions/songs'
 import { parseChordSheet, type ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { AppSidebar } from '@/components/app-sidebar'
-import { DeleteSongButton } from './delete-song-button'
+import { SongActions } from './song-actions'
 import { CifraStudy } from './cifra-study'
 
 export default async function SongDetailPage({
@@ -36,10 +36,11 @@ export default async function SongDetailPage({
     <div className="flex min-h-screen bg-paper text-ink">
       <AppSidebar active="acervo" />
 
-      {/* Main column */}
-      <div className="mx-auto flex w-full min-w-0 max-w-[1925px] flex-col">
-        {/* Header band */}
-        <div className="flex items-start justify-between gap-6 border-b border-ink/12 bg-folha px-8 py-6">
+      {/* Main column (full-width; conteúdo capado em max-w-7xl) */}
+      <div className="flex w-full min-w-0 flex-col">
+        {/* Header band — faixa folha ocupa tudo, conteúdo centralizado */}
+        <div className="border-b border-ink/12 bg-folha">
+          <div className="mx-auto flex w-full max-w-7xl items-start justify-between gap-6 px-8 py-6">
           <div className="min-w-0">
             <div className="mb-1.5 font-cifra text-[10px] uppercase tracking-[.2em] text-faint">
               acervo → {song.title}
@@ -60,13 +61,6 @@ export default async function SongDetailPage({
           </div>
 
           <div className="flex flex-none items-center gap-3">
-            <Link
-              href={`/songs/${song.id}/edit`}
-              className="rounded border border-ink/22 px-3 py-2 font-cifra text-[11px] uppercase tracking-wide text-soft hover:text-ink"
-            >
-              editar
-            </Link>
-            <DeleteSongButton action={deleteThis} />
             <button
               type="button"
               disabled
@@ -76,6 +70,8 @@ export default async function SongDetailPage({
               <span className="inline-block h-[9px] w-[9px] rounded-[2px] border-[1.5px] border-folha" />
               modo palco
             </button>
+            <SongActions songId={song.id} deleteAction={deleteThis} />
+          </div>
           </div>
         </div>
 

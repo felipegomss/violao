@@ -53,7 +53,7 @@ export function SongEditor({
   const filledCount = PANEL.filter((d) => raw(d.key).trim() !== '').length
 
   return (
-    <form action={formAction} className="mx-auto flex w-full max-w-[1925px] flex-col min-w-0">
+    <form action={formAction} className="mx-auto flex w-full max-w-7xl flex-col min-w-0">
       {/* header */}
       <div className="flex items-center justify-between gap-6 border-b border-ink/12 px-8 py-5">
         <div className="flex items-center gap-3.5">

@@ -58,7 +58,7 @@ export function CifraStudy({
   )
 
   return (
-    <div className="grid flex-1 grid-cols-1 lg:grid-cols-[1fr_320px] lg:min-h-0">
+    <div className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 lg:grid-cols-[1fr_320px] lg:min-h-0">
       {/* Cifra sheet */}
       <div className="overflow-y-auto px-8 py-8 lg:px-10">
         {chordFormat === 'TRADICIONAL' ? (
