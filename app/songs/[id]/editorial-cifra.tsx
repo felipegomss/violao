@@ -69,22 +69,30 @@ export function EditorialCifra({
 
         return (
           <div key={i} className="flex flex-wrap items-end">
-            {line.items.map((item, j) => (
-              <span key={j} className="inline-flex flex-col items-start">
-                {item.chord ? (
-                  <Chord
-                    chord={item.chord}
-                    onHover={onChordHover}
-                    className="h-[15px] font-cifra text-[12px] font-medium leading-none text-teal"
-                  />
-                ) : (
-                  <span className="h-[15px] font-cifra text-[12px] leading-none">{' '}</span>
-                )}
-                <span className="whitespace-pre font-editorial text-[19px] leading-[1.25] text-ink">
-                  {item.lyrics}
+            {line.items.map((item, j) => {
+              // Acorde "solto" (sem sílaba embaixo, ex.: sequência no fim da
+              // linha) precisa de respiro à direita, senão os acordes se colam.
+              const bareChord = !!item.chord && item.lyrics.trim() === ''
+              return (
+                <span
+                  key={j}
+                  className={`inline-flex flex-col items-start${bareChord ? ' pr-2.5' : ''}`}
+                >
+                  {item.chord ? (
+                    <Chord
+                      chord={item.chord}
+                      onHover={onChordHover}
+                      className="h-[15px] font-cifra text-[12px] font-medium leading-none text-teal"
+                    />
+                  ) : (
+                    <span className="h-[15px] font-cifra text-[12px] leading-none">{' '}</span>
+                  )}
+                  <span className="whitespace-pre font-editorial text-[19px] leading-[1.25] text-ink">
+                    {item.lyrics}
+                  </span>
                 </span>
-              </span>
-            ))}
+              )
+            })}
           </div>
         )
       })}
