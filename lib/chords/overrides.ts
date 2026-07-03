@@ -84,6 +84,13 @@ const DM_C: ChordShape[] = [
   { frets: [3, -1, 2, 2, 1, -1], fingers: [4, 0, 2, 3, 1, 0], baseFret: 6, barres: [], bassString: 0 },
 ]
 
+// C9/E: C9 (C E G Bb D) com E (3ª) no baixo. Notas A# C D E G. Formas com E na
+// 6ª solta (o db não tem slash de 9); notas conferidas.
+const C9_E: ChordShape[] = [
+  { frets: [0, 3, 2, 3, 3, 3], fingers: [0, 2, 1, 3, 3, 3], baseFret: 1, barres: [3], bassString: 0 },
+  { frets: [0, 1, 0, 0, 1, 0], fingers: [0, 1, 0, 0, 2, 0], baseFret: 1, barres: [], bassString: 0 },
+]
+
 export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   'E7/B': E7_B,
   B7sus4: B7SUS4,
@@ -100,4 +107,5 @@ export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   'Dm7(9)': DM9,
   Dm9: DM9,
   'Dm/C': DM_C,
+  'C9/E': C9_E,
 }
