@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
 import { setComoEstouTocando } from '@/app/actions/songs'
@@ -47,23 +47,24 @@ export function CifraStudy({
   const [rating, setRating] = useState(comoEstouTocando ?? 0)
   const [metronomeOn, setMetronomeOn] = useState(false)
   const [beat, setBeat] = useState(0)
-  const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll: animação imperativa (rAF) rolando o container da cifra.
+  // Auto-scroll: rola a JANELA (na view normal a página cresce e quem rola é a
+  // window, não um container interno). Animação imperativa via rAF.
   useEffect(() => {
     if (!autoScroll) return
-    const el = scrollRef.current
-    if (!el) return
     let raf = 0
     let carry = 0
     const tick = () => {
       carry += speed * 0.35
       const px = Math.floor(carry)
       if (px > 0) {
-        el.scrollTop += px
+        window.scrollBy(0, px)
         carry -= px
       }
-      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 1) {
+      const atBottom =
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 1
+      if (atBottom) {
         setAutoScroll(false)
         return
       }
@@ -138,7 +139,7 @@ export function CifraStudy({
   return (
     <div className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 lg:grid-cols-[1fr_320px] lg:min-h-0">
       {/* Cifra sheet */}
-      <div ref={scrollRef} className="overflow-y-auto px-8 py-8 lg:px-10">
+      <div className="px-8 py-8 lg:px-10">
         {chordFormat === 'TRADICIONAL' ? (
           shownSheet ? (
             <EditorialCifra sheet={shownSheet} />
