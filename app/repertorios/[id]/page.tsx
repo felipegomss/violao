@@ -34,7 +34,7 @@ export default async function RepertorioPage({
   const rows = rep.songs.map((rs) => ({
     songId: rs.songId,
     title: rs.song.title,
-    artist: rs.song.artist,
+    artist: rs.song.artists.join(', '),
     key: rs.song.key,
     comoEstouTocando: rs.song.comoEstouTocando,
     also: alsoMap.get(rs.songId) ?? [],
@@ -43,9 +43,17 @@ export default async function RepertorioPage({
   const inIds = new Set(songIds)
   const allSongs = await prisma.song.findMany({
     orderBy: { title: 'asc' },
-    select: { id: true, title: true, artist: true, key: true, comoEstouTocando: true },
+    select: { id: true, title: true, artists: true, key: true, comoEstouTocando: true },
   })
-  const available = allSongs.filter((s) => !inIds.has(s.id))
+  const available = allSongs
+    .filter((s) => !inIds.has(s.id))
+    .map((s) => ({
+      id: s.id,
+      title: s.title,
+      artist: s.artists.join(', '),
+      key: s.key,
+      comoEstouTocando: s.comoEstouTocando,
+    }))
 
   return (
     <div className="flex min-h-screen bg-paper text-ink">

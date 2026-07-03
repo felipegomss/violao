@@ -3,7 +3,7 @@ import { SongSchema } from './song'
 
 const valid = {
   title: 'Carta ao Tom 74',
-  artist: 'Toquinho',
+  artists: ['Toquinho'],
   key: 'C',
   genres: ['MPB'],
   chordFormat: 'GRADE',
@@ -17,12 +17,12 @@ describe('SongSchema', () => {
   })
 
   it('exige title, artist e key', () => {
-    const r = SongSchema.safeParse({ ...valid, title: '', artist: '', key: '' })
+    const r = SongSchema.safeParse({ ...valid, title: '', artists: [], key: '' })
     expect(r.success).toBe(false)
     if (!r.success) {
       const f = r.error.flatten().fieldErrors
       expect(f.title).toBeDefined()
-      expect(f.artist).toBeDefined()
+      expect(f.artists).toBeDefined()
       expect(f.key).toBeDefined()
     }
   })

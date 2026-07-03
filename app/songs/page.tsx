@@ -14,7 +14,7 @@ export default async function SongsPage() {
         songs={songs.map((s) => ({
           id: s.id,
           title: s.title,
-          artist: s.artist,
+          artists: s.artists,
           genres: s.genres,
           key: s.key,
           comoEstouTocando: s.comoEstouTocando,

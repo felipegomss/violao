@@ -46,7 +46,7 @@ export default async function SongDetailPage({
             </div>
             <h1 className="font-editorial text-[40px] font-medium leading-none">{song.title}</h1>
             <div className="mt-1 font-editorial text-[19px] italic text-soft">
-              {song.artist}
+              {song.artists.join(', ')}
               {song.genres.length > 0 ? ` · ${song.genres.join(', ')}` : ''}
             </div>
 

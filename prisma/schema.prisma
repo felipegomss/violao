@@ -11,7 +11,6 @@ datasource db {
 model Song {
   id                  String   @id @default(cuid())
   title               String
-  artist              String
   artists             String[]
   genres              String[]
   version             String?

@@ -2,7 +2,7 @@ export type ChordFormat = 'TRADICIONAL' | 'GRADE'
 
 export type DerivedFields = {
   title: string
-  artist: string
+  artists: string[]
   key: string
   genres: string[]
   version?: string
@@ -22,7 +22,7 @@ export type DirectiveSpec = {
 
 export const DIRECTIVES: DirectiveSpec[] = [
   { key: 'title', field: 'title', label: 'Título', required: true },
-  { key: 'artist', field: 'artist', label: 'Artista', required: true },
+  { key: 'artist', field: 'artists', label: 'Artista', required: true },
   { key: 'tom', field: 'key', label: 'Tom', required: true },
   { key: 'genero', field: 'genres', label: 'Gêneros' },
   { key: 'versao', field: 'version', label: 'Versão' },
@@ -58,7 +58,9 @@ export function parseDirectives(content: string): DerivedFields {
   const genero = get('genero')
   return {
     title: get('title'),
-    artist: get('artist'),
+    artists: get('artist')
+      ? get('artist').split(',').map((a) => a.trim()).filter(Boolean)
+      : [],
     key: get('tom'),
     genres: genero
       ? genero.split(',').map((g) => g.trim()).filter(Boolean)

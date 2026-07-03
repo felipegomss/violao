@@ -4,7 +4,7 @@ export const CHORD_FORMAT = ['TRADICIONAL', 'GRADE'] as const
 
 export const SongSchema = z.object({
   title: z.string().trim().min(1, 'Título é obrigatório'),
-  artist: z.string().trim().min(1, 'Artista é obrigatório'),
+  artists: z.array(z.string().trim().min(1)).min(1, 'Artista é obrigatório'),
   key: z.string().trim().min(1, 'Tom é obrigatório'),
   genres: z.array(z.string().trim().min(1)).default([]),
   version: z.string().trim().optional(),

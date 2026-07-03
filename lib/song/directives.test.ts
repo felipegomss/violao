@@ -38,7 +38,7 @@ describe('parseDirectives', () => {
     const d = parseDirectives(tradFull)
     expect(d).toMatchObject({
       title: 'Minha Música',
-      artist: 'Fulano',
+      artists: ['Fulano'],
       key: 'C',
       genres: ['bossa nova', 'mpb'],
       version: 'Songbook',

@@ -6,7 +6,7 @@ import Link from 'next/link'
 type Song = {
   id: string
   title: string
-  artist: string
+  artists: string[]
   genres: string[]
   key: string
   comoEstouTocando: number | null
@@ -29,7 +29,7 @@ export function Acervo({ songs }: { songs: Song[] }) {
   const [sortOpen, setSortOpen] = useState(false)
 
   const genres = ['todos', ...Array.from(new Set(songs.flatMap((s) => s.genres)))]
-  const artists = ['todos', ...Array.from(new Set(songs.map((s) => s.artist)))]
+  const artistOptions = ['todos', ...Array.from(new Set(songs.flatMap((s) => s.artists)))]
 
   const anyMenuOpen = artistOpen || sortOpen
 
@@ -42,11 +42,12 @@ export function Acervo({ songs }: { songs: Song[] }) {
 
   const filtered = songs
     .filter((s) => genre === 'todos' || s.genres.includes(genre))
-    .filter((s) => artist === 'todos' || s.artist === artist)
-    .filter((s) => `${s.title} ${s.artist}`.toLowerCase().includes(needle))
+    .filter((s) => artist === 'todos' || s.artists.includes(artist))
+    .filter((s) => `${s.title} ${s.artists.join(' ')}`.toLowerCase().includes(needle))
     .sort((a, b) => {
       if (sort === 'titulo') return a.title.localeCompare(b.title, 'pt')
-      if (sort === 'artista') return a.artist.localeCompare(b.artist, 'pt')
+      if (sort === 'artista')
+        return (a.artists[0] ?? '').localeCompare(b.artists[0] ?? '', 'pt')
       // toco: desc, nulls last, tiebreak title
       const av = a.comoEstouTocando
       const bv = b.comoEstouTocando
@@ -139,7 +140,7 @@ export function Acervo({ songs }: { songs: Song[] }) {
               </button>
               {artistOpen && (
                 <div className="absolute right-0 z-20 mt-1.5 max-h-64 w-56 overflow-y-auto rounded-lg border border-ink/20 bg-folha p-1.5 shadow-[0_16px_34px_-14px_rgba(38,33,27,.5)]">
-                  {artists.map((a) => (
+                  {artistOptions.map((a) => (
                     <button
                       key={a}
                       type="button"
@@ -224,7 +225,7 @@ export function Acervo({ songs }: { songs: Song[] }) {
                       {s.title}
                     </span>
                     <span className="block truncate font-editorial text-[16px] italic text-[#7a7061]">
-                      {s.artist}
+                      {s.artists.join(', ')}
                     </span>
                   </span>
                   <span className="w-[110px]">

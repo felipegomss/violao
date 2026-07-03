@@ -17,7 +17,7 @@ const PANEL = DIRECTIVES.filter((d) => d.key !== 'tipo')
 
 const PLACEHOLDER: Record<string, string> = {
   title: 'digite o título',
-  artist: 'digite o artista',
+  artists: 'digite o artista (vírgula separa vários)',
   key: 'ex.: G, Am, Dm…',
   genres: 'ex.: bossa, mpb',
   version: 'ex.: v2 · songbook',
