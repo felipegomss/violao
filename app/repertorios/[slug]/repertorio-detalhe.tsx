@@ -18,6 +18,7 @@ const FOCUS =
 
 type Row = {
   songId: string
+  slug: string
   title: string
   artist: string
   key: string
@@ -26,6 +27,7 @@ type Row = {
 }
 type Avail = {
   id: string
+  slug: string
   title: string
   artist: string
   key: string
@@ -34,11 +36,13 @@ type Avail = {
 
 export function RepertorioDetalhe({
   repertoireId,
+  repertoireSlug,
   name,
   rows,
   available,
 }: {
   repertoireId: string
+  repertoireSlug: string
   name: string
   rows: Row[]
   available: Avail[]
@@ -86,6 +90,7 @@ export function RepertorioDetalhe({
           ...prev,
           {
             id: row.songId,
+            slug: row.slug,
             title: row.title,
             artist: row.artist,
             key: row.key,
@@ -101,6 +106,7 @@ export function RepertorioDetalhe({
       ...prev,
       {
         songId: s.id,
+        slug: s.slug,
         title: s.title,
         artist: s.artist,
         key: s.key,
@@ -233,7 +239,7 @@ export function RepertorioDetalhe({
                 {String(pos + 1).padStart(2, '0')}
               </span>
               <Link
-                href={`/songs/${r.songId}?palco=1&rep=${repertoireId}`}
+                href={`/songs/${r.slug}?palco=1&rep=${repertoireSlug}`}
                 className="min-w-0 flex-1"
               >
                 <div className="font-editorial text-[19px] font-semibold leading-tight">{r.title}</div>

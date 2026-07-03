@@ -72,18 +72,18 @@ export function StagePalco({
   title,
   songKey,
   bpm,
-  currentId,
+  currentSlug,
   playlist = [],
-  repertoireId,
+  repertoireSlug,
   autoOpen = false,
 }: {
   sheet: ChordSheetModel | null
   title: string
   songKey: string
   bpm: number | null
-  currentId: string
-  playlist?: { id: string; title: string }[]
-  repertoireId?: string
+  currentSlug: string
+  playlist?: { slug: string; title: string }[]
+  repertoireSlug?: string
   autoOpen?: boolean
 }) {
   const router = useRouter()
@@ -91,12 +91,12 @@ export function StagePalco({
   const [listOpen, setListOpen] = useState(false)
 
   // Playlist (só quando o palco veio de um repertório). idx = posição atual.
-  const idx = playlist.findIndex((p) => p.id === currentId)
+  const idx = playlist.findIndex((p) => p.slug === currentSlug)
   const hasList = playlist.length > 1 && idx >= 0
   const prev = hasList && idx > 0 ? playlist[idx - 1] : null
   const next = hasList && idx < playlist.length - 1 ? playlist[idx + 1] : null
-  const goTo = (id: string) =>
-    router.push(`/songs/${id}?palco=1${repertoireId ? `&rep=${repertoireId}` : ''}`)
+  const goTo = (slug: string) =>
+    router.push(`/songs/${slug}?palco=1${repertoireSlug ? `&rep=${repertoireSlug}` : ''}`)
   const [notation, setNotation] = useState<Notation>('chord')
   const [transpose, setTranspose] = useState(0)
   const [autoScroll, setAutoScroll] = useState(false)
@@ -148,8 +148,8 @@ export function StagePalco({
       if (e.key === 'Escape') {
         if (listOpen) setListOpen(false)
         else setOpen(false)
-      } else if (e.key === 'ArrowRight' && next) goTo(next.id)
-      else if (e.key === 'ArrowLeft' && prev) goTo(prev.id)
+      } else if (e.key === 'ArrowRight' && next) goTo(next.slug)
+      else if (e.key === 'ArrowLeft' && prev) goTo(prev.slug)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -189,7 +189,7 @@ export function StagePalco({
                 <div className="relative flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => prev && goTo(prev.id)}
+                    onClick={() => prev && goTo(prev.slug)}
                     disabled={!prev}
                     aria-label="Música anterior"
                     title={prev ? prev.title : undefined}
@@ -208,7 +208,7 @@ export function StagePalco({
                   </button>
                   <button
                     type="button"
-                    onClick={() => next && goTo(next.id)}
+                    onClick={() => next && goTo(next.slug)}
                     disabled={!next}
                     aria-label="Próxima música"
                     title={next ? next.title : undefined}
@@ -228,14 +228,14 @@ export function StagePalco({
                       <div className="absolute right-0 top-[calc(100%+8px)] z-20 max-h-[62vh] w-72 overflow-y-auto rounded-lg border border-[#f0e9da]/15 bg-[#1a1712] p-1.5 shadow-[0_24px_50px_-20px_rgba(0,0,0,.7)]">
                         {playlist.map((p, i) => (
                           <button
-                            key={p.id}
+                            key={p.slug}
                             type="button"
                             onClick={() => {
                               setListOpen(false)
-                              if (p.id !== currentId) goTo(p.id)
+                              if (p.slug !== currentSlug) goTo(p.slug)
                             }}
                             className={`flex w-full items-center gap-3 rounded px-2.5 py-2 text-left transition-colors ${
-                              p.id === currentId
+                              p.slug === currentSlug
                                 ? 'bg-gold/15 text-gold'
                                 : 'text-[#f0e9da]/80 hover:bg-[#f0e9da]/10'
                             }`}
@@ -246,7 +246,7 @@ export function StagePalco({
                             <span className="min-w-0 flex-1 truncate font-editorial text-[15px]">
                               {p.title}
                             </span>
-                            {p.id === currentId && (
+                            {p.slug === currentSlug && (
                               <span className="flex-none font-cifra text-[11px] lowercase">
                                 tocando
                               </span>

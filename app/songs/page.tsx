@@ -16,6 +16,7 @@ export default async function SongsPage() {
       <Acervo
         songs={songs.map((s) => ({
           id: s.id,
+          slug: s.slug,
           title: s.title,
           artists: s.artists,
           genres: s.genres,

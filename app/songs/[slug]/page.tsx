@@ -12,30 +12,32 @@ export default async function SongDetailPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ slug: string }>
   searchParams: Promise<{ palco?: string; rep?: string }>
 }) {
   const { userId } = await verifySession()
-  const { id } = await params
+  const { slug } = await params
   const { palco, rep } = await searchParams
-  const song = await prisma.song.findFirst({ where: { id, userId } })
+  const song = await prisma.song.findFirst({ where: { slug, userId } })
   if (!song) notFound()
 
   const deleteThis = deleteSong.bind(null, song.id)
 
   // Vindo de um repertório: passa a lista ordenada pro palco navegar como playlist.
-  let playlist: { id: string; title: string }[] = []
+  // rep é o slug do repertório; a playlist carrega o slug de cada música.
+  let playlist: { slug: string; title: string }[] = []
   if (rep) {
     const repertoire = await prisma.repertoire.findFirst({
-      where: { id: rep, userId },
+      where: { slug: rep, userId },
       include: {
         songs: {
           orderBy: { order: 'asc' },
-          include: { song: { select: { id: true, title: true } } },
+          include: { song: { select: { slug: true, title: true } } },
         },
       },
     })
-    if (repertoire) playlist = repertoire.songs.map((s) => ({ id: s.song.id, title: s.song.title }))
+    if (repertoire)
+      playlist = repertoire.songs.map((s) => ({ slug: s.song.slug, title: s.song.title }))
   }
 
   const afinacao = song.tuning === 'standard' ? 'E A D G B E' : song.tuning
@@ -79,12 +81,12 @@ export default async function SongDetailPage({
                 title={song.title}
                 songKey={song.key}
                 bpm={song.bpm}
-                currentId={song.id}
+                currentSlug={song.slug}
                 playlist={playlist}
-                repertoireId={rep}
+                repertoireSlug={rep}
                 autoOpen={palco === '1'}
               />
-              <SongActions songId={song.id} deleteAction={deleteThis} />
+              <SongActions slug={song.slug} deleteAction={deleteThis} />
             </>
           }
         />

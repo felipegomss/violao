@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { Ellipsis, SquarePen, Trash2 } from 'lucide-react'
 
 export function SongActions({
-  songId,
+  slug,
   deleteAction,
 }: {
-  songId: string
+  slug: string
   deleteAction: () => Promise<void>
 }) {
   const [open, setOpen] = useState(false)
@@ -36,7 +36,7 @@ export function SongActions({
         {open && (
           <div className="absolute right-0 top-[calc(100%+6px)] w-36 rounded-lg border border-ink/20 bg-folha p-1.5 shadow-[0_16px_34px_-14px_rgba(38,33,27,.5)]">
             <Link
-              href={`/songs/${songId}/edit`}
+              href={`/songs/${slug}/edit`}
               className="flex items-center gap-2 rounded px-2.5 py-2 font-cifra text-[11px] lowercase text-soft transition-colors duration-150 hover:bg-[#f1eadb] hover:text-ink"
             >
               <SquarePen size={14} strokeWidth={2} />

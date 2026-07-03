@@ -7,12 +7,12 @@ import { RepertorioDetalhe } from './repertorio-detalhe'
 export default async function RepertorioPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ slug: string }>
 }) {
   const { userId } = await verifySession()
-  const { id } = await params
+  const { slug } = await params
   const rep = await prisma.repertoire.findFirst({
-    where: { id, userId },
+    where: { slug, userId },
     include: {
       songs: { include: { song: true }, orderBy: { order: 'asc' } },
     },
@@ -23,7 +23,7 @@ export default async function RepertorioPage({
   const others = await prisma.repertoireSong.findMany({
     where: {
       songId: { in: songIds },
-      repertoireId: { not: id },
+      repertoireId: { not: rep.id },
       repertoire: { userId },
     },
     include: { repertoire: { select: { name: true } } },
@@ -37,6 +37,7 @@ export default async function RepertorioPage({
 
   const rows = rep.songs.map((rs) => ({
     songId: rs.songId,
+    slug: rs.song.slug,
     title: rs.song.title,
     artist: rs.song.artists.join(', '),
     key: rs.song.key,
@@ -48,12 +49,13 @@ export default async function RepertorioPage({
   const allSongs = await prisma.song.findMany({
     where: { userId },
     orderBy: { title: 'asc' },
-    select: { id: true, title: true, artists: true, key: true, comoEstouTocando: true },
+    select: { id: true, slug: true, title: true, artists: true, key: true, comoEstouTocando: true },
   })
   const available = allSongs
     .filter((s) => !inIds.has(s.id))
     .map((s) => ({
       id: s.id,
+      slug: s.slug,
       title: s.title,
       artist: s.artists.join(', '),
       key: s.key,
@@ -65,6 +67,7 @@ export default async function RepertorioPage({
       <AppSidebar active="repert" />
       <RepertorioDetalhe
         repertoireId={rep.id}
+        repertoireSlug={rep.slug}
         name={rep.name}
         rows={rows}
         available={available}

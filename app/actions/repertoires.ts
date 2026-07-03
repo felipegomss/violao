@@ -29,7 +29,7 @@ export async function renameRepertoire(id: string, formData: FormData) {
   })
   if (count === 0) return
   revalidatePath('/repertorios')
-  revalidatePath(`/repertorios/${id}`)
+  revalidatePath('/repertorios/[slug]', 'page')
 }
 
 export async function deleteRepertoire(id: string) {
@@ -55,7 +55,7 @@ export async function addSongToRepertoire(repertoireId: string, songId: string) 
     create: { repertoireId, songId, order },
     update: {},
   })
-  revalidatePath(`/repertorios/${repertoireId}`)
+  revalidatePath('/repertorios/[slug]', 'page')
 }
 
 export async function removeSongFromRepertoire(repertoireId: string, songId: string) {
@@ -65,7 +65,7 @@ export async function removeSongFromRepertoire(repertoireId: string, songId: str
   await prisma.repertoireSong.delete({
     where: { repertoireId_songId: { repertoireId, songId } },
   })
-  revalidatePath(`/repertorios/${repertoireId}`)
+  revalidatePath('/repertorios/[slug]', 'page')
 }
 
 export async function reorderRepertoireSongs(
@@ -83,5 +83,5 @@ export async function reorderRepertoireSongs(
       }),
     ),
   )
-  revalidatePath(`/repertorios/${repertoireId}`)
+  revalidatePath('/repertorios/[slug]', 'page')
 }

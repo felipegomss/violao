@@ -69,5 +69,5 @@ export async function setComoEstouTocando(id: string, value: number) {
   const v = Math.min(5, Math.max(1, Math.round(value)))
   await prisma.song.updateMany({ where: { id, userId }, data: { comoEstouTocando: v } })
   revalidatePath('/songs')
-  revalidatePath(`/songs/${id}`)
+  revalidatePath('/songs/[slug]', 'page')
 }

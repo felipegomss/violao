@@ -8,11 +8,11 @@ import { SongEditor } from '@/app/songs/song-editor'
 export default async function EditSongPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ slug: string }>
 }) {
   const { userId } = await verifySession()
-  const { id } = await params
-  const song = await prisma.song.findFirst({ where: { id, userId } })
+  const { slug } = await params
+  const song = await prisma.song.findFirst({ where: { slug, userId } })
   if (!song) notFound()
 
   return (
@@ -22,7 +22,7 @@ export default async function EditSongPage({
         action={updateSong.bind(null, song.id)}
         initialContent={song.chordContent}
         title="Editar"
-        backHref={`/songs/${song.id}`}
+        backHref={`/songs/${song.slug}`}
         submitLabel="Salvar alterações"
       />
     </div>

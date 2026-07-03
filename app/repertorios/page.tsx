@@ -48,7 +48,7 @@ export default async function RepertoriosPage() {
                 return (
                   <Link
                     key={rep.id}
-                    href={`/repertorios/${rep.id}`}
+                    href={`/repertorios/${rep.slug}`}
                     className="block rounded-xl border border-ink/16 bg-[#fbf7ee] p-6 transition-colors duration-150 hover:border-ink/35"
                   >
                     <div className="flex items-baseline justify-between gap-4">

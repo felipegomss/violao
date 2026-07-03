@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/empty-state'
 
 type Song = {
   id: string
+  slug: string
   title: string
   artists: string[]
   genres: string[]
@@ -215,7 +216,7 @@ export function Acervo({ songs }: { songs: Song[] }) {
               {filtered.map((s, i) => (
                 <Link
                   key={s.id}
-                  href={`/songs/${s.id}`}
+                  href={`/songs/${s.slug}`}
                   style={{ animationDelay: `${Math.min(i, 5) * 40}ms`, animationDuration: '200ms' }}
                   className="animate-in fade-in slide-in-from-bottom-1 fill-mode-both -mx-2 flex items-center gap-5 border-b border-dotted border-ink/15 px-2 py-3 transition-colors duration-150 hover:bg-folha"
                 >
