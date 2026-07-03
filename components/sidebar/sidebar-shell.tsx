@@ -23,6 +23,12 @@ import { useInfiniteSongs } from '@/lib/hooks/use-infinite-songs'
 
 const FOCUS = 'focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
 
+// Entrada suave de um item na troca de estado (fade + leve slide da esquerda),
+// respeitando prefers-reduced-motion. fill-mode-both mantém escondido até o delay.
+const ITEM_ANIM =
+  'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-left-2 motion-safe:fill-mode-both'
+const stagger = (ms: number) => ({ animationDelay: `${ms}ms`, animationDuration: '260ms' })
+
 type Active = 'acervo' | 'repert'
 export type SidebarContext = {
   currentSlug: string
@@ -57,20 +63,27 @@ function RailLink({
   )
 }
 
-function CollapsedRail({ active }: { active: Active }) {
+function CollapsedRail({ active, animate }: { active: Active; animate: boolean }) {
+  const it = (i: number) => (animate ? { className: ITEM_ANIM, style: stagger(i * 40) } : {})
   return (
     <div className="flex h-full flex-col items-center gap-1 py-5">
-      <Link
-        href="/songs"
-        aria-label="Compasso — início"
-        className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-ink text-folha transition-transform duration-150 hover:-translate-y-0.5"
-      >
-        <Semibreve size={24} />
-      </Link>
-      <RailLink href="/songs" label="acervo" active={active === 'acervo'} Icon={Library} />
-      <RailLink href="/repertorios" label="repertório" active={active === 'repert'} Icon={ListMusic} />
+      <div {...it(0)}>
+        <Link
+          href="/songs"
+          aria-label="Compasso — início"
+          className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-ink text-folha transition-transform duration-150 hover:-translate-y-0.5"
+        >
+          <Semibreve size={24} />
+        </Link>
+      </div>
+      <div className="w-full" {...it(1)}>
+        <RailLink href="/songs" label="acervo" active={active === 'acervo'} Icon={Library} />
+      </div>
+      <div className="w-full" {...it(2)}>
+        <RailLink href="/repertorios" label="repertório" active={active === 'repert'} Icon={ListMusic} />
+      </div>
 
-      <form action={logout} className="mt-auto flex w-full flex-col items-center">
+      <form action={logout} className="mt-auto flex w-full flex-col items-center" {...it(3)}>
         <button
           type="submit"
           className="flex w-full flex-col items-center gap-1.5 py-2.5 text-faint transition-colors duration-150 hover:text-ink"
@@ -116,13 +129,16 @@ function Panel({
   context,
   onClose,
   closeIcon,
+  animate,
 }: {
   active: Active
   songs: SongRow[]
   context?: SidebarContext
   onClose: () => void
   closeIcon: 'collapse' | 'close'
+  animate: boolean
 }) {
+  const anim = animate ? ITEM_ANIM : ''
   const [q, setQ] = useState('')
   const debouncedQ = useDebouncedValue(q, 250)
   const params = { q: debouncedQ.trim() || undefined }
@@ -139,7 +155,10 @@ function Panel({
   return (
     <div className="flex h-full min-h-0 flex-col">
       {/* Header: logo escrito + recolher/fechar */}
-      <div className="flex items-center justify-between px-4 pb-3 pt-5">
+      <div
+        className={`flex items-center justify-between px-4 pb-3 pt-5 ${anim}`}
+        style={animate ? stagger(0) : undefined}
+      >
         <Link
           href="/songs"
           aria-label="Compasso — início"
@@ -161,7 +180,7 @@ function Panel({
       </div>
 
       {/* Seções */}
-      <div className="px-3">
+      <div className={`px-3 ${anim}`} style={animate ? stagger(45) : undefined}>
         <PanelNavLink href="/songs" label="acervo" active={active === 'acervo'} Icon={Library} />
         <PanelNavLink
           href="/repertorios"
@@ -173,7 +192,10 @@ function Panel({
 
       {/* Setlist do repertório (quando a música veio de um) */}
       {setlist.length > 0 && (
-        <div className="mt-1 border-t border-dotted border-ink/15 px-4 pb-2 pt-3">
+        <div
+          className={`mt-1 border-t border-dotted border-ink/15 px-4 pb-2 pt-3 ${anim}`}
+          style={animate ? stagger(90) : undefined}
+        >
           <div className="mb-1.5 font-cifra text-[11px] lowercase text-faint">
             {context?.repName ?? 'repertório'}
           </div>
@@ -203,7 +225,10 @@ function Panel({
       )}
 
       {/* Busca + acervo */}
-      <div className="mt-1 flex min-h-0 flex-1 flex-col border-t border-dotted border-ink/15 pt-3">
+      <div
+        className={`mt-1 flex min-h-0 flex-1 flex-col border-t border-dotted border-ink/15 pt-3 ${anim}`}
+        style={animate ? stagger(135) : undefined}
+      >
         <div className="mx-4 mb-1 flex items-center gap-2 border-b-[1.5px] border-ink/30 pb-1.5">
           <Search size={16} strokeWidth={2} className="shrink-0 text-faint" />
           <input
@@ -263,7 +288,11 @@ function Panel({
       </div>
 
       {/* Rodapé: sair */}
-      <form action={logout} className="border-t border-dotted border-ink/15 px-3 py-2">
+      <form
+        action={logout}
+        className={`border-t border-dotted border-ink/15 px-3 py-2 ${anim}`}
+        style={animate ? stagger(180) : undefined}
+      >
         <button
           type="submit"
           className={`flex w-full items-center gap-3 rounded-md px-2 py-2 text-faint transition-colors duration-150 hover:bg-folha hover:text-ink ${FOCUS}`}
@@ -289,11 +318,15 @@ export function SidebarShell({
 }) {
   const [expanded, setExpanded] = useState(initialExpanded)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  // Anima os itens só na troca de estado (toggle), não em cada navegação — a
+  // sidebar remonta ao navegar, e sem isso re-animaria toda vez.
+  const [toggled, setToggled] = useState(false)
   const pathname = usePathname()
 
   const toggle = () => {
     const next = !expanded
     setExpanded(next)
+    setToggled(true)
     document.cookie = `sidebar=${next ? '1' : '0'}; path=/; max-age=31536000; samesite=lax`
   }
 
@@ -326,9 +359,16 @@ export function SidebarShell({
         }`}
       >
         {expanded ? (
-          <Panel active={active} songs={songs} context={context} onClose={toggle} closeIcon="collapse" />
+          <Panel
+            active={active}
+            songs={songs}
+            context={context}
+            onClose={toggle}
+            closeIcon="collapse"
+            animate={toggled}
+          />
         ) : (
-          <CollapsedRail active={active} />
+          <CollapsedRail active={active} animate={toggled} />
         )}
       </nav>
 
@@ -377,13 +417,14 @@ export function SidebarShell({
             onClick={() => setDrawerOpen(false)}
             className="absolute inset-0 bg-[rgba(22,19,15,.4)]"
           />
-          <nav className="absolute inset-y-0 left-0 flex w-[300px] flex-col border-r border-ink/12 bg-[#efe7d5]">
+          <nav className="absolute inset-y-0 left-0 flex w-[300px] flex-col border-r border-ink/12 bg-[#efe7d5] motion-safe:animate-in motion-safe:slide-in-from-left motion-safe:duration-200">
             <Panel
               active={active}
               songs={songs}
               context={context}
               onClose={() => setDrawerOpen(false)}
               closeIcon="close"
+              animate={false}
             />
           </nav>
         </div>
