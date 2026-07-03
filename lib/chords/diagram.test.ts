@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chordDiagram, chordPositions } from './diagram'
+import { chordDiagram, chordPositions, type ChordShape } from './diagram'
 import { CHORD_OVERRIDES } from './overrides'
 
 describe('chordDiagram', () => {
@@ -23,8 +23,29 @@ describe('chordDiagram', () => {
     expect(chordDiagram('Ab7')).not.toBeNull()
   })
 
-  it('baixo invertido usa a tríade principal', () => {
-    expect(chordDiagram('G/B')).toEqual(chordDiagram('G'))
+  it('acorde com baixo (tríade) reflete o baixo: G/B tem B na corda mais grave', () => {
+    // grafias: cordas soltas E A D G B e = classes 4 9 2 7 11 4; B = 11
+    const OPEN = [4, 9, 2, 7, 11, 4]
+    const noteAt = (p: ChordShape, i: number) =>
+      (OPEN[i] + (p.baseFret > 1 ? p.baseFret - 1 + p.frets[i] : p.frets[i])) % 12
+    const g = chordDiagram('G')!
+    const gb = chordDiagram('G/B')!
+    expect(gb).not.toEqual(g) // não é mais a tríade crua
+    expect(gb.bassString).not.toBeUndefined()
+    expect(noteAt(gb, gb.bassString!)).toBe(11) // baixo = B
+  })
+
+  it('sétima com baixo (E7/G#) injeta o baixo quando não há entrada no chords-db', () => {
+    const OPEN = [4, 9, 2, 7, 11, 4]
+    const p = chordDiagram('E7/G#')!
+    expect(p.bassString).not.toBeUndefined()
+    const abs = p.baseFret > 1 ? p.baseFret - 1 + p.frets[p.bassString!] : p.frets[p.bassString!]
+    expect((OPEN[p.bassString!] + abs) % 12).toBe(8) // baixo = G#
+  })
+
+  it("não confunde barra de baixo com '/' interno: A7M(6/11+) não vira acorde com baixo", () => {
+    // termina em '+)', não em /Nota → tratado como token único (sem digitação no db → vazio)
+    expect(chordPositions('A7M(6/11+)')).toEqual([])
   })
 
   it('grau ou token inválido → null', () => {

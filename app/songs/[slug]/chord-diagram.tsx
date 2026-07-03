@@ -130,20 +130,28 @@ export function ChordDiagram({
         )
       })}
 
-      {/* dedos */}
+      {/* dedos — o baixo (acorde com barra) vem vazado p/ se destacar */}
       {frets.map((f, i) => {
         if (f <= 0) return null
         const row = f
         if (row < 1 || row > FRETS) return null
+        const isBass = i === shape.bassString
         return (
           <g key={i}>
-            <circle cx={sx(i)} cy={rowCenter(row)} r={dotR} fill={TEAL} />
+            <circle
+              cx={sx(i)}
+              cy={rowCenter(row)}
+              r={dotR}
+              fill={isBass ? FOLHA : TEAL}
+              stroke={TEAL}
+              strokeWidth={isBass ? 1.8 : 0}
+            />
             {!compact && fingers[i] > 0 && (
               <text
                 x={sx(i)}
                 y={rowCenter(row) + 3}
                 textAnchor="middle"
-                fill={FOLHA}
+                fill={isBass ? TEAL : FOLHA}
                 style={{ fontFamily: 'var(--font-cifra)', fontSize: 8, fontWeight: 700 }}
               >
                 {fingers[i]}
