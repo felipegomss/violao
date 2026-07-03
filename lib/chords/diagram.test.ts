@@ -74,10 +74,10 @@ describe('chordDiagram', () => {
     expect(noteAt(gb, gb.bassString!)).toBe(11) // baixo = B
   })
 
-  it('acorde com baixo sem entrada no db não gera nada, mas parece acorde (E7/G#)', () => {
+  it('acorde com baixo sem entrada no db nem override não gera nada, mas parece acorde', () => {
     // sem geração automática: mostramos "sem digitação" e o usuário manda o shape
-    expect(chordPositions('E7/G#')).toEqual([])
-    expect(looksLikeChord('E7/G#')).toBe(true)
+    expect(chordPositions('C7/E')).toEqual([])
+    expect(looksLikeChord('C7/E')).toBe(true)
   })
 
   it('looksLikeChord separa acorde de token não-acorde', () => {
