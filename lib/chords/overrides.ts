@@ -70,6 +70,20 @@ const A7M_6_11: ChordShape[] = [
   { frets: [-1, 0, 4, 6, 4, 4], fingers: [0, 0, 1, 4, 2, 3], baseFret: 1, barres: [] },
 ]
 
+// Dm7(9) = Dm9: notas D F A C E. A seed do db mostrava também inversões (baixo em
+// F) e formas esquisitas; aqui ficam só as duas com D no baixo (= oolimo).
+const DM9: ChordShape[] = [
+  { frets: [-1, 3, 1, 3, 3, 3], fingers: [0, 2, 1, 3, 4, 4], baseFret: 3, barres: [3] },
+  { frets: [1, 3, 1, 1, 1, 3], fingers: [1, 3, 1, 1, 1, 4], baseFret: 10, barres: [1] },
+]
+
+// Dm/C: Dm (D F A) com C no baixo (7ªm). Notas A C D F. Lido do braço do oolimo
+// (db não tem m/C pra D). Baixo C na 5ª (casa 3) / na 6ª (casa 8).
+const DM_C: ChordShape[] = [
+  { frets: [-1, 3, -1, 2, 3, 1], fingers: [0, 3, 0, 2, 4, 1], baseFret: 1, barres: [], bassString: 1 },
+  { frets: [3, -1, 2, 2, 1, -1], fingers: [4, 0, 2, 3, 1, 0], baseFret: 6, barres: [], bassString: 0 },
+]
+
 export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   'E7/B': E7_B,
   B7sus4: B7SUS4,
@@ -83,4 +97,7 @@ export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   'E7/G#': E7_GSHARP,
   'F#7/E': FSHARP7_E,
   'A7M(6/11+)': A7M_6_11,
+  'Dm7(9)': DM9,
+  Dm9: DM9,
+  'Dm/C': DM_C,
 }
