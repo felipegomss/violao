@@ -47,6 +47,7 @@ export function PublicCifra({
 }) {
   const [notation, setNotation] = useState<Notation>('chord')
   const [transpose, setTranspose] = useState(0)
+  const [voicings, setVoicings] = useState<Record<string, number>>({})
   const [hover, setHover] = useState<
     { name: string; shape: ChordShape; top: number; left: number } | null
   >(null)
@@ -57,7 +58,7 @@ export function PublicCifra({
       setHover(null)
       return
     }
-    const shape = chordDiagram(chord)
+    const shape = chordDiagram(chord, voicings[chord] ?? 0)
     if (!shape) {
       setHover(null)
       return
@@ -206,7 +207,11 @@ export function PublicCifra({
 
         {uniqueChords.length > 0 && (
           <div className="mt-6">
-            <ChordStrip chords={uniqueChords} />
+            <ChordStrip
+              chords={uniqueChords}
+              voicings={voicings}
+              onVary={(name, index) => setVoicings((v) => ({ ...v, [name]: index }))}
+            />
           </div>
         )}
 

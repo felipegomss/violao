@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chordDiagram } from './diagram'
+import { chordDiagram, chordPositions } from './diagram'
 import { CHORD_OVERRIDES } from './overrides'
 
 describe('chordDiagram', () => {
@@ -31,6 +31,14 @@ describe('chordDiagram', () => {
     expect(chordDiagram('VIm7')).toBeNull()
     expect(chordDiagram('N.C.')).toBeNull()
     expect(chordDiagram('%')).toBeNull()
+  })
+
+  it('expõe múltiplas digitações e indexa por posição', () => {
+    const pos = chordPositions('C')
+    expect(pos.length).toBeGreaterThan(1)
+    expect(chordDiagram('C', 1)).toEqual(pos[1])
+    // índice fora do range cai na primeira (graceful)
+    expect(chordDiagram('C', 99)).toEqual(pos[0])
   })
 
   it('override tem precedência (e vale pra tríade em baixo invertido)', () => {

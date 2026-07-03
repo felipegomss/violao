@@ -57,31 +57,32 @@ const chords = guitar.chords as unknown as Record<string, DbChord[]>
 
 const ROOT_RE = /^([A-G][#b]?)(.*)$/
 
-// Devolve a primeira digitação do acorde, ou null se não houver.
+// Todas as digitações conhecidas do acorde (várias posições no braço).
 // Acordes com baixo invertido (G/B) usam a tríade principal (antes da /).
-export function chordDiagram(token: string): ChordShape | null {
+// Override colapsa pra uma única digitação.
+export function chordPositions(token: string): ChordShape[] {
   const full = token.trim()
   const main = full.split('/')[0].trim()
 
-  // Overrides têm precedência: acorde completo primeiro (G/B), depois a tríade.
-  if (CHORD_OVERRIDES[full]) return CHORD_OVERRIDES[full]
-  if (CHORD_OVERRIDES[main]) return CHORD_OVERRIDES[main]
+  if (CHORD_OVERRIDES[full]) return [CHORD_OVERRIDES[full]]
+  if (CHORD_OVERRIDES[main]) return [CHORD_OVERRIDES[main]]
 
   const m = ROOT_RE.exec(main)
-  if (!m) return null
-
+  if (!m) return []
   const dbKey = ROOT_TO_DBKEY[m[1]]
-  if (!dbKey) return null
+  if (!dbKey) return []
 
   const suffix = SUFFIX_MAP[m[2]] ?? m[2]
   const entry = chords[dbKey]?.find((c) => c.suffix === suffix)
-  const pos = entry?.positions?.[0]
-  if (!pos) return null
+  return (entry?.positions ?? []).map((p) => ({
+    frets: p.frets,
+    fingers: p.fingers,
+    baseFret: p.baseFret,
+    barres: p.barres,
+  }))
+}
 
-  return {
-    frets: pos.frets,
-    fingers: pos.fingers,
-    baseFret: pos.baseFret,
-    barres: pos.barres,
-  }
+// Digitação numa posição específica (padrão: a primeira), ou null se não houver.
+export function chordDiagram(token: string, index = 0): ChordShape | null {
+  return chordPositions(token)[index] ?? chordPositions(token)[0] ?? null
 }
