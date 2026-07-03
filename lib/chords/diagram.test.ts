@@ -86,9 +86,15 @@ describe('chordDiagram', () => {
     expect(looksLikeChord('Bm7')).toBe(true)
   })
 
-  it("não confunde barra de baixo com '/' interno: A7M(6/11+) não vira acorde com baixo", () => {
-    // termina em '+)', não em /Nota → tratado como token único (sem digitação no db → vazio)
-    expect(chordPositions('A7M(6/11+)')).toEqual([])
+  it("não confunde barra de baixo com '/' interno (C7M(6/11+) não vira acorde com baixo)", () => {
+    // termina em '+)', não em /Nota → token único (sem override e sem db → vazio, não split)
+    expect(chordPositions('C7M(6/11+)')).toEqual([])
+    expect(looksLikeChord('C7M(6/11+)')).toBe(true)
+  })
+
+  it('A7M(6/11+) resolve pelo override (corda solta + casas altas)', () => {
+    const p = chordDiagram('A7M(6/11+)')!
+    expect(p.frets).toEqual([-1, 0, 4, 6, 4, 4])
   })
 
   it('grau ou token inválido → null', () => {

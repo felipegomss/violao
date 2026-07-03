@@ -1,7 +1,7 @@
 import type { ChordShape } from '@/lib/chords/diagram'
 
 const STRINGS = ['E', 'A', 'D', 'G', 'B', 'e']
-const FRETS = 4
+const MIN_FRETS = 4
 
 const INK = '#26211b'
 const TEAL = '#1c3c4c'
@@ -28,6 +28,10 @@ export function ChordDiagram({
     baseFret: 1,
     barres: [] as number[],
   }
+
+  // nº de casas mostradas: 4, ou mais se a forma tiver corda solta + casa alta
+  // (ex.: A7M(6/11+) = x 0 4 6 4 4 precisa chegar na 6ª). Só cresce em baseFret 1.
+  const FRETS = Math.max(MIN_FRETS, 0, ...frets.filter((f) => f > 0), ...barres)
 
   const W = compact ? 72 : 110
   const padX = compact ? 11 : 17
