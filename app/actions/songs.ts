@@ -54,3 +54,12 @@ export async function deleteSong(id: string) {
   revalidatePath('/songs')
   redirect('/songs')
 }
+
+// Autoavaliação "como estou tocando" (1–5), marcada na view da cifra.
+export async function setComoEstouTocando(id: string, value: number) {
+  await verifySession()
+  const v = Math.min(5, Math.max(1, Math.round(value)))
+  await prisma.song.update({ where: { id }, data: { comoEstouTocando: v } })
+  revalidatePath('/songs')
+  revalidatePath(`/songs/${id}`)
+}

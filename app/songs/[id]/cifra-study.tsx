@@ -1,13 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
+import { setComoEstouTocando } from '@/app/actions/songs'
 import { EditorialCifra } from './editorial-cifra'
 
 type Notation = 'chord' | 'degree'
 
+const RATING_WORDS: Record<number, string> = {
+  0: 'ainda não avaliado',
+  1: 'começando a decifrar',
+  2: 'ainda tropeçando',
+  3: 'já sai, com atenção',
+  4: 'fluindo bem',
+  5: 'de olhos fechados',
+}
+
 export function CifraStudy({
+  songId,
   sheet,
   parseFailed,
   rawContent,
@@ -16,7 +27,9 @@ export function CifraStudy({
   bpm,
   referenceYoutubeUrl,
   notes,
+  comoEstouTocando,
 }: {
+  songId: string
   sheet: ChordSheetModel | null
   parseFailed: boolean
   rawContent: string
@@ -25,9 +38,38 @@ export function CifraStudy({
   bpm: number | null
   referenceYoutubeUrl: string | null
   notes: string | null
+  comoEstouTocando: number | null
 }) {
   const [notation, setNotation] = useState<Notation>('chord')
   const [transpose, setTranspose] = useState(0)
+  const [autoScroll, setAutoScroll] = useState(false)
+  const [speed, setSpeed] = useState(2)
+  const [rating, setRating] = useState(comoEstouTocando ?? 0)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll: animação imperativa (rAF) rolando o container da cifra.
+  useEffect(() => {
+    if (!autoScroll) return
+    const el = scrollRef.current
+    if (!el) return
+    let raf = 0
+    let carry = 0
+    const tick = () => {
+      carry += speed * 0.35
+      const px = Math.floor(carry)
+      if (px > 0) {
+        el.scrollTop += px
+        carry -= px
+      }
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 1) {
+        setAutoScroll(false)
+        return
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [autoScroll, speed])
 
   const displayChord = (chord: string) =>
     notation === 'degree' ? degreeChord(chord, songKey) : transposeChord(chord, transpose)
@@ -51,6 +93,11 @@ export function CifraStudy({
       ? 'graus'
       : `${transpose > 0 ? '+' : ''}${transpose} · ${transposeChord(songKey, transpose)}`
 
+  const rate = (n: number) => {
+    setRating(n)
+    void setComoEstouTocando(songId, n)
+  }
+
   const rawPre = (
     <pre className="overflow-x-auto whitespace-pre-wrap rounded-md border border-ink/15 bg-folha p-4 font-cifra text-[13px] text-ink">
       {rawContent || '(vazio)'}
@@ -60,7 +107,7 @@ export function CifraStudy({
   return (
     <div className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 lg:grid-cols-[1fr_320px] lg:min-h-0">
       {/* Cifra sheet */}
-      <div className="overflow-y-auto px-8 py-8 lg:px-10">
+      <div ref={scrollRef} className="overflow-y-auto px-8 py-8 lg:px-10">
         {chordFormat === 'TRADICIONAL' ? (
           shownSheet ? (
             <EditorialCifra sheet={shownSheet} />
@@ -211,18 +258,34 @@ export function CifraStudy({
             </div>
           </div>
 
-          {/* Auto-scroll (stub) */}
+          {/* Auto-scroll — FUNCIONAL */}
           <div>
             <div className="mb-1.5 flex items-center justify-between">
               <span className="font-cifra text-[9px] tracking-[.06em] text-faint">AUTO-SCROLL</span>
-              <span className="rounded border border-ink/22 px-2 py-0.5 font-cifra text-[9px] uppercase tracking-[.1em] text-soft">
-                off
-              </span>
+              <button
+                type="button"
+                onClick={() => setAutoScroll((v) => !v)}
+                className={`rounded border px-2 py-0.5 font-cifra text-[9px] uppercase tracking-[.1em] ${
+                  autoScroll
+                    ? 'border-transparent bg-rust text-folha'
+                    : 'border-ink/22 text-soft'
+                }`}
+              >
+                {autoScroll ? 'on' : 'off'}
+              </button>
             </div>
-            <input type="range" min={1} max={5} step={1} defaultValue={2} disabled className="w-full" />
+            <input
+              type="range"
+              min={1}
+              max={5}
+              step={1}
+              value={speed}
+              onChange={(e) => setSpeed(Number(e.target.value))}
+              className="w-full"
+            />
             <div className="mt-0.5 flex justify-between font-cifra text-[8px] text-faint">
               <span>lento</span>
-              <span>veloc. 2</span>
+              <span>veloc. {speed}</span>
               <span>rápido</span>
             </div>
           </div>
@@ -244,17 +307,23 @@ export function CifraStudy({
           </div>
         </div>
 
-        {/* Como estou tocando (stub) */}
+        {/* Como estou tocando — FUNCIONAL */}
         <div className="p-[18px]">
           <div className="mb-2.5 font-cifra text-[9px] uppercase tracking-[.2em] text-faint">
             Como estou tocando
           </div>
           <div className="mb-2 flex gap-1.5">
             {[1, 2, 3, 4, 5].map((n) => (
-              <span key={n} className="h-3 w-[26px] rounded-sm bg-ink/[.16]" />
+              <button
+                key={n}
+                type="button"
+                aria-label={`nota ${n}`}
+                onClick={() => rate(n)}
+                className={`h-3 w-[26px] rounded-sm ${n <= rating ? 'bg-teal' : 'bg-ink/[.16]'}`}
+              />
             ))}
           </div>
-          <div className="font-editorial text-[15px] italic text-soft">ainda não avaliado</div>
+          <div className="font-editorial text-[15px] italic text-soft">{RATING_WORDS[rating]}</div>
         </div>
       </div>
     </div>

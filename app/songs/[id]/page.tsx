@@ -77,6 +77,7 @@ export default async function SongDetailPage({
 
         {/* Content split (interativo: notação + transpor) */}
         <CifraStudy
+          songId={song.id}
           sheet={sheet}
           parseFailed={parseFailed}
           rawContent={song.chordContent}
@@ -85,6 +86,7 @@ export default async function SongDetailPage({
           bpm={song.bpm}
           referenceYoutubeUrl={song.referenceYoutubeUrl}
           notes={song.notes}
+          comoEstouTocando={song.comoEstouTocando}
         />
       </div>
     </div>
