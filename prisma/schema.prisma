@@ -23,6 +23,7 @@ model Song {
   voicings            Json?    // { [acorde]: índice da digitação } — escolha do "variar acorde", persistida
   searchText          String   @default("") // folded(título + artistas) p/ busca acento-insensível
   artistSort          String   @default("") // folded(1º artista) p/ ordenar por artista
+  lastViewedAt        DateTime? // último acesso à cifra (p/ "recentes" na sidebar)
   chordContent        String   @db.Text
   referenceYoutubeUrl String?
   notes               String?  @db.Text

@@ -60,9 +60,13 @@ export function AppSidebar({
       return
     }
     let alive = true
-    void searchSongs({ q: debouncedQ.trim() || undefined, take: 6 }).then((rows) => {
-      if (alive) setItems(rows)
-    })
+    const term = debouncedQ.trim()
+    // sem busca → 5 últimas acessadas; buscando → resultado da busca
+    void searchSongs({ q: term || undefined, sort: term ? undefined : 'recent', take: 6 }).then(
+      (rows) => {
+        if (alive) setItems(rows)
+      },
+    )
     return () => {
       alive = false
     }
@@ -159,6 +163,9 @@ export function AppSidebar({
               className="w-full border-0 bg-transparent font-editorial text-[14px] text-ink caret-teal outline-none placeholder:text-faint"
             />
           </div>
+          {!debouncedQ.trim() && shown.length > 0 && (
+            <div className="mb-0.5 px-2 font-cifra text-[11px] lowercase text-faint">recentes</div>
+          )}
           <div className="min-h-0 flex-1 overflow-y-auto">
             {shown.length === 0 ? (
               <div className="px-2 py-5 text-center font-cifra text-[11px] lowercase text-faint">

@@ -62,7 +62,7 @@ export async function searchSongs(params: {
   q?: string
   genre?: string
   artist?: string
-  sort?: 'titulo' | 'artista' | 'toco'
+  sort?: 'titulo' | 'artista' | 'toco' | 'recent'
   excludeRepId?: string
   skip?: number
   take?: number
@@ -77,7 +77,10 @@ export async function searchSongs(params: {
       ? [{ artistSort: 'asc' }, { title: 'asc' }]
       : params.sort === 'toco'
         ? [{ comoEstouTocando: { sort: 'desc', nulls: 'last' } }, { title: 'asc' }]
-        : [{ title: 'asc' }]
+        : params.sort === 'recent'
+          ? // recentes primeiro; sem histórico (null) cai na ordem do acervo
+            [{ lastViewedAt: { sort: 'desc', nulls: 'last' } }, { title: 'asc' }]
+          : [{ title: 'asc' }]
 
   return prisma.song.findMany({
     where: {

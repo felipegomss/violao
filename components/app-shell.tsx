@@ -27,7 +27,7 @@ export async function AppShell({
     session
       ? prisma.user.findUnique({ where: { id: session.userId }, select: { name: true } })
       : null,
-    session ? searchSongs({ take: 6 }) : [],
+    session ? searchSongs({ sort: 'recent', take: 6 }) : [],
     cookies(),
   ])
   const open = cookieStore.get('sidebar_state')?.value !== 'false'

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { after } from 'next/server'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
@@ -37,6 +38,11 @@ export default async function SongDetailPage({
   const { palco, rep } = await searchParams
   const song = await prisma.song.findFirst({ where: { slug, userId } })
   if (!song) notFound()
+
+  // Registra o acesso (p/ "recentes" na sidebar) sem bloquear o render.
+  after(() =>
+    prisma.song.updateMany({ where: { id: song.id, userId }, data: { lastViewedAt: new Date() } }),
+  )
 
   const deleteThis = deleteSong.bind(null, song.id)
 
