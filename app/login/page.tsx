@@ -1,4 +1,4 @@
-import { Semibreve } from '@/components/semibreve'
+import { CompassoWordmark } from '@/components/compasso-wordmark'
 import { LoginForm } from './login-form'
 
 const MOINHO = ['D#m7(5-)', 'E/D', 'C#m7', 'Cº', 'Ebº']
@@ -14,10 +14,7 @@ export default async function LoginPage({
       <div className="grid w-full max-w-[900px] min-h-[560px] overflow-hidden rounded-xl border border-ink/18 bg-folha shadow-[0_30px_60px_-28px_rgba(38,33,27,.45)] md:grid-cols-2">
         <div className="flex flex-col justify-between gap-10 bg-teal p-12 text-[#f0e9da] md:p-14">
           {/* marca */}
-          <div className="flex items-center gap-2.5">
-            <Semibreve size={26} />
-            <span className="font-editorial text-[22px] font-medium tracking-[-.01em]">Compasso</span>
-          </div>
+          <CompassoWordmark size={30} />
 
           {/* frase */}
           <h2 className="font-editorial text-[44px] font-medium leading-[1.04] tracking-[-.015em]">
