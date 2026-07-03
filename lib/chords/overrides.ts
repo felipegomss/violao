@@ -59,6 +59,11 @@ const E7_GSHARP: ChordShape[] = [
   { frets: [4, -1, 2, 4, 3, -1], fingers: [2, 0, 1, 4, 3, 0], baseFret: 1, barres: [], bassString: 0 },
 ]
 
+// F#7/E: F#7 (F# A# C# E) com E (7ªm) no baixo. Notas A# C# E F#. Lido do braço do oolimo (casas 6-8).
+const FSHARP7_E: ChordShape[] = [
+  { frets: [-1, 2, 3, 1, 2, -1], fingers: [0, 2, 4, 1, 3, 0], baseFret: 6, barres: [], bassString: 1 },
+]
+
 export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   'E7/B': E7_B,
   B7sus4: B7SUS4,
@@ -70,4 +75,5 @@ export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   'D(add9)/F#': DADD9_F,
   'Bm/A': BM_A,
   'E7/G#': E7_GSHARP,
+  'F#7/E': FSHARP7_E,
 }
