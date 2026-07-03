@@ -1,11 +1,12 @@
 'use server'
 
 import { verifySession } from '@/lib/auth'
-import { parseCifraClub } from '@/lib/import/cifraclub'
+import { resolveSource, SOURCE_NAMES } from '@/lib/import/sources'
 
 export type ImportState = { content?: string; error?: string }
 
-export async function importCifraClub(url: string): Promise<ImportState> {
+// Import por link: reconhece a fonte pelo host e converte pro nosso ChordPro.
+export async function importFromUrl(url: string): Promise<ImportState> {
   await verifySession()
 
   let host: string
@@ -14,8 +15,10 @@ export async function importCifraClub(url: string): Promise<ImportState> {
   } catch {
     return { error: 'Esse link não parece válido.' }
   }
-  if (host !== 'cifraclub.com.br' && !host.endsWith('.cifraclub.com.br')) {
-    return { error: 'Por enquanto só importo link do CifraClub.' }
+
+  const source = resolveSource(host)
+  if (!source) {
+    return { error: `Ainda não conheço esse site. Por enquanto: ${SOURCE_NAMES.join(', ')}.` }
   }
 
   let html: string
@@ -29,9 +32,9 @@ export async function importCifraClub(url: string): Promise<ImportState> {
     return { error: 'Não consegui buscar o link.' }
   }
 
-  const parsed = parseCifraClub(html)
+  const parsed = source.parse(html)
   if (!parsed.title || !parsed.content.includes('[')) {
-    return { error: 'Não achei uma cifra nessa página. É uma página de cifra do CifraClub?' }
+    return { error: `Não achei uma cifra nessa página do ${source.name}.` }
   }
   return { content: parsed.content }
 }

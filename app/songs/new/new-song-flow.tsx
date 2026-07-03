@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ClipboardType, Link2 } from 'lucide-react'
-import { importCifraClub } from '@/app/actions/import'
+import { importFromUrl } from '@/app/actions/import'
 import type { SongFormState } from '@/app/actions/songs'
 import { Btn } from '@/components/btn'
 import { SongEditor } from '@/app/songs/song-editor'
@@ -27,7 +27,7 @@ export function NewSongFlow({ action, initialContent }: { action: Action; initia
   async function runImport() {
     setError(null)
     setPending(true)
-    const res = await importCifraClub(url.trim())
+    const res = await importFromUrl(url.trim())
     setPending(false)
     if (res.error) {
       setError(res.error)
@@ -98,10 +98,10 @@ export function NewSongFlow({ action, initialContent }: { action: Action; initia
             <Link2 size={22} strokeWidth={1.75} className="mt-0.5 flex-none text-teal" />
             <span>
               <span className="block font-editorial text-[19px] font-semibold">
-                Importar do CifraClub
+                Importar por link
               </span>
               <span className="mt-1 block font-editorial text-[15px] italic text-soft">
-                Cola o link da cifra e a gente converte pra você revisar.
+                Cola o link da cifra (CifraClub ou Cifras) e a gente converte pra você revisar.
               </span>
             </span>
           </button>
@@ -109,7 +109,7 @@ export function NewSongFlow({ action, initialContent }: { action: Action; initia
       ) : (
         <div className="mt-10 max-w-[440px]">
           <label htmlFor="cc-url" className="mb-2 block font-cifra text-[11px] lowercase text-faint">
-            link do CifraClub
+            link da cifra
           </label>
           <input
             id="cc-url"
@@ -120,7 +120,7 @@ export function NewSongFlow({ action, initialContent }: { action: Action; initia
             onKeyDown={(e) => {
               if (e.key === 'Enter' && url.trim() && !pending) runImport()
             }}
-            placeholder="https://www.cifraclub.com.br/…"
+            placeholder="https://www.cifraclub.com.br/… ou cifras.com.br/…"
             className={INPUT}
           />
           {error && (
