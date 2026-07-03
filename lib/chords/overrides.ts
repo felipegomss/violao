@@ -22,9 +22,19 @@ import type { ChordShape } from './diagram'
 //   'E7/B': [
 //     { frets: [-1, 2, 0, 1, 0, 0], fingers: [0, 2, 0, 1, 0, 0], baseFret: 1, barres: [], bassString: 1 },
 //   ],
+// B7sus4 (= B7(4)): notas B E F# A. As três formas "must know" do oolimo —
+// pestana de A na 2ª, forma de E na 7ª, forma de D na 9ª.
+const B7SUS4: ChordShape[] = [
+  { frets: [-1, 1, 3, 1, 4, 1], fingers: [0, 1, 3, 1, 4, 1], baseFret: 2, barres: [1], bassString: 1 },
+  { frets: [1, 3, 1, 3, 1, 1], fingers: [1, 3, 1, 4, 1, 1], baseFret: 7, barres: [1], bassString: 0 },
+  { frets: [-1, -1, 1, 3, 2, 4], fingers: [0, 0, 1, 3, 2, 4], baseFret: 9, barres: [], bassString: 2 },
+]
+
 export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   // E7 com baixo em B: forma aberta do E7 com a 6ª abafada (B na 5ª corda). oolimo "must know".
   'E7/B': [
     { frets: [-1, 2, 0, 1, 0, 0], fingers: [0, 2, 0, 1, 0, 0], baseFret: 1, barres: [], bassString: 1 },
   ],
+  B7sus4: B7SUS4,
+  'B7(4)': B7SUS4,
 }

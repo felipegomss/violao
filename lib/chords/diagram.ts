@@ -43,7 +43,7 @@ const SUFFIX_MAP: Record<string, string> = {
   m9: 'm9', 'm7(9)': 'm9',
   sus4: 'sus4', sus: 'sus4', '4': 'sus4',
   sus2: 'sus2', '2': 'sus2',
-  '7sus4': '7sus4',
+  '7sus4': '7sus4', '7(4)': '7sus4',
   add9: 'add9',
   '11': '11',
   '13': '13', '7(13)': '13',
