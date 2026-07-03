@@ -9,7 +9,7 @@ import { chordDiagram, type ChordShape } from '@/lib/chords/diagram'
 import { CompassoWordmark } from '@/components/compasso-wordmark'
 import { EditorialCifra } from '@/app/songs/[slug]/editorial-cifra'
 import { ChordDiagram } from '@/app/songs/[slug]/chord-diagram'
-import { ChordStrip } from '@/app/songs/[slug]/chord-strip'
+import { ChordGrid } from '@/app/songs/[slug]/chord-grid'
 
 type Notation = 'chord' | 'degree'
 
@@ -205,16 +205,6 @@ export function PublicCifra({
           </div>
         )}
 
-        {uniqueChords.length > 0 && (
-          <div className="mt-6">
-            <ChordStrip
-              chords={uniqueChords}
-              voicings={voicings}
-              onVary={(name, index) => setVoicings((v) => ({ ...v, [name]: index }))}
-            />
-          </div>
-        )}
-
         <div className="mt-8">
           {shownSheet ? (
             <EditorialCifra
@@ -232,6 +222,14 @@ export function PublicCifra({
             </>
           )}
         </div>
+
+        {uniqueChords.length > 0 && (
+          <ChordGrid
+            chords={uniqueChords}
+            voicings={voicings}
+            onVary={(name, index) => setVoicings((v) => ({ ...v, [name]: index }))}
+          />
+        )}
       </div>
 
       {hover && (

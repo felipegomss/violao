@@ -9,7 +9,7 @@ import { suggestScrollSpeed } from '@/lib/song/autoscroll'
 import { setComoEstouTocando } from '@/app/actions/songs'
 import { EditorialCifra } from './editorial-cifra'
 import { ChordDiagram } from './chord-diagram'
-import { ChordStrip } from './chord-strip'
+import { ChordGrid } from './chord-grid'
 import { StudyBar, type FontScale } from './study-bar'
 import { YoutubePlayer } from './youtube-player'
 
@@ -305,17 +305,6 @@ export function CifraStudy({
           </details>
         )}
 
-        {/* Linha de diagramas dos acordes usados */}
-        {uniqueChords.length > 0 && (
-          <div className="mt-6">
-            <ChordStrip
-              chords={uniqueChords}
-              voicings={voicings}
-              onVary={(name, index) => setVoicings((v) => ({ ...v, [name]: index }))}
-            />
-          </div>
-        )}
-
         {/* Cifra — o wrapper controla o A−/A+ da régua (EditorialCifra usa em) */}
         <div className="mt-8" style={{ fontSize: `${fontScale}em` }}>
           {shownSheet ? (
@@ -334,6 +323,15 @@ export function CifraStudy({
             </>
           )}
         </div>
+
+        {/* Diagramas dos acordes usados — grade no fim da cifra */}
+        {uniqueChords.length > 0 && (
+          <ChordGrid
+            chords={uniqueChords}
+            voicings={voicings}
+            onVary={(name, index) => setVoicings((v) => ({ ...v, [name]: index }))}
+          />
+        )}
 
         {notes && (
           <div className="mt-8 max-w-[640px] rounded-r-md border-l-2 border-rust bg-[#efe7d5] px-4 py-4">
