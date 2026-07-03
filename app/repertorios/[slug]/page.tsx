@@ -69,6 +69,7 @@ export default async function RepertorioPage({
         repertoireId={rep.id}
         repertoireSlug={rep.slug}
         name={rep.name}
+        shareSlug={rep.shareSlug}
         rows={rows}
         available={available}
       />

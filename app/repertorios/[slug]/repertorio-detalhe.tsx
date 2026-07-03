@@ -1,14 +1,16 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, Ellipsis, GripVertical, Plus, SquarePen, Trash2, X } from 'lucide-react'
+import { ChevronLeft, Ellipsis, GripVertical, Plus, Share2, SquarePen, Trash2, X } from 'lucide-react'
 import {
   reorderRepertoireSongs,
   removeSongFromRepertoire,
   addSongToRepertoire,
   renameRepertoire,
   deleteRepertoire,
+  shareRepertoire,
+  unshareRepertoire,
 } from '@/app/actions/repertoires'
 import { Btn } from '@/components/btn'
 import { EmptyState } from '@/components/empty-state'
@@ -38,12 +40,14 @@ export function RepertorioDetalhe({
   repertoireId,
   repertoireSlug,
   name,
+  shareSlug: initialShareSlug,
   rows,
   available,
 }: {
   repertoireId: string
   repertoireSlug: string
   name: string
+  shareSlug: string | null
   rows: Row[]
   available: Avail[]
 }) {
@@ -55,7 +59,43 @@ export function RepertorioDetalhe({
   const [renaming, setRenaming] = useState(false)
   const [displayName, setDisplayName] = useState(name)
   const [q, setQ] = useState('')
+  const [shareOpen, setShareOpen] = useState(false)
+  const [shareSlug, setShareSlug] = useState<string | null>(initialShareSlug)
+  const [copied, setCopied] = useState(false)
+  const [sharing, setSharing] = useState(false)
+  const shareRef = useRef<HTMLDivElement>(null)
   const itemsRef = useRef<Row[]>(rows)
+
+  // Fecha o painel de compartilhar ao clicar fora (mesmo padrão do menu ⋯).
+  useEffect(() => {
+    if (!shareOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (shareRef.current && !shareRef.current.contains(e.target as Node))
+        setShareOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [shareOpen])
+
+  const shareUrl = shareSlug ? `${location.origin}/r/${shareSlug}` : ''
+
+  const generateLink = async () => {
+    setSharing(true)
+    const s = await shareRepertoire(repertoireId)
+    if (s) setShareSlug(s)
+    setSharing(false)
+  }
+
+  const copyLink = async () => {
+    await navigator.clipboard.writeText(shareUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const makePrivate = async () => {
+    await unshareRepertoire(repertoireId)
+    setShareSlug(null)
+  }
 
   const setItemsTracked = (updater: (prev: Row[]) => Row[]) =>
     setItems((prev) => {
@@ -164,6 +204,53 @@ export function RepertorioDetalhe({
             <Btn type="button" variant="secondary" onClick={() => setPickerOpen(true)}>
               <Plus size={16} strokeWidth={2.25} /> Adicionar música
             </Btn>
+            <div ref={shareRef} className="relative">
+              <Btn
+                type="button"
+                variant="secondary"
+                onClick={() => setShareOpen((o) => !o)}
+                aria-expanded={shareOpen}
+              >
+                <Share2 size={16} strokeWidth={2} /> Compartilhar
+              </Btn>
+              {shareOpen && (
+                <div className="absolute right-0 top-[calc(100%+6px)] z-20 w-80 rounded-lg border border-ink/20 bg-folha p-4 shadow-[0_16px_34px_-14px_rgba(38,33,27,.5)]">
+                  {shareSlug ? (
+                    <div>
+                      <div className="mb-2 font-cifra text-[11px] lowercase text-faint">
+                        link público
+                      </div>
+                      <input
+                        readOnly
+                        value={shareUrl}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className={`h-11 w-full rounded-lg border border-ink/22 bg-[#fbf7ee] px-3 font-cifra text-[13px] text-ink outline-none transition-colors duration-150 focus:border-teal ${FOCUS}`}
+                      />
+                      <div className="mt-3 flex items-center gap-2.5">
+                        <Btn type="button" onClick={copyLink}>
+                          {copied ? 'copiado!' : 'copiar'}
+                        </Btn>
+                        <Btn type="button" variant="ghost" onClick={makePrivate}>
+                          tornar privado
+                        </Btn>
+                      </div>
+                      <div className="mt-3 font-cifra text-[11px] leading-relaxed text-faint">
+                        qualquer um com o link vê (só leitura)
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="mb-3 font-cifra text-[13px] leading-relaxed text-soft">
+                        esse repertório é privado
+                      </div>
+                      <Btn type="button" onClick={generateLink} disabled={sharing}>
+                        {sharing ? 'gerando…' : 'gerar link público'}
+                      </Btn>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <Btn
               type="button"
               variant="secondary"
