@@ -57,7 +57,7 @@ function RailLink({
   )
 }
 
-function CollapsedRail({ active, onExpand }: { active: Active; onExpand: () => void }) {
+function CollapsedRail({ active }: { active: Active }) {
   return (
     <div className="flex h-full flex-col items-center gap-1 py-5">
       <Link
@@ -70,27 +70,15 @@ function CollapsedRail({ active, onExpand }: { active: Active; onExpand: () => v
       <RailLink href="/songs" label="acervo" active={active === 'acervo'} Icon={Library} />
       <RailLink href="/repertorios" label="repertório" active={active === 'repert'} Icon={ListMusic} />
 
-      {/* rodapé: expandir + sair */}
-      <div className="mt-auto flex w-full flex-col items-center gap-1">
+      <form action={logout} className="mt-auto flex w-full flex-col items-center">
         <button
-          type="button"
-          aria-label="Expandir menu"
-          onClick={onExpand}
-          className={`flex w-full flex-col items-center gap-1.5 py-2.5 text-faint transition-colors duration-150 hover:text-ink ${FOCUS}`}
+          type="submit"
+          className="flex w-full flex-col items-center gap-1.5 py-2.5 text-faint transition-colors duration-150 hover:text-ink"
         >
-          <PanelLeft size={20} strokeWidth={1.75} />
-          <span className="font-cifra text-[11px] lowercase">expandir</span>
+          <LogOut size={20} strokeWidth={1.75} />
+          <span className="font-cifra text-[11px] lowercase">sair</span>
         </button>
-        <form action={logout} className="flex w-full flex-col items-center">
-          <button
-            type="submit"
-            className="flex w-full flex-col items-center gap-1.5 py-2.5 text-faint transition-colors duration-150 hover:text-ink"
-          >
-            <LogOut size={20} strokeWidth={1.75} />
-            <span className="font-cifra text-[11px] lowercase">sair</span>
-          </button>
-        </form>
-      </div>
+      </form>
     </div>
   )
 }
@@ -159,18 +147,17 @@ function Panel({
         >
           <CompassoWordmark size={23} />
         </Link>
-        <button
-          type="button"
-          aria-label={closeIcon === 'close' ? 'Fechar menu' : 'Recolher menu'}
-          onClick={onClose}
-          className={`flex h-11 w-11 items-center justify-center text-faint transition-colors duration-150 hover:text-ink ${FOCUS}`}
-        >
-          {closeIcon === 'close' ? (
+        {/* Fechar só no drawer mobile; no desktop quem recolhe é o trigger externo. */}
+        {closeIcon === 'close' && (
+          <button
+            type="button"
+            aria-label="Fechar menu"
+            onClick={onClose}
+            className={`flex h-11 w-11 items-center justify-center text-faint transition-colors duration-150 hover:text-ink ${FOCUS}`}
+          >
             <X size={20} strokeWidth={1.75} />
-          ) : (
-            <PanelLeftClose size={20} strokeWidth={1.75} />
-          )}
-        </button>
+          </button>
+        )}
       </div>
 
       {/* Seções */}
@@ -339,17 +326,28 @@ export function SidebarShell({
         }`}
       >
         {expanded ? (
-          <Panel
-            active={active}
-            songs={songs}
-            context={context}
-            onClose={toggle}
-            closeIcon="collapse"
-          />
+          <Panel active={active} songs={songs} context={context} onClose={toggle} closeIcon="collapse" />
         ) : (
-          <CollapsedRail active={active} onExpand={toggle} />
+          <CollapsedRail active={active} />
         )}
       </nav>
+
+      {/* Trigger estilo shadcn: no topo-esquerdo do conteúdo (fora do rail),
+          desliza junto com a borda da sidebar. Expande e recolhe. */}
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={expanded ? 'Recolher menu' : 'Expandir menu'}
+        title={expanded ? 'Recolher menu' : 'Expandir menu'}
+        style={{ left: expanded ? 306 : 82 }}
+        className={`fixed top-2.5 z-30 hidden h-9 w-9 items-center justify-center rounded-lg text-soft transition-[left,color] duration-[250ms] ease-out hover:bg-folha hover:text-ink motion-reduce:transition-none md:flex ${FOCUS}`}
+      >
+        {expanded ? (
+          <PanelLeftClose size={18} strokeWidth={1.75} />
+        ) : (
+          <PanelLeft size={18} strokeWidth={1.75} />
+        )}
+      </button>
 
       {/* Mobile: topbar fina com botão de menu */}
       <div className="fixed inset-x-0 top-0 z-40 flex h-12 items-center gap-2 border-b border-ink/12 bg-[#efe7d5] px-2 md:hidden">
