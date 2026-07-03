@@ -161,9 +161,9 @@ export function RepertorioDetalhe({
             <Btn
               type="button"
               variant="secondary"
+              size="icon"
               onClick={() => setMenuOpen((o) => !o)}
               aria-label="Ações do repertório"
-              className="w-11 px-0"
             >
               <Ellipsis size={18} strokeWidth={2} />
             </Btn>

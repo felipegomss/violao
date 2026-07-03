@@ -12,6 +12,7 @@ const VARIANTS = {
 const SIZES = {
   md: 'h-11 px-5 text-[13px]',
   sm: 'h-9 px-4 text-[12px]',
+  icon: 'h-11 w-11 text-[13px]', // quadrado, sem padding horizontal (ícone-only)
 } as const
 
 export function Btn({
