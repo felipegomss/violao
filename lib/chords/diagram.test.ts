@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chordDiagram, chordPositions, type ChordShape } from './diagram'
+import { chordDiagram, chordPositions, looksLikeChord, type ChordShape } from './diagram'
 import { CHORD_OVERRIDES } from './overrides'
 
 describe('chordDiagram', () => {
@@ -35,12 +35,16 @@ describe('chordDiagram', () => {
     expect(noteAt(gb, gb.bassString!)).toBe(11) // baixo = B
   })
 
-  it('sétima com baixo (E7/G#) injeta o baixo quando não há entrada no chords-db', () => {
-    const OPEN = [4, 9, 2, 7, 11, 4]
-    const p = chordDiagram('E7/G#')!
-    expect(p.bassString).not.toBeUndefined()
-    const abs = p.baseFret > 1 ? p.baseFret - 1 + p.frets[p.bassString!] : p.frets[p.bassString!]
-    expect((OPEN[p.bassString!] + abs) % 12).toBe(8) // baixo = G#
+  it('acorde com baixo sem entrada no db não gera nada, mas parece acorde (E7/G#)', () => {
+    // sem geração automática: mostramos "sem digitação" e o usuário manda o shape
+    expect(chordPositions('E7/G#')).toEqual([])
+    expect(looksLikeChord('E7/G#')).toBe(true)
+  })
+
+  it('looksLikeChord separa acorde de token não-acorde', () => {
+    expect(looksLikeChord('N.C.')).toBe(false)
+    expect(looksLikeChord('%')).toBe(false)
+    expect(looksLikeChord('Bm7')).toBe(true)
   })
 
   it("não confunde barra de baixo com '/' interno: A7M(6/11+) não vira acorde com baixo", () => {
@@ -62,29 +66,32 @@ describe('chordDiagram', () => {
     expect(chordDiagram('C', 99)).toEqual(pos[0])
   })
 
-  it('override por token exato vale pro acorde com baixo', () => {
+  it('E7/B vem do override embutido (x20100, baixo na 5ª corda)', () => {
+    const p = chordDiagram('E7/B')!
+    expect(p.frets).toEqual([-1, 2, 0, 1, 0, 0])
+    expect(p.bassString).toBe(1)
+  })
+
+  it('override por token exato tem precedência (acorde-com-baixo que o db não tem)', () => {
+    expect(chordPositions('D7/A')).toEqual([]) // sem override, e o db não tem 7/A → vazio
     const custom: ChordShape = {
-      frets: [-1, 2, 0, 1, 0, 0], fingers: [0, 2, 0, 1, 0, 0], baseFret: 1, barres: [], bassString: 1,
+      frets: [-1, -1, -1, 1, 0, 0], fingers: [0, 0, 0, 1, 0, 0], baseFret: 1, barres: [], bassString: 3,
     }
-    CHORD_OVERRIDES['E7/B'] = [custom]
+    CHORD_OVERRIDES['D7/A'] = [custom]
     try {
-      expect(chordDiagram('E7/B')).toEqual(custom)
+      expect(chordDiagram('D7/A')).toEqual(custom)
     } finally {
-      delete CHORD_OVERRIDES['E7/B']
+      delete CHORD_OVERRIDES['D7/A']
     }
   })
 
-  it('override do acorde base tem precedência e recebe o baixo por cima', () => {
+  it('override do acorde base tem precedência no acorde puro', () => {
     const custom: ChordShape = {
       frets: [3, 2, 0, 0, 0, 3], fingers: [3, 2, 0, 0, 0, 4], baseFret: 1, barres: [],
     }
     CHORD_OVERRIDES['G'] = [custom]
     try {
       expect(chordDiagram('G')).toEqual(custom)
-      // G/B usa o shape override e marca B (corda A, casa 2) como baixo, abafando a 6ª
-      const gb = chordDiagram('G/B')!
-      expect(gb.bassString).toBe(1)
-      expect(gb.frets[0]).toBe(-1)
     } finally {
       delete CHORD_OVERRIDES['G']
     }

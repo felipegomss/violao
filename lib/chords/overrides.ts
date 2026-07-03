@@ -22,4 +22,9 @@ import type { ChordShape } from './diagram'
 //   'E7/B': [
 //     { frets: [-1, 2, 0, 1, 0, 0], fingers: [0, 2, 0, 1, 0, 0], baseFret: 1, barres: [], bassString: 1 },
 //   ],
-export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {}
+export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
+  // E7 com baixo em B: forma aberta do E7 com a 6ª abafada (B na 5ª corda). oolimo "must know".
+  'E7/B': [
+    { frets: [-1, 2, 0, 1, 0, 0], fingers: [0, 2, 0, 1, 0, 0], baseFret: 1, barres: [], bassString: 1 },
+  ],
+}

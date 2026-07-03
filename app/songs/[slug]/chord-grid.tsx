@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import { chordPositions } from '@/lib/chords/diagram'
+import { chordPositions, looksLikeChord } from '@/lib/chords/diagram'
 import { ChordDiagram } from './chord-diagram'
 
 const FOCUS =
@@ -22,9 +22,11 @@ export function ChordGrid({
 }) {
   const [modal, setModal] = useState<string | null>(null)
 
+  // mostra acordes com digitação e também os que "parecem acorde" mas ainda não
+  // temos (placeholder "sem digitação"); ignora tokens que nem são acorde (N.C.…)
   const known = chords
     .map((name) => ({ name, positions: chordPositions(name) }))
-    .filter((c) => c.positions.length > 0)
+    .filter((c) => c.positions.length > 0 || looksLikeChord(c.name))
 
   if (known.length === 0) return null
 
@@ -37,6 +39,19 @@ export function ChordGrid({
 
       <div className="flex flex-wrap gap-x-5 gap-y-5">
         {known.map(({ name, positions }) => {
+          // sem digitação: braço vazio + aviso (você me manda pra adicionar)
+          if (positions.length === 0) {
+            return (
+              <div key={name} className="relative flex flex-col items-center p-1">
+                <ChordDiagram name={name} placeholder />
+                <span className="pointer-events-none absolute inset-x-0 top-[42%] -translate-y-1/2 text-center font-cifra text-[10px] lowercase leading-tight text-faint">
+                  sem
+                  <br />
+                  digitação
+                </span>
+              </div>
+            )
+          }
           const sel = Math.min(voicings[name] ?? 0, positions.length - 1)
           const many = positions.length > 1
           const body = (

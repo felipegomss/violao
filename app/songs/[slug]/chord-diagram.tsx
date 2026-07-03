@@ -13,12 +13,21 @@ export function ChordDiagram({
   name,
   shape,
   compact = false,
+  placeholder = false,
 }: {
   name: string
-  shape: ChordShape
+  shape?: ChordShape
   compact?: boolean
+  placeholder?: boolean
 }) {
-  const { frets, fingers, baseFret, barres } = shape
+  // placeholder = braço vazio (acorde sem digitação); o nome sai apagado.
+  const empty = placeholder || !shape
+  const { frets, fingers, baseFret, barres } = shape ?? {
+    frets: [] as number[],
+    fingers: [] as number[],
+    baseFret: 1,
+    barres: [] as number[],
+  }
 
   const W = compact ? 72 : 110
   const padX = compact ? 11 : 17
@@ -39,7 +48,7 @@ export function ChordDiagram({
         x={W / 2}
         y={compact ? 13 : 17}
         textAnchor="middle"
-        fill={TEAL}
+        fill={empty ? FAINT : TEAL}
         style={{ fontFamily: 'var(--font-cifra)', fontSize: nameSize, fontWeight: 700 }}
       >
         {name}
@@ -135,7 +144,7 @@ export function ChordDiagram({
         if (f <= 0) return null
         const row = f
         if (row < 1 || row > FRETS) return null
-        const isBass = i === shape.bassString
+        const isBass = i === shape?.bassString
         return (
           <g key={i}>
             <circle

@@ -71,7 +71,6 @@ const SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 const OPEN_PC = [4, 9, 2, 7, 11, 4]
 // Qualidade do acorde → prefixo do sufixo-com-baixo do chords-db (só tem tríade maior/menor).
 const SLASH_QUALITY: Record<string, string> = { '': '', m: 'm', '-': 'm', min: 'm' }
-const WINDOW = 4 // casas visíveis no diagrama
 
 const clone = (p: ChordShape): ChordShape => ({
   frets: [...p.frets],
@@ -91,60 +90,28 @@ const lowestPlayed = (p: ChordShape) => {
   return -1
 }
 
-// Tocável: no máx. 4 dedos (barra conta 1) e vão de até 4 casas.
-function isPlayable(frets: number[], barres: number[]): boolean {
-  const vals = frets.filter((f) => f > 0)
-  if (vals.length === 0) return true
-  if (Math.max(...vals) - Math.min(...vals) > 3) return false
-  const barreFrets = new Set(barres)
-  const fingers = barreFrets.size + vals.filter((f) => !barreFrets.has(f)).length
-  return fingers <= 4
-}
-
-// Ajusta a digitação p/ o baixo pedido e marca a corda do baixo. Ordem:
-//   1) a corda mais grave já soa o baixo → só marca
-//   2) dá pra pôr o baixo numa corda grave mantendo o acorde inteiro e ficando
-//      tocável → usa (preserva as notas, ex.: mantém a 7ª em E7/G#)
-//   3) senão, abafa as cordas abaixo de um baixo que já existe na forma (sempre
-//      tocável, mas pode perder alguma nota, ex.: E7/B → x20100)
-//   4) não deu → devolve como está (sem marcar; filtrado depois)
-function withBass(p: ChordShape, bassPc: number): ChordShape {
+// Marca qual corda é o baixo (sem inventar digitação): se a corda mais grave
+// tocada soa a nota do baixo, aponta ela. É só p/ destacar acordes-com-baixo
+// que já vêm prontos do chords-db (não gera nada).
+function markBass(p: ChordShape, bassPc: number): ChordShape {
   const lo = lowestPlayed(p)
-  if (lo >= 0 && noteAt(p, lo) === bassPc) return { ...p, bassString: lo }
-
-  const limit = lo < 0 ? 5 : lo
-  for (let i = 0; i <= limit; i++) {
-    for (let f = 0; f <= WINDOW; f++) {
-      if ((OPEN_PC[i] + absFret(p.baseFret, f)) % 12 !== bassPc) continue
-      const frets = [...p.frets]
-      const fingers = [...p.fingers]
-      for (let j = 0; j < i; j++) {
-        frets[j] = -1
-        fingers[j] = 0
-      }
-      frets[i] = f
-      fingers[i] = p.frets[i] === f ? fingers[i] : 0 // dedilhado do baixo novo desconhecido
-      if (isPlayable(frets, p.barres)) return { ...p, frets, fingers, bassString: i }
-    }
-  }
-
-  for (let i = 0; i < 6; i++) {
-    if (p.frets[i] >= 0 && noteAt(p, i) === bassPc) {
-      const frets = [...p.frets]
-      const fingers = [...p.fingers]
-      for (let j = 0; j < i; j++) {
-        frets[j] = -1
-        fingers[j] = 0
-      }
-      return { ...p, frets, fingers, bassString: i }
-    }
-  }
-  return p
+  return lo >= 0 && noteAt(p, lo) === bassPc ? { ...p, bassString: lo } : p
 }
 
-// Todas as digitações conhecidas do acorde (várias posições no braço). Acordes com
-// baixo (D/F#, E7/G#) refletem o baixo: usa a entrada do chords-db quando existe,
-// senão injeta a nota do baixo, sempre mantendo tocável. Override tem precedência.
+// Parece nome de acorde? (fundamental válida). Serve pro grid decidir entre
+// mostrar "sem digitação" e ignorar um token que nem é acorde (N.C., %…).
+export function looksLikeChord(token: string): boolean {
+  const full = token.trim()
+  if (CHORD_OVERRIDES[full]) return true
+  const sm = SLASH_RE.exec(full)
+  const mainPart = (sm ? sm[1] : full).trim()
+  const m = ROOT_RE.exec(mainPart)
+  return !!(m && ROOT_TO_DBKEY[m[1]])
+}
+
+// Todas as digitações conhecidas do acorde. NÃO gera nada: vem de override ou do
+// chords-db. Acorde-com-baixo só se existe (override do token, ou tríade /X do db);
+// senão devolve vazio — o grid mostra "sem digitação" e o usuário manda pra adicionar.
 export function chordPositions(token: string): ChordShape[] {
   const full = token.trim()
   if (CHORD_OVERRIDES[full]) return CHORD_OVERRIDES[full].map(clone)
@@ -170,19 +137,15 @@ export function chordPositions(token: string): ChordShape[] {
   const bassPc = NOTE_PC[bassPart]
   if (bassPc == null) return basePositions
 
-  // 1) acorde-com-baixo pronto no chords-db (tríades maior/menor: /G#, m/C…).
-  // Pulado se o acorde base tem override — aí o baixo vai em cima do seu shape.
+  // acorde-com-baixo pronto no chords-db (tríades maior/menor: /G#, m/C…)
   const slashQ = SLASH_QUALITY[quality]
-  if (slashQ != null && !CHORD_OVERRIDES[mainPart]) {
+  if (slashQ != null) {
     const slash = chords[dbKey]?.find((c) => c.suffix === `${slashQ}/${SHARP[bassPc]}`)
-    if (slash) return slash.positions.map((p) => withBass(clone(p), bassPc))
+    if (slash) return slash.positions.map((p) => markBass(clone(p), bassPc))
   }
 
-  // 2) sétima/estendido com baixo (E7/G#): parte do acorde base e injeta o baixo.
-  // Só as digitações onde o baixo coube na janela; se nenhuma, cai no acorde base.
-  const injected = basePositions.map((p) => withBass(p, bassPc))
-  const withBaixo = injected.filter((p) => p.bassString != null)
-  return withBaixo.length > 0 ? withBaixo : basePositions
+  // sem digitação pronta pro baixo → nada (usuário manda pra adicionar via override)
+  return []
 }
 
 // Digitação numa posição específica (padrão: a primeira), ou null se não houver.
