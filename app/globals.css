@@ -60,6 +60,22 @@
   --color-stageblue: #7fa9bd; /* azul de palco */
   --font-editorial: var(--font-newsreader);
   --font-cifra: var(--font-jbmono);
+
+  /* Escala tipográfica do Caderno (única fonte de tamanhos) */
+  --text-display: 2.5rem; /* 40px — título da música */
+  --text-h1: 2rem; /* 32px — título de página */
+  --text-h2: 1.5rem; /* 24px — cards/itens */
+  --text-h3: 1.1875rem; /* 19px — subtítulos/artista */
+  --text-body: 1rem; /* 16px — prosa */
+  --text-small: 0.875rem; /* 14px */
+  --text-caption: 0.75rem; /* 12px — mínimo legível */
+  --text-mono-ui: 0.8125rem; /* 13px — valores/controles */
+  --text-mono-label: 0.6875rem; /* 11px — labels (lowercase) */
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --dur-fast: 150ms;
+  --dur-med: 250ms;
 }
 
 :root {
@@ -140,5 +156,13 @@
   }
   html {
     @apply font-sans;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
