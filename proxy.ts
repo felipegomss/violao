@@ -9,7 +9,7 @@ export async function proxy(req: NextRequest) {
 
   const token = req.cookies.get('session')?.value
   const session = await decrypt(token)
-  const isAuth = session?.sub === 'owner'
+  const isAuth = typeof session?.sub === 'string'
 
   if (!isAuth && !isPublic) {
     return NextResponse.redirect(new URL('/login', req.nextUrl))

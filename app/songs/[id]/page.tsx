@@ -16,10 +16,10 @@ export default async function SongDetailPage({
   params: Promise<{ id: string }>
   searchParams: Promise<{ palco?: string; rep?: string }>
 }) {
-  await verifySession()
+  const { userId } = await verifySession()
   const { id } = await params
   const { palco, rep } = await searchParams
-  const song = await prisma.song.findUnique({ where: { id } })
+  const song = await prisma.song.findFirst({ where: { id, userId } })
   if (!song) notFound()
 
   const deleteThis = deleteSong.bind(null, song.id)
@@ -27,8 +27,8 @@ export default async function SongDetailPage({
   // Vindo de um repertório: passa a lista ordenada pro palco navegar como playlist.
   let playlist: { id: string; title: string }[] = []
   if (rep) {
-    const repertoire = await prisma.repertoire.findUnique({
-      where: { id: rep },
+    const repertoire = await prisma.repertoire.findFirst({
+      where: { id: rep, userId },
       include: {
         songs: {
           orderBy: { order: 'asc' },

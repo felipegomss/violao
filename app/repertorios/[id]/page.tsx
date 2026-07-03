@@ -9,10 +9,10 @@ export default async function RepertorioPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  await verifySession()
+  const { userId } = await verifySession()
   const { id } = await params
-  const rep = await prisma.repertoire.findUnique({
-    where: { id },
+  const rep = await prisma.repertoire.findFirst({
+    where: { id, userId },
     include: {
       songs: { include: { song: true }, orderBy: { order: 'asc' } },
     },
@@ -21,7 +21,11 @@ export default async function RepertorioPage({
 
   const songIds = rep.songs.map((rs) => rs.songId)
   const others = await prisma.repertoireSong.findMany({
-    where: { songId: { in: songIds }, repertoireId: { not: id } },
+    where: {
+      songId: { in: songIds },
+      repertoireId: { not: id },
+      repertoire: { userId },
+    },
     include: { repertoire: { select: { name: true } } },
   })
   const alsoMap = new Map<string, string[]>()
@@ -42,6 +46,7 @@ export default async function RepertorioPage({
 
   const inIds = new Set(songIds)
   const allSongs = await prisma.song.findMany({
+    where: { userId },
     orderBy: { title: 'asc' },
     select: { id: true, title: true, artists: true, key: true, comoEstouTocando: true },
   })

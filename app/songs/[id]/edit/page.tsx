@@ -10,9 +10,9 @@ export default async function EditSongPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  await verifySession()
+  const { userId } = await verifySession()
   const { id } = await params
-  const song = await prisma.song.findUnique({ where: { id } })
+  const song = await prisma.song.findFirst({ where: { id, userId } })
   if (!song) notFound()
 
   return (

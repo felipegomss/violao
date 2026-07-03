@@ -6,32 +6,40 @@ import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
 
 export async function createRepertoire(formData: FormData) {
-  await verifySession()
+  const { userId } = await verifySession()
   const name = String(formData.get('name') ?? '').trim()
   if (!name) return
-  const rep = await prisma.repertoire.create({ data: { name } })
+  const rep = await prisma.repertoire.create({ data: { name, userId } })
   revalidatePath('/repertorios')
   redirect(`/repertorios/${rep.id}`)
 }
 
 export async function renameRepertoire(id: string, formData: FormData) {
-  await verifySession()
+  const { userId } = await verifySession()
   const name = String(formData.get('name') ?? '').trim()
   if (!name) return
-  await prisma.repertoire.update({ where: { id }, data: { name } })
+  const { count } = await prisma.repertoire.updateMany({
+    where: { id, userId },
+    data: { name },
+  })
+  if (count === 0) return
   revalidatePath('/repertorios')
   revalidatePath(`/repertorios/${id}`)
 }
 
 export async function deleteRepertoire(id: string) {
-  await verifySession()
-  await prisma.repertoire.delete({ where: { id } })
+  const { userId } = await verifySession()
+  await prisma.repertoire.deleteMany({ where: { id, userId } })
   revalidatePath('/repertorios')
   redirect('/repertorios')
 }
 
 export async function addSongToRepertoire(repertoireId: string, songId: string) {
-  await verifySession()
+  const { userId } = await verifySession()
+  const rep = await prisma.repertoire.findFirst({ where: { id: repertoireId, userId } })
+  if (!rep) return
+  const song = await prisma.song.findFirst({ where: { id: songId, userId } })
+  if (!song) return
   const max = await prisma.repertoireSong.aggregate({
     where: { repertoireId },
     _max: { order: true },
@@ -46,7 +54,9 @@ export async function addSongToRepertoire(repertoireId: string, songId: string) 
 }
 
 export async function removeSongFromRepertoire(repertoireId: string, songId: string) {
-  await verifySession()
+  const { userId } = await verifySession()
+  const rep = await prisma.repertoire.findFirst({ where: { id: repertoireId, userId } })
+  if (!rep) return
   await prisma.repertoireSong.delete({
     where: { repertoireId_songId: { repertoireId, songId } },
   })
@@ -57,7 +67,9 @@ export async function reorderRepertoireSongs(
   repertoireId: string,
   orderedSongIds: string[],
 ) {
-  await verifySession()
+  const { userId } = await verifySession()
+  const rep = await prisma.repertoire.findFirst({ where: { id: repertoireId, userId } })
+  if (!rep) return
   await prisma.$transaction(
     orderedSongIds.map((songId, i) =>
       prisma.repertoireSong.update({

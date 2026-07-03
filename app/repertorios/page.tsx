@@ -5,8 +5,9 @@ import { AppSidebar } from '@/components/app-sidebar'
 import { NovoRepertorio } from './novo-repertorio'
 
 export default async function RepertoriosPage() {
-  await verifySession()
+  const { userId } = await verifySession()
   const reps = await prisma.repertoire.findMany({
+    where: { userId },
     orderBy: { createdAt: 'asc' },
     include: {
       songs: {

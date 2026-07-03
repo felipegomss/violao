@@ -4,8 +4,11 @@ import { AppSidebar } from '@/components/app-sidebar'
 import { Acervo } from './acervo'
 
 export default async function SongsPage() {
-  await verifySession()
-  const songs = await prisma.song.findMany({ orderBy: { updatedAt: 'desc' } })
+  const { userId } = await verifySession()
+  const songs = await prisma.song.findMany({
+    where: { userId },
+    orderBy: { updatedAt: 'desc' },
+  })
 
   return (
     <div className="flex min-h-screen bg-paper">

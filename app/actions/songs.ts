@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { verifySession } from '@/lib/auth'
 import { SongSchema } from '@/lib/validations/song'
@@ -15,15 +15,14 @@ export async function createSong(
   _prev: SongFormState,
   formData: FormData,
 ): Promise<SongFormState> {
-  await verifySession()
+  const { userId } = await verifySession()
   const chordContent = String(formData.get('chordContent') ?? '')
   const parsed = SongSchema.safeParse(parseDirectives(chordContent))
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors }
   }
   const song = await prisma.song.create({
-    // chordFormat é coluna legada (modo grade removido) — sempre TRADICIONAL.
-    data: { ...parsed.data, chordContent, chordFormat: 'TRADICIONAL' },
+    data: { ...parsed.data, chordContent, userId },
   })
   revalidatePath('/songs')
   redirect(`/songs/${song.id}`)
@@ -34,34 +33,34 @@ export async function updateSong(
   _prev: SongFormState,
   formData: FormData,
 ): Promise<SongFormState> {
-  await verifySession()
+  const { userId } = await verifySession()
   const chordContent = String(formData.get('chordContent') ?? '')
   const parsed = SongSchema.safeParse(parseDirectives(chordContent))
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors }
   }
-  await prisma.song.update({
-    where: { id },
-    // normaliza registros antigos de grade → sempre TRADICIONAL.
-    data: { ...parsed.data, chordContent, chordFormat: 'TRADICIONAL' },
+  const { count } = await prisma.song.updateMany({
+    where: { id, userId },
+    data: { ...parsed.data, chordContent },
   })
+  if (count === 0) notFound()
   revalidatePath('/songs')
   revalidatePath(`/songs/${id}`)
   redirect(`/songs/${id}`)
 }
 
 export async function deleteSong(id: string) {
-  await verifySession()
-  await prisma.song.delete({ where: { id } })
+  const { userId } = await verifySession()
+  await prisma.song.deleteMany({ where: { id, userId } })
   revalidatePath('/songs')
   redirect('/songs')
 }
 
 // Autoavaliação "como estou tocando" (1–5), marcada na view da cifra.
 export async function setComoEstouTocando(id: string, value: number) {
-  await verifySession()
+  const { userId } = await verifySession()
   const v = Math.min(5, Math.max(1, Math.round(value)))
-  await prisma.song.update({ where: { id }, data: { comoEstouTocando: v } })
+  await prisma.song.updateMany({ where: { id, userId }, data: { comoEstouTocando: v } })
   revalidatePath('/songs')
   revalidatePath(`/songs/${id}`)
 }
