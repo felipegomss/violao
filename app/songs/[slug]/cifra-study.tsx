@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { ChevronDown } from 'lucide-react'
 import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
 import { chordDiagram, type ChordShape } from '@/lib/chords/diagram'
@@ -11,7 +10,7 @@ import { EditorialCifra } from './editorial-cifra'
 import { ChordDiagram } from './chord-diagram'
 import { ChordGrid } from './chord-grid'
 import { StudyBar, type FontScale } from './study-bar'
-import { YoutubePlayer } from './youtube-player'
+import { FloatingVideo } from './floating-video'
 
 type Notation = 'chord' | 'degree'
 
@@ -75,6 +74,7 @@ export function CifraStudy({
   const suggestedOnce = useRef(false)
   const [rating, setRating] = useState(comoEstouTocando ?? 0)
   const [metronomeOn, setMetronomeOn] = useState(false)
+  const [videoOpen, setVideoOpen] = useState(false)
   // Digitação escolhida por acorde (índice de posição). "variar acorde".
   // Começa do que foi salvo na música e persiste a cada mudança (menos no mount).
   const [voicings, setVoicings] = useState<Record<string, number>>(initialVoicings ?? {})
@@ -297,27 +297,8 @@ export function CifraStudy({
           {actions && <div className="flex flex-none items-center gap-3">{actions}</div>}
         </header>
 
-        {/* Vídeo de referência — colapsável, só existe quando há vídeo */}
-        {referenceYoutubeUrl && (
-          <details className="group mt-6">
-            <summary
-              className={`flex h-11 w-fit cursor-pointer list-none items-center gap-2 font-cifra text-[11px] lowercase text-soft transition-colors duration-150 ease-out hover:text-ink [&::-webkit-details-marker]:hidden ${FOCUS}`}
-            >
-              <ChevronDown
-                size={16}
-                strokeWidth={2}
-                className="transition-transform duration-150 ease-out group-open:rotate-180"
-              />
-              vídeo de referência
-            </summary>
-            <div className="mt-2">
-              <YoutubePlayer url={referenceYoutubeUrl} />
-            </div>
-          </details>
-        )}
-
         {/* Cifra — o wrapper controla o A−/A+ da régua (EditorialCifra usa em) */}
-        <div className="mt-8" style={{ fontSize: `${fontScale}em` }}>
+        <div className="mt-7" style={{ fontSize: `${fontScale}em` }}>
           {shownSheet ? (
             <EditorialCifra
               sheet={shownSheet}
@@ -397,7 +378,14 @@ export function CifraStudy({
         bpm={bpm}
         metronomeOn={metronomeOn}
         onToggleMetronome={() => setMetronomeOn((v) => !v)}
+        hasVideo={!!referenceYoutubeUrl}
+        videoOpen={videoOpen}
+        onToggleVideo={() => setVideoOpen((v) => !v)}
       />
+
+      {referenceYoutubeUrl && videoOpen && (
+        <FloatingVideo url={referenceYoutubeUrl} onClose={() => setVideoOpen(false)} />
+      )}
 
       {hover && (
         <div

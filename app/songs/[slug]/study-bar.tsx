@@ -1,6 +1,6 @@
 'use client'
 
-import { Minus, Pause, Play, Plus } from 'lucide-react'
+import { Minus, MonitorPlay, Pause, Play, Plus } from 'lucide-react'
 import { transposeChord } from '@/lib/chords/transform'
 
 // O lucide não tem metrônomo — este segue o traço da família (stroke 2,
@@ -57,6 +57,9 @@ export function StudyBar({
   bpm,
   metronomeOn,
   onToggleMetronome,
+  hasVideo,
+  videoOpen,
+  onToggleVideo,
 }: {
   songKey: string
   notation: Notation
@@ -72,6 +75,9 @@ export function StudyBar({
   bpm: number | null
   metronomeOn: boolean
   onToggleMetronome: () => void
+  hasVideo: boolean
+  videoOpen: boolean
+  onToggleVideo: () => void
 }) {
   const degree = notation === 'degree'
   const scaleIdx = FONT_SCALES.indexOf(fontScale)
@@ -211,6 +217,23 @@ export function StudyBar({
           <span className="flex-none font-cifra text-[13px] tabular-nums text-soft">
             {bpm} <span className="text-[11px] text-faint">bpm</span>
           </span>
+        </>
+      )}
+
+      {/* vídeo de referência (abre o painel flutuante) */}
+      {hasVideo && (
+        <>
+          <Divider />
+          <button
+            type="button"
+            onClick={onToggleVideo}
+            aria-pressed={videoOpen}
+            aria-label="vídeo de referência"
+            title="vídeo de referência"
+            className={`${ICON_BTN} ${videoOpen ? 'text-teal' : ''}`}
+          >
+            <MonitorPlay size={18} strokeWidth={2} />
+          </button>
         </>
       )}
     </div>

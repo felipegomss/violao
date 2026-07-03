@@ -60,29 +60,34 @@ function CollapsedRail({ active, onExpand }: { active: Active; onExpand: () => v
       <Link
         href="/songs"
         aria-label="Compasso — início"
-        className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-ink text-folha transition-transform duration-150 hover:-translate-y-0.5"
+        className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-ink text-folha transition-transform duration-150 hover:-translate-y-0.5"
       >
         <Semibreve size={24} />
       </Link>
-      <button
-        type="button"
-        aria-label="Expandir menu"
-        onClick={onExpand}
-        className={`mb-1 flex h-11 w-11 items-center justify-center text-faint transition-colors duration-150 hover:text-ink ${FOCUS}`}
-      >
-        <PanelLeft size={20} strokeWidth={1.75} />
-      </button>
       <RailLink href="/songs" label="acervo" active={active === 'acervo'} Icon={Library} />
       <RailLink href="/repertorios" label="repertório" active={active === 'repert'} Icon={ListMusic} />
-      <form action={logout} className="mt-auto flex w-full flex-col items-center">
+
+      {/* rodapé: expandir + sair */}
+      <div className="mt-auto flex w-full flex-col items-center gap-1">
         <button
-          type="submit"
-          className="flex w-full flex-col items-center gap-1.5 py-2.5 text-faint transition-colors duration-150 hover:text-ink"
+          type="button"
+          aria-label="Expandir menu"
+          onClick={onExpand}
+          className={`flex w-full flex-col items-center gap-1.5 py-2.5 text-faint transition-colors duration-150 hover:text-ink ${FOCUS}`}
         >
-          <LogOut size={20} strokeWidth={1.75} />
-          <span className="font-cifra text-[11px] lowercase">sair</span>
+          <PanelLeft size={20} strokeWidth={1.75} />
+          <span className="font-cifra text-[11px] lowercase">expandir</span>
         </button>
-      </form>
+        <form action={logout} className="flex w-full flex-col items-center">
+          <button
+            type="submit"
+            className="flex w-full flex-col items-center gap-1.5 py-2.5 text-faint transition-colors duration-150 hover:text-ink"
+          >
+            <LogOut size={20} strokeWidth={1.75} />
+            <span className="font-cifra text-[11px] lowercase">sair</span>
+          </button>
+        </form>
+      </div>
     </div>
   )
 }
