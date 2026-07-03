@@ -21,7 +21,7 @@ export default async function RepertoriosPage() {
   return (
     <div className="flex min-h-screen bg-paper text-ink">
       <AppSidebar active="repert" />
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="mx-auto flex w-full max-w-[1925px] flex-col min-w-0">
         <header className="px-10 pt-8 flex justify-between items-start">
           <div>
             <h2 className="font-editorial font-medium text-[38px] leading-none">

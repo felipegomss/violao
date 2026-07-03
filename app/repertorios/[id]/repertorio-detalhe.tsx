@@ -111,7 +111,7 @@ export function RepertorioDetalhe({
   )
 
   return (
-    <main className="flex min-w-0 flex-1 flex-col">
+    <main className="mx-auto flex w-full min-w-0 max-w-[1925px] flex-col">
       {/* header */}
       <div className="border-b border-ink/12 px-10 pt-6 pb-5">
         <Link href="/repertorios" className="font-cifra text-[11px] text-faint hover:text-ink">

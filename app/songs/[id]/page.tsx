@@ -37,7 +37,7 @@ export default async function SongDetailPage({
       <AppSidebar active="acervo" />
 
       {/* Main column */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="mx-auto flex w-full min-w-0 max-w-[1925px] flex-col">
         {/* Header band */}
         <div className="flex items-start justify-between gap-6 border-b border-ink/12 bg-folha px-8 py-6">
           <div className="min-w-0">
