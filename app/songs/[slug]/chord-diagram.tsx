@@ -128,8 +128,15 @@ export function ChordDiagram({
         if (row < 1 || row > FRETS) return null
         const idxs = frets.map((f, i) => (f === b ? i : -1)).filter((i) => i >= 0)
         if (idxs.length < 2) return null
-        const x1 = sx(Math.min(...idxs))
-        const x2 = sx(Math.max(...idxs))
+        const lo = Math.min(...idxs)
+        const hi = Math.max(...idxs)
+        // A barra não é física se alguma corda DENTRO do vão está numa casa
+        // MENOR (fretada mais perto da pestana) — não dá pra barrar por cima.
+        for (let i = lo + 1; i < hi; i++) {
+          if (frets[i] > 0 && frets[i] < b) return null
+        }
+        const x1 = sx(lo)
+        const x2 = sx(hi)
         return (
           <rect
             key={k}
