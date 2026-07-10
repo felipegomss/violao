@@ -101,7 +101,7 @@ export function StudyBar({
         onClick={onRestore}
         aria-label="mostrar controles"
         tabIndex={hidden ? 0 : -1}
-        className={`group fixed bottom-6 left-1/2 z-30 flex h-11 -translate-x-1/2 items-center gap-2 rounded-full border border-ink/15 bg-folha px-4 text-ink shadow-[0_12px_32px_-12px_rgba(38,33,27,.4)] transition-[opacity,transform] duration-300 ease-out hover:-translate-y-0.5 active:scale-95 motion-reduce:transition-none max-md:bottom-3 ${FOCUS} ${
+        className={`group fixed bottom-6 right-6 z-30 flex h-11 items-center gap-2 rounded-full border border-ink/15 bg-folha px-4 text-ink shadow-[0_12px_32px_-12px_rgba(38,33,27,.4)] transition-[opacity,transform] duration-300 ease-out hover:-translate-y-0.5 active:scale-95 motion-reduce:transition-none max-md:bottom-3 max-md:right-3 ${FOCUS} ${
           hidden
             ? 'translate-y-0 scale-100 opacity-100 delay-150 hover:-translate-y-0.5'
             : 'pointer-events-none translate-y-3 scale-90 opacity-0'
