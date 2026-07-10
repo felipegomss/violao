@@ -39,6 +39,14 @@ function Divider() {
   return <span aria-hidden className="mx-2 h-6 w-px flex-none bg-ink/10" />
 }
 
+// Entrada escalonada dos itens dentro da alça "controles": cada um desliza da
+// direita e faz fade, com um delay próprio (o pop da pílula vem primeiro).
+function handleItem(shown: boolean, delay: string) {
+  return `transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none ${
+    shown ? `translate-x-0 opacity-100 ${delay}` : 'translate-x-1.5 opacity-0'
+  }`
+}
+
 // Régua de estudo: barra fixa com todos os controles de leitura da cifra —
 // transpor · notação · fonte · auto-scroll · metrônomo. Pill flutuante no
 // desktop, barra full-width colada no rodapé no mobile.
@@ -93,26 +101,32 @@ export function StudyBar({
 
   return (
     <>
-      {/* Alça pra trazer a régua de volta sem ter que rolar pra cima. Aparece
-          (fade + sobe + escala) quando a régua está escondida, com um respiro
-          depois que ela desliza pra fora. */}
+      {/* Alça pra trazer a régua de volta sem ter que rolar pra cima. Surge do
+          canto com um leve overshoot (easing back-out) e os itens de dentro
+          entram escalonados, depois que a régua desliza pra fora. */}
       <button
         type="button"
         onClick={onRestore}
         aria-label="mostrar controles"
         tabIndex={hidden ? 0 : -1}
-        className={`group fixed bottom-6 right-6 z-30 flex h-11 items-center gap-2 rounded-full border border-ink/15 bg-folha px-4 text-ink shadow-[0_12px_32px_-12px_rgba(38,33,27,.4)] transition-[opacity,transform] duration-300 ease-out hover:-translate-y-0.5 active:scale-95 motion-reduce:transition-none max-md:bottom-3 max-md:right-3 ${FOCUS} ${
+        className={`group fixed bottom-6 right-6 z-30 flex h-11 origin-bottom-right items-center gap-2 rounded-full border border-ink/15 bg-folha px-4 text-ink shadow-[0_12px_32px_-12px_rgba(38,33,27,.4)] transition-[opacity,transform] duration-[420ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 active:scale-95 motion-reduce:transition-none max-md:bottom-3 max-md:right-3 ${FOCUS} ${
           hidden
-            ? 'translate-y-0 scale-100 opacity-100 delay-150 hover:-translate-y-0.5'
-            : 'pointer-events-none translate-y-3 scale-90 opacity-0'
+            ? 'translate-y-0 scale-100 opacity-100 delay-150'
+            : 'pointer-events-none translate-y-2 scale-[.72] opacity-0'
         }`}
       >
-        <SlidersHorizontal size={15} strokeWidth={2} className="text-soft" />
-        <span className="font-cifra text-[12px] lowercase">controles</span>
+        <SlidersHorizontal
+          size={15}
+          strokeWidth={2}
+          className={`text-soft ${handleItem(hidden, 'delay-200')}`}
+        />
+        <span className={`font-cifra text-[12px] lowercase ${handleItem(hidden, 'delay-[250ms]')}`}>
+          controles
+        </span>
         <ChevronUp
           size={15}
           strokeWidth={2}
-          className="text-teal transition-transform duration-200 ease-out group-hover:-translate-y-0.5"
+          className={`text-teal group-hover:-translate-y-0.5 ${handleItem(hidden, 'delay-[300ms]')}`}
         />
       </button>
 
