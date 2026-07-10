@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import Link from 'next/link'
+import { parseAsStringLiteral, useQueryState } from 'nuqs'
 import { ChevronDown, Search } from 'lucide-react'
 import { EmptyState } from '@/components/empty-state'
 import { searchSongs, type SongRow } from '@/app/actions/songs'
@@ -9,7 +10,8 @@ import { useDebouncedValue } from '@/lib/hooks/use-debounced-value'
 import { useInfiniteSongs } from '@/lib/hooks/use-infinite-songs'
 import { NewSongMenu } from './new-song-menu'
 
-type SortKey = 'titulo' | 'artista' | 'toco'
+const SORT_KEYS = ['titulo', 'artista', 'toco'] as const
+type SortKey = (typeof SORT_KEYS)[number]
 
 const SORT_LABELS: Record<SortKey, string> = {
   titulo: 'Título A–Z',
@@ -27,18 +29,27 @@ export function Acervo({
   genres: facetGenres,
   artists: facetArtists,
   total,
-  initialQ = '',
 }: {
   initialSongs: SongRow[]
   genres: string[]
   artists: string[]
   total: number
-  initialQ?: string
 }) {
-  const [q, setQ] = useState(initialQ)
-  const [genre, setGenre] = useState('todos')
-  const [artist, setArtist] = useState('todos')
-  const [sort, setSort] = useState<SortKey>('titulo')
+  // Filtros na URL (nuqs) — persistem ao sair e voltar pra tela. `clearOnDefault`
+  // limpa o param quando volta pro default, mantendo a URL limpa.
+  const [q, setQ] = useQueryState('q', { defaultValue: '', clearOnDefault: true })
+  const [genre, setGenre] = useQueryState('genre', {
+    defaultValue: 'todos',
+    clearOnDefault: true,
+  })
+  const [artist, setArtist] = useQueryState('artist', {
+    defaultValue: 'todos',
+    clearOnDefault: true,
+  })
+  const [sort, setSort] = useQueryState(
+    'sort',
+    parseAsStringLiteral(SORT_KEYS).withDefault('titulo').withOptions({ clearOnDefault: true }),
+  )
   const [artistOpen, setArtistOpen] = useState(false)
   const [sortOpen, setSortOpen] = useState(false)
 

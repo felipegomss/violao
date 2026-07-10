@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Newsreader, JetBrains_Mono } from 'next/font/google'
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import './globals.css'
 
 // DS editorial "Caderno" — carregadas como CSS vars (font-editorial / font-cifra).
@@ -31,7 +32,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className={`${newsreader.variable} ${jetbrainsMono.variable}`}>
-      <body className="min-h-screen bg-background text-foreground antialiased">{children}</body>
+      <body className="min-h-screen bg-background text-foreground antialiased">
+        <NuqsAdapter>{children}</NuqsAdapter>
+      </body>
     </html>
   )
 }
