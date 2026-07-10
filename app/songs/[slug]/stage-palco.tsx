@@ -7,6 +7,7 @@ import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
 import { suggestScrollSpeed } from '@/lib/song/autoscroll'
 import { Btn } from '@/components/btn'
+import { StagePlayer } from './stage-player'
 
 type Notation = 'chord' | 'degree'
 
@@ -75,6 +76,7 @@ export function StagePalco({
   currentSlug,
   playlist = [],
   repertoireSlug,
+  referenceYoutubeUrl,
   autoOpen = false,
 }: {
   sheet: ChordSheetModel | null
@@ -84,6 +86,7 @@ export function StagePalco({
   currentSlug: string
   playlist?: { slug: string; title: string }[]
   repertoireSlug?: string
+  referenceYoutubeUrl?: string | null
   autoOpen?: boolean
 }) {
   const router = useRouter()
@@ -370,6 +373,14 @@ export function StagePalco({
                 aria-label="velocidade do auto-scroll"
               />
             </div>
+
+            {/* áudio de referência — play · pause · recomeçar */}
+            {referenceYoutubeUrl && (
+              <>
+                <span aria-hidden className="h-8 w-px bg-[#f0e9da]/10 max-md:hidden" />
+                <StagePlayer url={referenceYoutubeUrl} />
+              </>
+            )}
           </div>
         </div>
       )}

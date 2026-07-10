@@ -113,6 +113,7 @@ export default async function SongDetailPage({
                 currentSlug={song.slug}
                 playlist={playlist}
                 repertoireSlug={rep}
+                referenceYoutubeUrl={song.referenceYoutubeUrl}
                 autoOpen={palco === '1'}
               />
               <SongActions slug={song.slug} deleteAction={deleteThis} />

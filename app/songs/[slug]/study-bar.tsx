@@ -60,6 +60,7 @@ export function StudyBar({
   hasVideo,
   videoOpen,
   onToggleVideo,
+  hidden = false,
 }: {
   songKey: string
   notation: Notation
@@ -78,6 +79,7 @@ export function StudyBar({
   hasVideo: boolean
   videoOpen: boolean
   onToggleVideo: () => void
+  hidden?: boolean
 }) {
   const degree = notation === 'degree'
   const scaleIdx = FONT_SCALES.indexOf(fontScale)
@@ -88,7 +90,11 @@ export function StudyBar({
     }`
 
   return (
-    <div className="fixed bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-ink/15 bg-folha px-4 py-2 shadow-[0_12px_32px_-12px_rgba(38,33,27,.4)] max-md:bottom-0 max-md:left-0 max-md:w-full max-md:translate-x-0 max-md:justify-between max-md:overflow-x-auto max-md:rounded-none">
+    <div
+      className={`fixed bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-ink/15 bg-folha px-4 py-2 shadow-[0_12px_32px_-12px_rgba(38,33,27,.4)] transition-transform duration-300 ease-in-out motion-reduce:transition-none max-md:bottom-0 max-md:left-0 max-md:w-full max-md:translate-x-0 max-md:justify-between max-md:overflow-x-auto max-md:rounded-none ${
+        hidden ? 'translate-y-[calc(100%+2rem)]' : ''
+      }`}
+    >
       {/* transpor */}
       <button
         type="button"

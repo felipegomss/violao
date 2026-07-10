@@ -76,6 +76,7 @@ export function CifraStudy({
   const [rating, setRating] = useState(comoEstouTocando ?? 0)
   const [metronomeOn, setMetronomeOn] = useState(false)
   const [videoOpen, setVideoOpen] = useState(false)
+  const [barHidden, setBarHidden] = useState(false)
   // Digitação escolhida por acorde (índice de posição). "variar acorde".
   // Começa do que foi salvo na música e persiste a cada mudança (menos no mount).
   const [voicings, setVoicings] = useState<Record<string, number>>(initialVoicings ?? {})
@@ -165,6 +166,24 @@ export function CifraStudy({
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
   }, [autoScroll, pxPerSec])
+
+  // Régua some ao rolar pra baixo e volta ao rolar pra cima (libera a tela na
+  // leitura). Durante o auto-scroll não escutamos o scroll (a barra fica sempre
+  // visível por derivação — é ali que está o pause). Perto do topo, mostra.
+  useEffect(() => {
+    if (autoScroll) return
+    let lastY = window.scrollY
+    const onScroll = () => {
+      const y = window.scrollY
+      const dy = y - lastY
+      if (Math.abs(dy) < 6) return // ignora tremor
+      if (y < 80) setBarHidden(false)
+      else setBarHidden(dy > 0)
+      lastY = y
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [autoScroll])
 
   // Espaço alterna o auto-scroll — exceto quando o foco está num controle
   // (input/textarea/select/botão/summary/contenteditable), que fica com a tecla.
@@ -395,6 +414,7 @@ export function CifraStudy({
         hasVideo={!!referenceYoutubeUrl}
         videoOpen={videoOpen}
         onToggleVideo={() => setVideoOpen((v) => !v)}
+        hidden={barHidden && !autoScroll}
       />
 
       {referenceYoutubeUrl && videoOpen && (

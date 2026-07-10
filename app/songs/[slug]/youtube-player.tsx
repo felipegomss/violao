@@ -3,39 +3,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { Repeat, X } from 'lucide-react'
 import { youtubeId, formatTime } from '@/lib/song/youtube'
+import { loadYouTubeApi, getYT } from './yt-loader'
 
 type YTPlayer = {
   getCurrentTime: () => number
   seekTo: (seconds: number, allowSeekAhead: boolean) => void
   destroy: () => void
-}
-
-// Carrega a IFrame API do YouTube uma única vez (promessa memoizada no módulo).
-let apiPromise: Promise<void> | null = null
-function loadYouTubeApi(): Promise<void> {
-  if (typeof window === 'undefined') return Promise.resolve()
-  const w = window as unknown as {
-    YT?: { Player: unknown }
-    onYouTubeIframeAPIReady?: () => void
-  }
-  if (w.YT?.Player) return Promise.resolve()
-  if (apiPromise) return apiPromise
-  apiPromise = new Promise((resolve) => {
-    const prev = w.onYouTubeIframeAPIReady
-    w.onYouTubeIframeAPIReady = () => {
-      prev?.()
-      resolve()
-    }
-    const tag = document.createElement('script')
-    tag.src = 'https://www.youtube.com/iframe_api'
-    document.body.appendChild(tag)
-  })
-  return apiPromise
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function YT(): any {
-  return (window as unknown as { YT: unknown }).YT
 }
 
 export function YoutubePlayer({ url }: { url: string | null }) {
@@ -59,7 +32,7 @@ export function YoutubePlayer({ url }: { url: string | null }) {
 
     void loadYouTubeApi().then(() => {
       if (cancelled || !hostRef.current) return
-      const player: YTPlayer = new (YT().Player)(hostRef.current, {
+      const player: YTPlayer = new (getYT().Player)(hostRef.current, {
         videoId,
         width: '100%',
         height: '100%',
