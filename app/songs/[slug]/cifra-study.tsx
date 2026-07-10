@@ -415,6 +415,7 @@ export function CifraStudy({
         videoOpen={videoOpen}
         onToggleVideo={() => setVideoOpen((v) => !v)}
         hidden={barHidden && !autoScroll}
+        onRestore={() => setBarHidden(false)}
       />
 
       {referenceYoutubeUrl && videoOpen && (
