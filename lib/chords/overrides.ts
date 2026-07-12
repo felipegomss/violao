@@ -102,6 +102,34 @@ const D7_SHARP11: ChordShape[] = [
   { frets: [-1, -1, 1, 2, 2, 3], fingers: [0, 0, 1, 2, 3, 4], baseFret: 6, barres: [] },
 ]
 
+// D7/F#: D7 (D F# A C) com a 3ª (F#) no baixo. Slash dominante — o db só tem
+// slash de tríade, então vem daqui. 4 posições do oolimo (baixo F# marcado).
+const D7_F: ChordShape[] = [
+  { frets: [2, -1, 0, 2, 1, -1], fingers: [2, 0, 0, 3, 1, 0], baseFret: 1, barres: [], bassString: 0 },
+  { frets: [-1, -1, 3, 4, 2, 1], fingers: [0, 0, 3, 4, 2, 1], baseFret: 2, barres: [], bassString: 2 },
+  { frets: [-1, -1, 2, 3, 1, 3], fingers: [0, 0, 2, 3, 1, 4], baseFret: 3, barres: [], bassString: 2 },
+  { frets: [-1, 3, -1, 1, 4, 2], fingers: [0, 3, 0, 1, 4, 2], baseFret: 7, barres: [], bassString: 1 },
+]
+
+// F#7/A#: F#7 (F# A# C# E) com a 3ª (A#) no baixo. Mesmos shapes do D7/F#
+// transpostos (+4 semitons), conferidos pelos rótulos de intervalo do oolimo.
+const FSHARP7_ASHARP: ChordShape[] = [
+  { frets: [3, -1, 1, 3, 2, -1], fingers: [3, 0, 1, 4, 2, 0], baseFret: 4, barres: [], bassString: 0 },
+  { frets: [-1, -1, 3, 4, 2, 1], fingers: [0, 0, 3, 4, 2, 1], baseFret: 6, barres: [], bassString: 2 },
+  { frets: [-1, -1, 2, 3, 1, 3], fingers: [0, 0, 2, 3, 1, 4], baseFret: 7, barres: [], bassString: 2 },
+  { frets: [-1, 3, -1, 1, 4, 2], fingers: [0, 3, 0, 1, 4, 2], baseFret: 11, barres: [], bassString: 1 },
+]
+
+// A7/C#: A7 (A C# E G) com a 3ª (C#) no baixo. Mesmos shapes (+7 semitons do
+// D7/F#), 5 posições do oolimo. Baixo C# marcado.
+const A7_CSHARP: ChordShape[] = [
+  { frets: [-1, 3, -1, 1, 4, 2], fingers: [0, 3, 0, 1, 4, 2], baseFret: 2, barres: [], bassString: 1 },
+  { frets: [-1, 3, 4, 1, 1, -1], fingers: [0, 3, 4, 1, 1, 0], baseFret: 2, barres: [1], bassString: 1 },
+  { frets: [3, -1, 1, 3, 2, -1], fingers: [3, 0, 1, 4, 2, 0], baseFret: 7, barres: [], bassString: 0 },
+  { frets: [-1, -1, 3, 4, 2, 1], fingers: [0, 0, 3, 4, 2, 1], baseFret: 9, barres: [], bassString: 2 },
+  { frets: [-1, -1, 2, 3, 1, 3], fingers: [0, 0, 2, 3, 1, 4], baseFret: 10, barres: [], bassString: 2 },
+]
+
 export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   'E7/B': E7_B,
   B7sus4: B7SUS4,
@@ -121,4 +149,7 @@ export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   'C9/E': C9_E,
   'D7(#11)': D7_SHARP11,
   'D7(11+)': D7_SHARP11,
+  'D7/F#': D7_F,
+  'F#7/A#': FSHARP7_ASHARP,
+  'A7/C#': A7_CSHARP,
 }
