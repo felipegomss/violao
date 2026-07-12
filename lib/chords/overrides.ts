@@ -91,6 +91,17 @@ const C9_E: ChordShape[] = [
   { frets: [0, 1, 0, 0, 1, 0], fingers: [0, 1, 0, 0, 2, 0], baseFret: 1, barres: [], bassString: 0 },
 ]
 
+// D7(#11) (= D7(11+)): notas D F# C G# (dominante com #11, sem 5ª). As 5 posições
+// do oolimo subindo o braço; cada corda/casa conferida pelos rótulos de intervalo
+// (3 · 7 · #11 · 1). Nada reconstruído — lido dos 5 prints.
+const D7_SHARP11: ChordShape[] = [
+  { frets: [-1, -1, 0, 1, 1, 2], fingers: [0, 0, 0, 1, 2, 3], baseFret: 1, barres: [] },
+  { frets: [-1, -1, 2, 3, 1, 2], fingers: [0, 0, 2, 4, 1, 3], baseFret: 3, barres: [] },
+  { frets: [-1, 2, -1, 2, 4, 1], fingers: [0, 2, 0, 3, 4, 1], baseFret: 4, barres: [] },
+  { frets: [-1, 1, 2, 1, 3, -1], fingers: [0, 2, 3, 1, 4, 0], baseFret: 5, barres: [] },
+  { frets: [-1, -1, 1, 2, 2, 3], fingers: [0, 0, 1, 2, 3, 4], baseFret: 6, barres: [] },
+]
+
 export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   'E7/B': E7_B,
   B7sus4: B7SUS4,
@@ -108,4 +119,6 @@ export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   Dm9: DM9,
   'Dm/C': DM_C,
   'C9/E': C9_E,
+  'D7(#11)': D7_SHARP11,
+  'D7(11+)': D7_SHARP11,
 }
