@@ -6,6 +6,7 @@ import { ListMusic, Pause, Play, Presentation, SkipBack, SkipForward } from 'luc
 import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
 import { transposeChord, degreeChord } from '@/lib/chords/transform'
 import { suggestScrollSpeed } from '@/lib/song/autoscroll'
+import { sectionKeys } from '@/lib/song/sections'
 import { Btn } from '@/components/btn'
 import { StagePlayer } from './stage-player'
 
@@ -16,17 +17,26 @@ const FOCUS_PALCO =
   'focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2'
 
 function renderDark(sheet: ChordSheetModel, disp: (c: string) => string) {
+  const keys = sectionKeys(sheet.lines)
   return sheet.lines.map((line, i) => {
     if (line.type === 'empty') return <div key={i} className="h-4" aria-hidden />
-    if (line.type === 'label')
+    if (line.type === 'label') {
+      const k = keys[i]
       return (
         <div
           key={i}
-          className="mt-8 mb-3 border-l-2 border-gold/40 pl-2.5 font-cifra text-[12px] uppercase tracking-[.08em] text-gold/70 first:mt-0"
+          data-section-key={k}
+          className="mt-8 mb-3 flex items-center gap-2 border-l-2 border-gold/40 pl-2.5 font-cifra text-[12px] uppercase tracking-[.08em] text-gold/70 first:mt-0"
         >
-          {line.text}
+          {k && (
+            <kbd className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded border border-gold/40 px-1 text-[10px] font-medium normal-case text-gold">
+              {k}
+            </kbd>
+          )}
+          <span>{line.text}</span>
         </div>
       )
+    }
     if (line.type === 'tab')
       return (
         <pre
@@ -165,6 +175,19 @@ export function StagePalco({
         else setOpen(false)
       } else if (e.key === 'ArrowRight' && next) goTo(next.slug)
       else if (e.key === 'ArrowLeft' && prev) goTo(prev.slug)
+      else if (/^[1-9]$/.test(e.key) || e.key === 'r' || e.key === 'R') {
+        // hotkey de seção: 1-9 pras partes, R pro refrão — rola o corpo do palco
+        const key = e.key === 'r' || e.key === 'R' ? 'R' : e.key
+        const root = scrollRef.current
+        const el = root?.querySelector<HTMLElement>(`[data-section-key="${key}"]`)
+        if (root && el) {
+          e.preventDefault()
+          const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          const top =
+            el.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop - 24
+          root.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'auto' : 'smooth' })
+        }
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)

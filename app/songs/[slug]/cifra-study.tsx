@@ -185,6 +185,27 @@ export function CifraStudy({
     return () => window.removeEventListener('scroll', onScroll)
   }, [autoScroll])
 
+  // Hotkeys de seção: 1-9 pulam pras partes na ordem; R vai pro refrão. Rola a
+  // janela até o label (com folga no topo). Só bloqueia quando o foco está num
+  // campo de texto — funciona mesmo logo após clicar num botão da régua.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return
+      const t = e.target as HTMLElement | null
+      if (t?.closest('input, textarea, select') || t?.isContentEditable) return
+      const key = /^[1-9]$/.test(e.key) ? e.key : e.key === 'r' || e.key === 'R' ? 'R' : null
+      if (!key) return
+      const el = cifraRef.current?.querySelector<HTMLElement>(`[data-section-key="${key}"]`)
+      if (!el) return
+      e.preventDefault()
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const y = el.getBoundingClientRect().top + window.scrollY - 80
+      window.scrollTo({ top: Math.max(0, y), behavior: reduce ? 'auto' : 'smooth' })
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   // Espaço alterna o auto-scroll — exceto quando o foco está num controle
   // (input/textarea/select/botão/summary/contenteditable), que fica com a tecla.
   useEffect(() => {

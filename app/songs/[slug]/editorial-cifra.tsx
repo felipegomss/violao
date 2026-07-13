@@ -1,4 +1,5 @@
 import type { ChordSheet as ChordSheetModel } from '@/lib/chordsheet/parse'
+import { sectionKeys } from '@/lib/song/sections'
 
 function isChordOnlyRow(items: { chord: string | null; lyrics: string }[]) {
   return items.every((item) => item.lyrics.trim() === '')
@@ -37,6 +38,8 @@ export function EditorialCifra({
   sheet: ChordSheetModel
   onChordHover?: (chord: string, el: HTMLElement | null) => void
 }) {
+  const keys = sectionKeys(sheet.lines)
+
   return (
     <div className="max-w-[640px]">
       {sheet.lines.map((line, i) => {
@@ -45,12 +48,22 @@ export function EditorialCifra({
         }
 
         if (line.type === 'label') {
+          const k = keys[i]
           return (
             <div
               key={i}
-              className="mt-8 mb-3 border-l-2 border-rust pl-2.5 font-cifra text-[12px] uppercase tracking-[.08em] text-rust first:mt-0"
+              data-section-key={k}
+              className="mt-8 mb-3 flex scroll-mt-20 items-center gap-2 border-l-2 border-rust pl-2.5 font-cifra text-[12px] uppercase tracking-[.08em] text-rust first:mt-0"
             >
-              {line.text}
+              {k && (
+                <kbd
+                  title={`atalho: ${k}`}
+                  className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded border border-rust/40 px-1 text-[10px] font-medium normal-case text-rust"
+                >
+                  {k}
+                </kbd>
+              )}
+              <span>{line.text}</span>
             </div>
           )
         }
