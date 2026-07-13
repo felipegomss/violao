@@ -199,12 +199,16 @@ export function CifraStudy({
       if (!el) return
       e.preventDefault()
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      // Com o auto-scroll ligado, o rAF fica dando scrollBy e "engole" um scroll
+      // suave — então o salto vira instantâneo (gruda na seção e a rolagem
+      // segue de lá). Parado, mantém o suave.
+      const behavior: ScrollBehavior = autoScroll || reduce ? 'auto' : 'smooth'
       const y = el.getBoundingClientRect().top + window.scrollY - 80
-      window.scrollTo({ top: Math.max(0, y), behavior: reduce ? 'auto' : 'smooth' })
+      window.scrollTo({ top: Math.max(0, y), behavior })
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [autoScroll])
 
   // Espaço alterna o auto-scroll — exceto quando o foco está num controle
   // (input/textarea/select/botão/summary/contenteditable), que fica com a tecla.

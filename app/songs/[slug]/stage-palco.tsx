@@ -183,16 +183,18 @@ export function StagePalco({
         if (root && el) {
           e.preventDefault()
           const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          // auto-scroll ligado engole o scroll suave → salto instantâneo
+          const behavior: ScrollBehavior = autoScroll || reduce ? 'auto' : 'smooth'
           const top =
             el.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop - 24
-          root.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'auto' : 'smooth' })
+          root.scrollTo({ top: Math.max(0, top), behavior })
         }
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, listOpen, next, prev])
+  }, [open, listOpen, next, prev, autoScroll])
 
   const disp = (c: string) =>
     notation === 'degree' ? degreeChord(c, songKey) : transposeChord(c, transpose)
