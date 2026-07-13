@@ -130,6 +130,13 @@ const A7_CSHARP: ChordShape[] = [
   { frets: [-1, -1, 2, 3, 1, 3], fingers: [0, 0, 2, 3, 1, 4], baseFret: 10, barres: [], bassString: 2 },
 ]
 
+// D9 (= D7(9)): notas D F# A C E. O db traz uma pestana com as duas cordas mi
+// tocando (soam a 5ª A) — o usuário pediu mi grave/agudo abafadas. Forma de funk
+// na A-D-G-B (dedos 2-1-3-4), 5ª omitida.
+const D9: ChordShape[] = [
+  { frets: [-1, 2, 1, 2, 2, -1], fingers: [0, 2, 1, 3, 4, 0], baseFret: 4, barres: [], bassString: 1 },
+]
+
 export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   'E7/B': E7_B,
   B7sus4: B7SUS4,
@@ -152,4 +159,6 @@ export const CHORD_OVERRIDES: Record<string, ChordShape[]> = {
   'D7/F#': D7_F,
   'F#7/A#': FSHARP7_ASHARP,
   'A7/C#': A7_CSHARP,
+  'D7(9)': D9,
+  D9: D9,
 }
