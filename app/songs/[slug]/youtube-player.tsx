@@ -1,13 +1,18 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Repeat, X } from 'lucide-react'
+import { Repeat, Volume1, Volume2, VolumeX, X } from 'lucide-react'
 import { youtubeId, formatTime } from '@/lib/song/youtube'
 import { loadYouTubeApi, getYT } from './yt-loader'
 
 type YTPlayer = {
   getCurrentTime: () => number
   seekTo: (seconds: number, allowSeekAhead: boolean) => void
+  setVolume: (v: number) => void
+  getVolume: () => number
+  mute: () => void
+  unMute: () => void
+  isMuted: () => boolean
   destroy: () => void
 }
 
@@ -22,6 +27,9 @@ export function YoutubePlayer({ url }: { url: string | null }) {
   const [a, setA] = useState<number | null>(null)
   const [b, setB] = useState<number | null>(null)
   const [loopOn, setLoopOn] = useState(false)
+  // Volume próprio: no player pequeno o slider nativo do YouTube fica espremido.
+  const [volume, setVolume] = useState(100)
+  const [muted, setMuted] = useState(false)
 
   // Play/pause e seek ficam por conta dos controles nativos do próprio iframe.
   // Aqui só criamos o player e fazemos polling do tempo pro A-B loop.
@@ -38,7 +46,11 @@ export function YoutubePlayer({ url }: { url: string | null }) {
         height: '100%',
         playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
         events: {
-          onReady: () => setReady(true),
+          onReady: (e: { target: YTPlayer }) => {
+            setReady(true)
+            setVolume(Math.round(e.target.getVolume()))
+            setMuted(e.target.isMuted())
+          },
         },
       })
       playerRef.current = player
@@ -72,6 +84,66 @@ export function YoutubePlayer({ url }: { url: string | null }) {
     <div>
       <div className="aspect-video overflow-hidden rounded-lg border border-ink/15 bg-ink/5">
         <div ref={hostRef} className="h-full w-full" />
+      </div>
+
+      {/* Volume — o slider nativo é pequeno demais nesse tamanho de player */}
+      <div className="mt-3 flex items-center gap-2.5">
+        <button
+          type="button"
+          onClick={() => {
+            const p = playerRef.current
+            if (!p || !ready) return
+            if (muted) {
+              p.unMute()
+              if (volume === 0) {
+                p.setVolume(50)
+                setVolume(50)
+              }
+              setMuted(false)
+            } else {
+              p.mute()
+              setMuted(true)
+            }
+          }}
+          disabled={!ready}
+          aria-label={muted ? 'ativar som' : 'silenciar'}
+          className="flex h-9 w-9 flex-none items-center justify-center rounded-lg border border-ink/22 text-soft transition-colors duration-150 ease-out hover:text-ink disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2"
+        >
+          {muted || volume === 0 ? (
+            <VolumeX size={15} strokeWidth={2} />
+          ) : volume < 50 ? (
+            <Volume1 size={15} strokeWidth={2} />
+          ) : (
+            <Volume2 size={15} strokeWidth={2} />
+          )}
+        </button>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={1}
+          value={muted ? 0 : volume}
+          disabled={!ready}
+          onChange={(e) => {
+            const v = Number(e.target.value)
+            const p = playerRef.current
+            setVolume(v)
+            if (!p) return
+            p.setVolume(v)
+            if (v > 0 && muted) {
+              p.unMute()
+              setMuted(false)
+            } else if (v === 0 && !muted) {
+              p.mute()
+              setMuted(true)
+            }
+          }}
+          aria-label="volume"
+          className="h-1 flex-1 cursor-pointer accent-teal disabled:opacity-40"
+        />
+        <span className="w-7 flex-none text-right font-cifra text-[11px] tabular-nums text-faint">
+          {muted ? 0 : volume}
+        </span>
       </div>
 
       {/* A-B loop — o que o player nativo não faz */}
