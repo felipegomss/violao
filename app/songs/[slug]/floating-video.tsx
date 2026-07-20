@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { GripHorizontal, Maximize2, Minus, X } from 'lucide-react'
 import { YoutubePlayer } from './youtube-player'
 
@@ -8,34 +8,35 @@ const PANEL_W = 360
 const BTN =
   'flex h-8 w-8 items-center justify-center rounded-lg text-faint transition-colors duration-150 ease-out hover:text-ink focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
 
-// Barras do equalizer: pico (altura), fator de duração (relativo à batida) e fase
-// variados, pra ficar orgânico em vez de uma onda uniforme.
-const EQ_BARS = [
-  { peak: 1, dur: 1, delay: 0 },
-  { peak: 0.5, dur: 0.5, delay: 0.25 },
-  { peak: 0.85, dur: 1, delay: 0.5 },
-  { peak: 0.6, dur: 0.5, delay: 0.1 },
-  { peak: 0.95, dur: 1, delay: 0.35 },
-]
+const EQ_N = 5
 
-// Equalizer genérico no tempo da música: a batida (60/bpm, default 150) escala a
-// duração das barras. Animam tocando, param ao pausar (o áudio do YouTube é
-// cross-origin, não dá pra reagir ao som real).
+// Equalizer no tempo da música: a cada meia batida (60/bpm, default 150) sorteia
+// alturas novas pras barras — aleatório de verdade, sincronizado ao tempo, com
+// transição suave entre os valores. Para ao pausar; respeita reduced-motion.
 function SoundBars({ playing, bpm }: { playing: boolean; bpm: number | null }) {
   const beat = 60 / (bpm && bpm > 0 ? bpm : 150)
+  const period = Math.max(90, Math.round((beat * 1000) / 2))
+  const [heights, setHeights] = useState<number[]>(() => Array(EQ_N).fill(0.3))
+
+  useEffect(() => {
+    if (!playing) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const id = setInterval(() => {
+      setHeights(Array.from({ length: EQ_N }, () => 0.22 + Math.random() * 0.78))
+    }, period)
+    return () => clearInterval(id)
+  }, [playing, period])
+
   return (
-    <span aria-hidden className={`soundbars flex h-3 items-end gap-[2px] ${playing ? 'on' : ''}`}>
-      {EQ_BARS.map((b, i) => (
+    <span aria-hidden className="flex h-3 items-end gap-[2px]">
+      {Array.from({ length: EQ_N }, (_, i) => (
         <span
           key={i}
-          className="h-full w-[3px] origin-bottom rounded-full bg-teal"
-          style={
-            {
-              animationDuration: `${(beat * b.dur).toFixed(3)}s`,
-              animationDelay: `-${(beat * b.delay).toFixed(3)}s`,
-              '--eq-peak': b.peak,
-            } as CSSProperties
-          }
+          className="h-full w-[3px] origin-bottom rounded-full bg-teal transition-transform ease-out"
+          style={{
+            transform: `scaleY(${playing ? heights[i] : 0.28})`,
+            transitionDuration: `${period}ms`,
+          }}
         />
       ))}
     </span>
