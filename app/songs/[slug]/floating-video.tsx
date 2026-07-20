@@ -10,11 +10,11 @@ const BTN =
 
 const EQ_N = 5
 
-// Equalizer no tempo da música: a cada meia batida (60/bpm, default 150) sorteia
+// Equalizer no tempo da música: a cada meia batida (60/bpm, default 120) sorteia
 // alturas novas pras barras — aleatório de verdade, sincronizado ao tempo, com
 // transição suave entre os valores. Para ao pausar; respeita reduced-motion.
 function SoundBars({ playing, bpm }: { playing: boolean; bpm: number | null }) {
-  const beat = 60 / (bpm && bpm > 0 ? bpm : 150)
+  const beat = 60 / (bpm && bpm > 0 ? bpm : 120)
   const period = Math.max(90, Math.round((beat * 1000) / 2))
   const [heights, setHeights] = useState<number[]>(() => Array(EQ_N).fill(0.3))
 
