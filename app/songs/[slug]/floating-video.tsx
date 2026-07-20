@@ -87,9 +87,10 @@ export function FloatingVideo({ url, onClose }: { url: string; onClose: () => vo
         </div>
       </div>
       {/* Player sempre montado (o vídeo colapsa dentro dele quando minimizado, o
-          áudio segue). `dragging` faz o iframe passar o pointer pro arraste. */}
+          áudio segue). O vídeo é pointer-events-none, então o arraste passa por
+          cima dele sem problema. */}
       <div className="p-2">
-        <YoutubePlayer url={url} minimized={minimized} dragging={dragging} />
+        <YoutubePlayer url={url} minimized={minimized} />
       </div>
     </div>
   )

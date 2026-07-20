@@ -104,11 +104,9 @@ function VolumeControl({
 export function YoutubePlayer({
   url,
   minimized = false,
-  dragging = false,
 }: {
   url: string | null
   minimized?: boolean
-  dragging?: boolean
 }) {
   const videoId = url ? youtubeId(url) : null
 
@@ -227,13 +225,15 @@ export function YoutubePlayer({
 
   return (
     <div>
-      {/* vídeo — colapsa quando minimizado (o iframe segue montado, só h-0). O
-          escudo de pointer-events durante o arraste evita o iframe engolir o drag. */}
+      {/* vídeo — colapsa quando minimizado (o iframe segue montado, só h-0).
+          pointer-events-none: como controlamos tudo pela nossa UI, bloqueamos o
+          hover no iframe — some o preview de storyboard do YouTube (e o iframe
+          deixa de engolir o arraste). */}
       <div
         className={
           minimized
             ? 'h-0 overflow-hidden'
-            : `aspect-video overflow-hidden rounded-lg border border-ink/15 bg-ink/5 ${dragging ? 'pointer-events-none' : ''}`
+            : 'pointer-events-none aspect-video overflow-hidden rounded-lg border border-ink/15 bg-ink/5'
         }
       >
         <div ref={hostRef} className="h-full w-full" />
