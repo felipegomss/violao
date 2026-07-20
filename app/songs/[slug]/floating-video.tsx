@@ -9,8 +9,8 @@ const BTN =
   'flex h-8 w-8 items-center justify-center rounded-lg text-faint transition-colors duration-150 ease-out hover:text-ink focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
 
 // Vídeo de referência como painel flutuante e arrastável (pela barra do topo).
-// Minimizar mantém o player montado (segue tocando + loop A-B), só colapsa o
-// vídeo e mostra um indicador. Fechar (X) desmonta e para.
+// Minimizar colapsa só o vídeo — os controles (play/pause, progresso, volume)
+// seguem visíveis e o áudio continua. Fechar (X) desmonta e para.
 export function FloatingVideo({ url, onClose }: { url: string; onClose: () => void }) {
   const panelRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState(() => {
@@ -49,22 +49,22 @@ export function FloatingVideo({ url, onClose }: { url: string; onClose: () => vo
     <div
       ref={panelRef}
       className={`fixed z-40 max-w-[calc(100vw-16px)] overflow-hidden rounded-xl border border-ink/20 bg-folha shadow-[0_24px_50px_-20px_rgba(38,33,27,.55)] ${
-        minimized ? 'w-56' : 'w-[360px]'
+        minimized ? 'w-[300px]' : 'w-[360px]'
       }`}
       style={{ left: pos.x, top: pos.y }}
     >
       {/* barra de arraste + controles */}
       <div
         onPointerDown={onPointerDown}
-        className={`flex touch-none select-none items-center justify-between gap-2 px-3 py-2 ${
-          minimized ? '' : 'border-b border-ink/12'
-        } ${dragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className={`flex touch-none select-none items-center justify-between gap-2 border-b border-ink/12 px-3 py-2 ${
+          dragging ? 'cursor-grabbing' : 'cursor-grab'
+        }`}
       >
         {minimized ? (
           <span className="flex items-center gap-2 font-cifra text-[11px] lowercase text-soft">
             {/* indicador de que segue tocando */}
             <span aria-hidden className="h-2 w-2 flex-none rounded-full bg-teal motion-safe:animate-pulse" />
-            vídeo minimizado
+            áudio
           </span>
         ) : (
           <span className="flex items-center gap-2 font-cifra text-[11px] lowercase text-faint">
@@ -86,10 +86,10 @@ export function FloatingVideo({ url, onClose }: { url: string; onClose: () => vo
           </button>
         </div>
       </div>
-      {/* Mantém o player montado mesmo minimizado (segue tocando/loop) — só colapsa.
-          Escudo de pointer-events enquanto arrasta, senão o iframe engole o drag. */}
-      <div className={minimized ? 'h-0 overflow-hidden' : `p-2 ${dragging ? 'pointer-events-none' : ''}`}>
-        <YoutubePlayer url={url} />
+      {/* Player sempre montado (o vídeo colapsa dentro dele quando minimizado, o
+          áudio segue). `dragging` faz o iframe passar o pointer pro arraste. */}
+      <div className="p-2">
+        <YoutubePlayer url={url} minimized={minimized} dragging={dragging} />
       </div>
     </div>
   )

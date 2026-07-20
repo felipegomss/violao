@@ -1,12 +1,15 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Repeat, Volume1, Volume2, VolumeX, X } from 'lucide-react'
+import { Pause, Play, Repeat, Volume1, Volume2, VolumeX, X } from 'lucide-react'
 import { youtubeId, formatTime } from '@/lib/song/youtube'
 import { loadYouTubeApi, getYT } from './yt-loader'
 
 type YTPlayer = {
+  playVideo: () => void
+  pauseVideo: () => void
   getCurrentTime: () => number
+  getDuration: () => number
   seekTo: (seconds: number, allowSeekAhead: boolean) => void
   setVolume: (v: number) => void
   getVolume: () => number
@@ -16,23 +19,38 @@ type YTPlayer = {
   destroy: () => void
 }
 
-export function YoutubePlayer({ url }: { url: string | null }) {
+const FOCUS = 'focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
+const ICON_BTN = `flex h-9 w-9 flex-none items-center justify-center rounded-lg border border-ink/22 text-soft transition-colors duration-150 ease-out hover:text-ink disabled:pointer-events-none disabled:opacity-40 ${FOCUS}`
+
+// Player de referência com transporte PRÓPRIO: os controles nativos do YouTube
+// (controls: 0) ficam espremidos no painel pequeno, então desenhamos play/pause,
+// barra de progresso e volume aqui. `minimized` colapsa só o vídeo (o áudio e os
+// controles seguem); `dragging` deixa o iframe passar o pointer pro arraste.
+export function YoutubePlayer({
+  url,
+  minimized = false,
+  dragging = false,
+}: {
+  url: string | null
+  minimized?: boolean
+  dragging?: boolean
+}) {
   const videoId = url ? youtubeId(url) : null
 
   const hostRef = useRef<HTMLDivElement>(null)
   const playerRef = useRef<YTPlayer | null>(null)
+  const seekingRef = useRef(false)
 
   const [ready, setReady] = useState(false)
+  const [playing, setPlaying] = useState(false)
   const [current, setCurrent] = useState(0)
+  const [duration, setDuration] = useState(0)
   const [a, setA] = useState<number | null>(null)
   const [b, setB] = useState<number | null>(null)
   const [loopOn, setLoopOn] = useState(false)
-  // Volume próprio: no player pequeno o slider nativo do YouTube fica espremido.
   const [volume, setVolume] = useState(100)
   const [muted, setMuted] = useState(false)
 
-  // Play/pause e seek ficam por conta dos controles nativos do próprio iframe.
-  // Aqui só criamos o player e fazemos polling do tempo pro A-B loop.
   useEffect(() => {
     if (!videoId) return
     let cancelled = false
@@ -44,19 +62,33 @@ export function YoutubePlayer({ url }: { url: string | null }) {
         videoId,
         width: '100%',
         height: '100%',
-        playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
+        // controls: 0 tira a barra nativa (usamos a nossa). O cabeçalho/logo do
+        // YouTube não some — é limite da API — mas a barra espremida sim.
+        playerVars: {
+          controls: 0,
+          rel: 0,
+          modestbranding: 1,
+          playsinline: 1,
+          iv_load_policy: 3,
+          disablekb: 1,
+        },
         events: {
           onReady: (e: { target: YTPlayer }) => {
             setReady(true)
             setVolume(Math.round(e.target.getVolume()))
             setMuted(e.target.isMuted())
+            setDuration(e.target.getDuration() || 0)
           },
+          // 1 = tocando; qualquer outro estado = pausado/parado
+          onStateChange: (e: { data: number }) => setPlaying(e.data === 1),
         },
       })
       playerRef.current = player
       interval = setInterval(() => {
         const p = playerRef.current
-        if (p?.getCurrentTime) setCurrent(p.getCurrentTime())
+        if (!p?.getCurrentTime) return
+        if (!seekingRef.current) setCurrent(p.getCurrentTime())
+        setDuration(p.getDuration?.() || 0)
       }, 200)
     })
 
@@ -77,37 +109,107 @@ export function YoutubePlayer({ url }: { url: string | null }) {
     }
   }, [current, loopOn, lo, hi])
 
-  // Sem vídeo não há player — quem decide mostrar ou não é o pai.
   if (!videoId) return null
+
+  const togglePlay = () => {
+    const p = playerRef.current
+    if (!p || !ready) return
+    if (playing) p.pauseVideo()
+    else p.playVideo()
+  }
+  const seek = (v: number) => {
+    setCurrent(v)
+    playerRef.current?.seekTo(v, true)
+  }
+  const toggleMute = () => {
+    const p = playerRef.current
+    if (!p || !ready) return
+    if (muted) {
+      p.unMute()
+      if (volume === 0) {
+        p.setVolume(50)
+        setVolume(50)
+      }
+      setMuted(false)
+    } else {
+      p.mute()
+      setMuted(true)
+    }
+  }
+  const changeVolume = (v: number) => {
+    const p = playerRef.current
+    setVolume(v)
+    if (!p) return
+    p.setVolume(v)
+    if (v > 0 && muted) {
+      p.unMute()
+      setMuted(false)
+    } else if (v === 0 && !muted) {
+      p.mute()
+      setMuted(true)
+    }
+  }
 
   return (
     <div>
-      <div className="aspect-video overflow-hidden rounded-lg border border-ink/15 bg-ink/5">
+      {/* vídeo — colapsa quando minimizado (o iframe segue montado, só h-0). O
+          escudo de pointer-events durante o arraste evita o iframe engolir o drag. */}
+      <div
+        className={
+          minimized
+            ? 'h-0 overflow-hidden'
+            : `aspect-video overflow-hidden rounded-lg border border-ink/15 bg-ink/5 ${dragging ? 'pointer-events-none' : ''}`
+        }
+      >
         <div ref={hostRef} className="h-full w-full" />
       </div>
 
-      {/* Volume — o slider nativo é pequeno demais nesse tamanho de player */}
-      <div className="mt-3 flex items-center gap-2.5">
+      {/* transporte: play/pause + progresso + tempo */}
+      <div className={`flex items-center gap-2.5 ${minimized ? '' : 'mt-3'}`}>
         <button
           type="button"
-          onClick={() => {
-            const p = playerRef.current
-            if (!p || !ready) return
-            if (muted) {
-              p.unMute()
-              if (volume === 0) {
-                p.setVolume(50)
-                setVolume(50)
-              }
-              setMuted(false)
-            } else {
-              p.mute()
-              setMuted(true)
-            }
+          onClick={togglePlay}
+          disabled={!ready}
+          aria-label={playing ? 'pausar' : 'tocar'}
+          className={ICON_BTN}
+        >
+          {playing ? (
+            <Pause size={15} strokeWidth={2} fill="currentColor" />
+          ) : (
+            <Play size={15} strokeWidth={2} fill="currentColor" className="ml-0.5" />
+          )}
+        </button>
+        <input
+          type="range"
+          min={0}
+          max={duration || 0}
+          step={1}
+          value={Math.min(current, duration || 0)}
+          disabled={!ready || !duration}
+          onPointerDown={() => {
+            seekingRef.current = true
           }}
+          onPointerUp={() => {
+            seekingRef.current = false
+          }}
+          onChange={(e) => seek(Number(e.target.value))}
+          aria-label="posição"
+          className={`h-1 flex-1 cursor-pointer accent-teal disabled:opacity-40 ${FOCUS}`}
+        />
+        <span className="w-[74px] flex-none text-right font-cifra text-[11px] tabular-nums text-soft">
+          {formatTime(current)}
+          <span className="text-faint"> / {formatTime(duration)}</span>
+        </span>
+      </div>
+
+      {/* volume */}
+      <div className="mt-2 flex items-center gap-2.5">
+        <button
+          type="button"
+          onClick={toggleMute}
           disabled={!ready}
           aria-label={muted ? 'ativar som' : 'silenciar'}
-          className="flex h-9 w-9 flex-none items-center justify-center rounded-lg border border-ink/22 text-soft transition-colors duration-150 ease-out hover:text-ink disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2"
+          className={ICON_BTN}
         >
           {muted || volume === 0 ? (
             <VolumeX size={15} strokeWidth={2} />
@@ -124,76 +226,65 @@ export function YoutubePlayer({ url }: { url: string | null }) {
           step={1}
           value={muted ? 0 : volume}
           disabled={!ready}
-          onChange={(e) => {
-            const v = Number(e.target.value)
-            const p = playerRef.current
-            setVolume(v)
-            if (!p) return
-            p.setVolume(v)
-            if (v > 0 && muted) {
-              p.unMute()
-              setMuted(false)
-            } else if (v === 0 && !muted) {
-              p.mute()
-              setMuted(true)
-            }
-          }}
+          onChange={(e) => changeVolume(Number(e.target.value))}
           aria-label="volume"
-          className="h-1 flex-1 cursor-pointer accent-teal disabled:opacity-40"
+          className={`h-1 flex-1 cursor-pointer accent-teal disabled:opacity-40 ${FOCUS}`}
         />
         <span className="w-7 flex-none text-right font-cifra text-[11px] tabular-nums text-faint">
           {muted ? 0 : volume}
         </span>
       </div>
 
-      {/* A-B loop — o que o player nativo não faz */}
-      <div className="mt-3 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => ready && setA(current)}
-          disabled={!ready}
-          className={`h-9 flex-1 rounded-lg border font-cifra text-[11px] transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2 ${
-            a != null ? 'border-teal/40 bg-teal/10 text-teal' : 'border-ink/22 text-soft hover:text-ink'
-          }`}
-        >
-          A {a != null && <span className="tabular-nums">{formatTime(a)}</span>}
-        </button>
-        <button
-          type="button"
-          onClick={() => ready && setB(current)}
-          disabled={!ready}
-          className={`h-9 flex-1 rounded-lg border font-cifra text-[11px] transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2 ${
-            b != null ? 'border-teal/40 bg-teal/10 text-teal' : 'border-ink/22 text-soft hover:text-ink'
-          }`}
-        >
-          B {b != null && <span className="tabular-nums">{formatTime(b)}</span>}
-        </button>
-        <button
-          type="button"
-          onClick={() => setLoopOn((v) => !v)}
-          disabled={lo == null || hi == null || hi <= lo}
-          className={`flex h-9 items-center gap-1.5 rounded-lg border px-3 font-cifra text-[11px] lowercase transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2 ${
-            loopOn ? 'border-transparent bg-teal text-folha' : 'border-ink/22 text-soft hover:text-ink'
-          }`}
-        >
-          <Repeat size={12} strokeWidth={2} />
-          loop
-        </button>
-        {(a != null || b != null) && (
+      {/* A-B loop — só no modo expandido (o que o player nativo não faz) */}
+      {!minimized && (
+        <div className="mt-3 flex items-center gap-2">
           <button
             type="button"
-            onClick={() => {
-              setA(null)
-              setB(null)
-              setLoopOn(false)
-            }}
-            aria-label="limpar A-B"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-ink/22 text-faint transition-colors duration-150 ease-out hover:text-ink focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2"
+            onClick={() => ready && setA(current)}
+            disabled={!ready}
+            className={`h-9 flex-1 rounded-lg border font-cifra text-[11px] transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-40 ${FOCUS} ${
+              a != null ? 'border-teal/40 bg-teal/10 text-teal' : 'border-ink/22 text-soft hover:text-ink'
+            }`}
           >
-            <X size={14} strokeWidth={2} />
+            A {a != null && <span className="tabular-nums">{formatTime(a)}</span>}
           </button>
-        )}
-      </div>
+          <button
+            type="button"
+            onClick={() => ready && setB(current)}
+            disabled={!ready}
+            className={`h-9 flex-1 rounded-lg border font-cifra text-[11px] transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-40 ${FOCUS} ${
+              b != null ? 'border-teal/40 bg-teal/10 text-teal' : 'border-ink/22 text-soft hover:text-ink'
+            }`}
+          >
+            B {b != null && <span className="tabular-nums">{formatTime(b)}</span>}
+          </button>
+          <button
+            type="button"
+            onClick={() => setLoopOn((v) => !v)}
+            disabled={lo == null || hi == null || hi <= lo}
+            className={`flex h-9 items-center gap-1.5 rounded-lg border px-3 font-cifra text-[11px] lowercase transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-40 ${FOCUS} ${
+              loopOn ? 'border-transparent bg-teal text-folha' : 'border-ink/22 text-soft hover:text-ink'
+            }`}
+          >
+            <Repeat size={12} strokeWidth={2} />
+            loop
+          </button>
+          {(a != null || b != null) && (
+            <button
+              type="button"
+              onClick={() => {
+                setA(null)
+                setB(null)
+                setLoopOn(false)
+              }}
+              aria-label="limpar A-B"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg border border-ink/22 text-faint transition-colors duration-150 ease-out hover:text-ink ${FOCUS}`}
+            >
+              <X size={14} strokeWidth={2} />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }
