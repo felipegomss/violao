@@ -22,6 +22,81 @@ type YTPlayer = {
 const FOCUS = 'focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
 const ICON_BTN = `flex h-9 w-9 flex-none items-center justify-center rounded-lg border border-ink/22 text-soft transition-colors duration-150 ease-out hover:text-ink disabled:pointer-events-none disabled:opacity-40 ${FOCUS}`
 
+function VolIcon({ muted, volume, size }: { muted: boolean; volume: number; size: number }) {
+  if (muted || volume === 0) return <VolumeX size={size} strokeWidth={2} />
+  return volume < 50 ? (
+    <Volume1 size={size} strokeWidth={2} />
+  ) : (
+    <Volume2 size={size} strokeWidth={2} />
+  )
+}
+
+// Volume estilo Windows: só o ícone; ao clicar, abre um popover com o slider.
+// Deixa a linha (e o modo minimizado) mais enxuta.
+function VolumeControl({
+  volume,
+  muted,
+  ready,
+  onToggleMute,
+  onChangeVolume,
+}: {
+  volume: number
+  muted: boolean
+  ready: boolean
+  onToggleMute: () => void
+  onChangeVolume: (v: number) => void
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="relative flex-none">
+      <button
+        type="button"
+        onClick={() => ready && setOpen((o) => !o)}
+        disabled={!ready}
+        aria-label="volume"
+        aria-expanded={open}
+        className={`${ICON_BTN} ${open ? 'border-teal/40 text-teal' : ''}`}
+      >
+        <VolIcon muted={muted} volume={volume} size={15} />
+      </button>
+      {open && (
+        <>
+          <button
+            type="button"
+            aria-hidden
+            tabIndex={-1}
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-10 cursor-default"
+          />
+          <div className="absolute bottom-full right-0 z-20 mb-2 flex items-center gap-2 rounded-lg border border-ink/20 bg-folha px-2.5 py-2 shadow-[0_16px_34px_-14px_rgba(38,33,27,.5)]">
+            <button
+              type="button"
+              onClick={onToggleMute}
+              aria-label={muted ? 'ativar som' : 'silenciar'}
+              className={`flex h-7 w-7 flex-none items-center justify-center rounded-md text-soft transition-colors duration-150 ease-out hover:text-ink ${FOCUS}`}
+            >
+              <VolIcon muted={muted} volume={volume} size={14} />
+            </button>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={muted ? 0 : volume}
+              onChange={(e) => onChangeVolume(Number(e.target.value))}
+              aria-label="ajustar volume"
+              className={`h-1 w-28 cursor-pointer accent-teal ${FOCUS}`}
+            />
+            <span className="w-6 flex-none text-right font-cifra text-[11px] tabular-nums text-faint">
+              {muted ? 0 : volume}
+            </span>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 // Player de referência com transporte PRÓPRIO: os controles nativos do YouTube
 // (controls: 0) ficam espremidos no painel pequeno, então desenhamos play/pause,
 // barra de progresso e volume aqui. `minimized` colapsa só o vídeo (o áudio e os
@@ -200,42 +275,19 @@ export function YoutubePlayer({
           {formatTime(current)}
           <span className="text-faint"> / {formatTime(duration)}</span>
         </span>
+        {/* no minimizado o volume mora aqui (ícone + popover), pra caber numa linha só */}
+        {minimized && (
+          <VolumeControl
+            volume={volume}
+            muted={muted}
+            ready={ready}
+            onToggleMute={toggleMute}
+            onChangeVolume={changeVolume}
+          />
+        )}
       </div>
 
-      {/* volume */}
-      <div className="mt-2 flex items-center gap-2.5">
-        <button
-          type="button"
-          onClick={toggleMute}
-          disabled={!ready}
-          aria-label={muted ? 'ativar som' : 'silenciar'}
-          className={ICON_BTN}
-        >
-          {muted || volume === 0 ? (
-            <VolumeX size={15} strokeWidth={2} />
-          ) : volume < 50 ? (
-            <Volume1 size={15} strokeWidth={2} />
-          ) : (
-            <Volume2 size={15} strokeWidth={2} />
-          )}
-        </button>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={1}
-          value={muted ? 0 : volume}
-          disabled={!ready}
-          onChange={(e) => changeVolume(Number(e.target.value))}
-          aria-label="volume"
-          className={`h-1 flex-1 cursor-pointer accent-teal disabled:opacity-40 ${FOCUS}`}
-        />
-        <span className="w-7 flex-none text-right font-cifra text-[11px] tabular-nums text-faint">
-          {muted ? 0 : volume}
-        </span>
-      </div>
-
-      {/* A-B loop — só no modo expandido (o que o player nativo não faz) */}
+      {/* A-B loop + volume — dividem a linha no modo expandido */}
       {!minimized && (
         <div className="mt-3 flex items-center gap-2">
           <button
@@ -283,6 +335,13 @@ export function YoutubePlayer({
               <X size={14} strokeWidth={2} />
             </button>
           )}
+          <VolumeControl
+            volume={volume}
+            muted={muted}
+            ready={ready}
+            onToggleMute={toggleMute}
+            onChangeVolume={changeVolume}
+          />
         </div>
       )}
     </div>

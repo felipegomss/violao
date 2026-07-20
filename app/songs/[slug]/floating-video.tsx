@@ -48,8 +48,8 @@ export function FloatingVideo({ url, onClose }: { url: string; onClose: () => vo
   return (
     <div
       ref={panelRef}
-      className={`fixed z-40 max-w-[calc(100vw-16px)] overflow-hidden rounded-xl border border-ink/20 bg-folha shadow-[0_24px_50px_-20px_rgba(38,33,27,.55)] ${
-        minimized ? 'w-[300px]' : 'w-[360px]'
+      className={`fixed z-40 max-w-[calc(100vw-16px)] rounded-xl border border-ink/20 bg-folha shadow-[0_24px_50px_-20px_rgba(38,33,27,.55)] ${
+        minimized ? 'w-[264px]' : 'w-[360px]'
       }`}
       style={{ left: pos.x, top: pos.y }}
     >
