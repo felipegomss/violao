@@ -276,7 +276,7 @@ export function YoutubePlayer({
           }}
           onChange={(e) => seek(Number(e.target.value))}
           aria-label="posição"
-          className={`h-1 flex-1 cursor-pointer accent-teal disabled:opacity-40 ${FOCUS}`}
+          className={`h-1 min-w-0 flex-1 cursor-pointer accent-teal disabled:opacity-40 ${FOCUS}`}
         />
         <span className="w-[74px] flex-none text-right font-cifra text-[11px] tabular-nums text-soft">
           {formatTime(current)}
