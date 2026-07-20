@@ -8,6 +8,19 @@ const PANEL_W = 360
 const BTN =
   'flex h-8 w-8 items-center justify-center rounded-lg text-faint transition-colors duration-150 ease-out hover:text-ink focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
 
+// Equalizer genérico: barras animam quando tocando, param ao pausar (o áudio do
+// YouTube é cross-origin, não dá pra reagir ao som de verdade).
+function SoundBars({ playing }: { playing: boolean }) {
+  return (
+    <span aria-hidden className={`soundbars flex h-3 items-end gap-[2px] ${playing ? 'on' : ''}`}>
+      <span className="h-full w-[3px] origin-bottom rounded-full bg-teal" />
+      <span className="h-full w-[3px] origin-bottom rounded-full bg-teal" />
+      <span className="h-full w-[3px] origin-bottom rounded-full bg-teal" />
+      <span className="h-full w-[3px] origin-bottom rounded-full bg-teal" />
+    </span>
+  )
+}
+
 // Vídeo de referência como painel flutuante e arrastável (pela barra do topo).
 // Minimizar colapsa só o vídeo — os controles (play/pause, progresso, volume)
 // seguem visíveis e o áudio continua. Fechar (X) desmonta e para.
@@ -20,6 +33,7 @@ export function FloatingVideo({ url, onClose }: { url: string; onClose: () => vo
   })
   const [dragging, setDragging] = useState(false)
   const [minimized, setMinimized] = useState(false)
+  const [playing, setPlaying] = useState(false)
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0) return
@@ -62,8 +76,8 @@ export function FloatingVideo({ url, onClose }: { url: string; onClose: () => vo
       >
         {minimized ? (
           <span className="flex items-center gap-2 font-cifra text-[11px] lowercase text-soft">
-            {/* indicador de que segue tocando */}
-            <span aria-hidden className="h-2 w-2 flex-none rounded-full bg-teal motion-safe:animate-pulse" />
+            {/* equalizer: anima tocando, para ao pausar */}
+            <SoundBars playing={playing} />
             áudio
           </span>
         ) : (
@@ -90,7 +104,7 @@ export function FloatingVideo({ url, onClose }: { url: string; onClose: () => vo
           áudio segue). O vídeo é pointer-events-none, então o arraste passa por
           cima dele sem problema. */}
       <div className="p-2">
-        <YoutubePlayer url={url} minimized={minimized} />
+        <YoutubePlayer url={url} minimized={minimized} onPlayingChange={setPlaying} />
       </div>
     </div>
   )

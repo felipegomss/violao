@@ -104,9 +104,11 @@ function VolumeControl({
 export function YoutubePlayer({
   url,
   minimized = false,
+  onPlayingChange,
 }: {
   url: string | null
   minimized?: boolean
+  onPlayingChange?: (playing: boolean) => void
 }) {
   const videoId = url ? youtubeId(url) : null
 
@@ -181,6 +183,11 @@ export function YoutubePlayer({
       playerRef.current?.seekTo(lo, true)
     }
   }, [current, loopOn, lo, hi])
+
+  // Avisa o pai (FloatingVideo) pra animar o equalizer do header.
+  useEffect(() => {
+    onPlayingChange?.(playing)
+  }, [playing, onPlayingChange])
 
   if (!videoId) return null
 
