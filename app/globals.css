@@ -174,34 +174,28 @@
 }
 
 /* Equalizer do player: barras animam quando .on (tocando), estáticas quando não.
-   Genérico (o áudio do YouTube é cross-origin, não dá pra reagir ao som real). */
+   Genérico (o áudio do YouTube é cross-origin, não dá pra reagir ao som real).
+   Pico por barra via --eq-peak; duração/delay vêm inline (escalados pela BPM). */
 @keyframes soundbar {
   0%,
   100% {
-    transform: scaleY(0.3);
+    transform: scaleY(0.28);
   }
   50% {
-    transform: scaleY(1);
+    transform: scaleY(var(--eq-peak, 1));
   }
 }
 .soundbars span {
-  transform: scaleY(0.3);
+  transform: scaleY(0.28);
 }
 .soundbars.on span {
-  animation: soundbar 0.7s ease-in-out infinite;
-}
-.soundbars.on span:nth-child(2) {
-  animation-delay: 0.13s;
-}
-.soundbars.on span:nth-child(3) {
-  animation-delay: 0.26s;
-}
-.soundbars.on span:nth-child(4) {
-  animation-delay: 0.39s;
+  animation-name: soundbar;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .soundbars.on span {
-    animation: none;
+    animation: none !important;
     transform: scaleY(0.6);
   }
 }

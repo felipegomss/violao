@@ -444,7 +444,11 @@ export function CifraStudy({
       />
 
       {referenceYoutubeUrl && videoOpen && (
-        <FloatingVideo url={referenceYoutubeUrl} onClose={() => setVideoOpen(false)} />
+        <FloatingVideo
+          url={referenceYoutubeUrl}
+          bpm={bpm}
+          onClose={() => setVideoOpen(false)}
+        />
       )}
 
       {hover && (

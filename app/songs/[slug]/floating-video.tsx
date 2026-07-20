@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, type CSSProperties } from 'react'
 import { GripHorizontal, Maximize2, Minus, X } from 'lucide-react'
 import { YoutubePlayer } from './youtube-player'
 
@@ -8,15 +8,36 @@ const PANEL_W = 360
 const BTN =
   'flex h-8 w-8 items-center justify-center rounded-lg text-faint transition-colors duration-150 ease-out hover:text-ink focus-visible:outline-2 focus-visible:outline-teal focus-visible:outline-offset-2'
 
-// Equalizer genérico: barras animam quando tocando, param ao pausar (o áudio do
-// YouTube é cross-origin, não dá pra reagir ao som de verdade).
-function SoundBars({ playing }: { playing: boolean }) {
+// Barras do equalizer: pico (altura), fator de duração (relativo à batida) e fase
+// variados, pra ficar orgânico em vez de uma onda uniforme.
+const EQ_BARS = [
+  { peak: 1, dur: 1, delay: 0 },
+  { peak: 0.5, dur: 0.5, delay: 0.25 },
+  { peak: 0.85, dur: 1, delay: 0.5 },
+  { peak: 0.6, dur: 0.5, delay: 0.1 },
+  { peak: 0.95, dur: 1, delay: 0.35 },
+]
+
+// Equalizer genérico no tempo da música: a batida (60/bpm, default 150) escala a
+// duração das barras. Animam tocando, param ao pausar (o áudio do YouTube é
+// cross-origin, não dá pra reagir ao som real).
+function SoundBars({ playing, bpm }: { playing: boolean; bpm: number | null }) {
+  const beat = 60 / (bpm && bpm > 0 ? bpm : 150)
   return (
     <span aria-hidden className={`soundbars flex h-3 items-end gap-[2px] ${playing ? 'on' : ''}`}>
-      <span className="h-full w-[3px] origin-bottom rounded-full bg-teal" />
-      <span className="h-full w-[3px] origin-bottom rounded-full bg-teal" />
-      <span className="h-full w-[3px] origin-bottom rounded-full bg-teal" />
-      <span className="h-full w-[3px] origin-bottom rounded-full bg-teal" />
+      {EQ_BARS.map((b, i) => (
+        <span
+          key={i}
+          className="h-full w-[3px] origin-bottom rounded-full bg-teal"
+          style={
+            {
+              animationDuration: `${(beat * b.dur).toFixed(3)}s`,
+              animationDelay: `-${(beat * b.delay).toFixed(3)}s`,
+              '--eq-peak': b.peak,
+            } as CSSProperties
+          }
+        />
+      ))}
     </span>
   )
 }
@@ -24,7 +45,15 @@ function SoundBars({ playing }: { playing: boolean }) {
 // Vídeo de referência como painel flutuante e arrastável (pela barra do topo).
 // Minimizar colapsa só o vídeo — os controles (play/pause, progresso, volume)
 // seguem visíveis e o áudio continua. Fechar (X) desmonta e para.
-export function FloatingVideo({ url, onClose }: { url: string; onClose: () => void }) {
+export function FloatingVideo({
+  url,
+  bpm,
+  onClose,
+}: {
+  url: string
+  bpm: number | null
+  onClose: () => void
+}) {
   const panelRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState(() => {
     if (typeof window === 'undefined') return { x: 24, y: 80 }
@@ -76,8 +105,8 @@ export function FloatingVideo({ url, onClose }: { url: string; onClose: () => vo
       >
         {minimized ? (
           <span className="flex items-center gap-2 font-cifra text-[11px] lowercase text-soft">
-            {/* equalizer: anima tocando, para ao pausar */}
-            <SoundBars playing={playing} />
+            {/* equalizer no tempo da música: anima tocando, para ao pausar */}
+            <SoundBars playing={playing} bpm={bpm} />
             áudio
           </span>
         ) : (
